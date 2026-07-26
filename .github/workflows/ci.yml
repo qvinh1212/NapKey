@@ -55,10 +55,10 @@ jobs:
       - run: npm run typecheck -- --incremental false
       - run: npm run lint
       - run: npm test
-      - run: npm audit --audit-level=high
+      # Gate deployable runtime dependencies; development tooling is not shipped.
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run build
         env:
           NEXT_PUBLIC_SITE_URL: https://napkey.io.vn
           NEXT_PUBLIC_API_BASE_URL: https://api.napkey.io.vn
           NAPKEY_CORE_URL: http://127.0.0.1:8081
-

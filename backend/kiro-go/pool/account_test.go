@@ -1,8 +1,10 @@
 package pool
 
 import (
+	"encoding/json"
 	"errors"
 	"kiro-go/config"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -206,6 +208,35 @@ func TestGetNextForModelExcludingReturnsNilOnEmptyPool(t *testing.T) {
 	acc := p.GetNextForModelExcluding("model", map[string]bool{})
 	if acc != nil {
 		t.Fatalf("expected nil for empty pool, got %q", acc.ID)
+	}
+}
+
+func TestUpdateStatsPersistsBeforeReturning(t *testing.T) {
+	cfgFile := filepath.Join(t.TempDir(), "config.json")
+	if err := config.Init(cfgFile); err != nil {
+		t.Fatalf("config.Init: %v", err)
+	}
+	if err := config.AddAccount(config.Account{ID: "stats", Enabled: true}); err != nil {
+		t.Fatalf("config.AddAccount: %v", err)
+	}
+
+	p := newTestPool(config.Account{ID: "stats", Enabled: true})
+	p.UpdateStats("stats", 42, 1.25)
+
+	raw, err := os.ReadFile(cfgFile)
+	if err != nil {
+		t.Fatalf("read persisted config: %v", err)
+	}
+	var persisted config.Config
+	if err := json.Unmarshal(raw, &persisted); err != nil {
+		t.Fatalf("decode persisted config: %v", err)
+	}
+	if len(persisted.Accounts) != 1 {
+		t.Fatalf("expected one persisted account, got %d", len(persisted.Accounts))
+	}
+	got := persisted.Accounts[0]
+	if got.RequestCount != 1 || got.TotalTokens != 42 || got.TotalCredits != 1.25 {
+		t.Fatalf("stats were not persisted before return: %+v", got)
 	}
 }
 
