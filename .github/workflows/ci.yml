@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/napkey-core/go.mod
-          cache-dependency-path: backend/napkey-core/go.sum
+          cache: false
       - run: go test ./... -count=1
       - run: go vet ./...
       - run: go build ./...
