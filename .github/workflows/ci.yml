@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  napkey-core:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/napkey-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/napkey-core/go.mod
+          cache-dependency-path: backend/napkey-core/go.sum
+      - run: go test ./... -count=1
+      - run: go vet ./...
+      - run: go build ./...
+
+  kiro-go:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/kiro-go
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/kiro-go/go.mod
+          cache-dependency-path: backend/kiro-go/go.sum
+      - run: go test ./... -count=1
+      - run: go vet ./...
+      - run: go build ./...
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: napkey-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: napkey-web/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck -- --incremental false
+      - run: npm run lint
+      - run: npm test
+      - run: npm audit --audit-level=high
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: https://napkey.io.vn
+          NEXT_PUBLIC_API_BASE_URL: https://api.napkey.io.vn
+          NAPKEY_CORE_URL: http://127.0.0.1:8081
+

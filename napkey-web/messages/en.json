@@ -1,0 +1,451 @@
+{
+  "meta": {
+    "title": "NapKey — prepaid wallet API for Claude",
+    "description": "Top up your wallet, get an API key, point Claude Code or your SDK at the NapKey endpoint. Pay only for tokens you use, billed in VND, no monthly plan.",
+    "ogAlt": "NapKey — prepaid wallet API gateway for Claude"
+  },
+  "nav": {
+    "pricing": "Pricing",
+    "integrate": "Integrate",
+    "billing": "Billing",
+    "signIn": "Sign in",
+    "getStarted": "Get started",
+    "skipToContent": "Skip to main content",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "switchLanguage": "Switch language"
+  },
+  "hero": {
+    "badge": "Anthropic and OpenAI compatible",
+    "titleLine1": "One API key",
+    "titleLine2": "for every Claude model",
+    "subtitle": "Top up your wallet, change the endpoint in two lines, leave the rest of your code alone. Billed in VND by actual token use — no plans, no idle fees.",
+    "ctaPrimary": "Get started",
+    "ctaSecondary": "See integration",
+    "note": "Minimum top-up 20,000 d. Balance is usable for API calls only.",
+    "statusLabel": "Status",
+    "statusValue": "Early access"
+  },
+  "value": {
+    "eyebrow": "Why NapKey",
+    "title": "We handle the hard part, you just call the API",
+    "cards": {
+      "streaming": {
+        "title": "Streams that survive long runs",
+        "body": "The proxy layer holds SSE connections through multi-minute sessions. No re-buffering, no cutting mid-stream."
+      },
+      "failover": {
+        "title": "Pooled accounts with failover",
+        "body": "Requests round-robin across multiple upstream accounts. When one fails, traffic moves on and you never see it."
+      },
+      "oneKey": {
+        "title": "One key, every model",
+        "body": "Opus, Sonnet and Haiku share a single key. Switch models with one field in the body, not a new credential."
+      }
+    }
+  },
+  "integrate": {
+    "eyebrow": "Integration",
+    "title": "Change the endpoint in two lines",
+    "subtitle": "NapKey speaks both the Anthropic Messages API and OpenAI Chat Completions. Your existing client works as-is.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyAria": "Copy the {name} snippet",
+    "docsLink": "Read the full integration guide",
+    "tabs": {
+      "claudeCode": "Claude Code",
+      "anthropic": "Anthropic SDK",
+      "openai": "OpenAI SDK",
+      "curl": "cURL"
+    }
+  },
+  "pricing": {
+    "eyebrow": "Pricing",
+    "title": "Priced per million tokens",
+    "subtitle": "Billed in VND. Input and output are priced separately because they cost very differently. Cache reads cost a fraction of fresh input — stable prompts make your bill drop accordingly.",
+    "filterAll": "All",
+    "filterAriaLabel": "Filter by model family",
+    "table": {
+      "model": "Model",
+      "input": "Input",
+      "output": "Output",
+      "cacheRead": "Cache read",
+      "cacheWrite": "Cache write",
+      "perMillion": "d / 1M tokens",
+      "caption": "NapKey list price per model, in Vietnamese dong per million tokens."
+    },
+    "family": {
+      "opus": "Opus",
+      "sonnet": "Sonnet",
+      "haiku": "Haiku"
+    },
+    "tag": {
+      "strongest": "Most capable",
+      "balanced": "Balanced",
+      "fastest": "Fastest",
+      "thinking": "Thinking variant"
+    },
+    "footnote": "Prices track the exchange rate and upstream list price. Every price change is recorded with an effective date — usage already recorded is never re-priced.",
+    "thinkingNote": "Every model has a -thinking variant at the same price."
+  },
+  "billing": {
+    "eyebrow": "Billing",
+    "title": "Prepaid, metered to the token",
+    "steps": {
+      "topup": {
+        "title": "Top up the wallet",
+        "body": "Bank transfer, or scan a VietQR code with the amount and reference already filled in. Transfers reconcile automatically."
+      },
+      "use": {
+        "title": "Call the API",
+        "body": "Each request deducts the tokens it actually used at the model's rate. No rounding up, no per-request minimum."
+      },
+      "track": {
+        "title": "Audit every line",
+        "body": "Each request writes one usage row: model, input tokens, output tokens, cost. Reconcilable down to a single call."
+      }
+    },
+    "faq": {
+      "title": "Know this first",
+      "items": {
+        "refund": {
+          "q": "Can I withdraw my balance?",
+          "a": "No. Balance can only be spent on API calls; it is not refundable to a bank account. Please weigh that before topping up."
+        },
+        "expiry": {
+          "q": "Does the balance expire?",
+          "a": "It does not. No maintenance fee and no inactivity fee."
+        },
+        "minimum": {
+          "q": "What is the minimum top-up?",
+          "a": "20,000 d. Below that, processing cost and reconciliation risk are not worth it."
+        },
+        "invoice": {
+          "q": "Do you issue tax invoices?",
+          "a": "Not at this stage. If you need a VAT invoice, please get in touch before topping up."
+        }
+      }
+    }
+  },
+  "cta": {
+    "title": "Want to try it?",
+    "body": "Put in 20,000 d, grab a key, change the endpoint. If it is not for you, that is all you spent.",
+    "button": "Get started"
+  },
+  "footer": {
+    "tagline": "A prepaid wallet API gateway for Claude, billed in VND.",
+    "product": "Product",
+    "resources": "Resources",
+    "legal": "Legal",
+    "links": {
+      "pricing": "Pricing",
+      "integrate": "Integrate",
+      "billing": "Billing",
+      "status": "System status",
+      "terms": "Terms of service",
+      "privacy": "Data policy",
+      "contact": "Contact"
+    },
+    "rights": "All rights reserved.",
+    "disclaimer": "NapKey is an independent service and is not an Anthropic product. Claude is a trademark of Anthropic PBC."
+  },
+  "console": {
+    "shell": {
+      "eyebrow": "Console",
+      "title": "Dashboard",
+      "navLabel": "Console navigation",
+      "tabs": {
+        "overview": "Overview",
+        "usage": "Usage",
+        "wallet": "Wallet",
+        "keys": "API keys",
+        "settings": "Settings"
+      },
+      "signOut": "Sign out",
+      "checkingSession": "Checking your session...",
+      "redirectingToSignIn": "Redirecting to sign in...",
+      "unverifiedBadge": "Unverified",
+      "unverifiedMessage": "Verify your email to create API keys. Everything else stays readable in the meantime.",
+      "resend": "Resend email",
+      "resendSending": "Sending...",
+      "resendSent": "Sent, check your inbox.",
+      "resendRetry": "Try again"
+    },
+    "auth": {
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "passwordHint": "At least 10 characters.",
+      "submitting": "Working...",
+      "genericError": "Could not reach the server. Check your connection and try again.",
+      "noAccount": "No account yet?",
+      "haveAccount": "Already have an account?",
+      "backToSignIn": "Back to sign in",
+      "checkEmailTitle": "Check your inbox",
+      "checkEmailBody": "We sent a verification link to {email}. Open it to activate your account, then sign in.",
+      "signin": {
+        "title": "Sign in",
+        "subtitle": "Open the console to review usage and manage API keys.",
+        "submit": "Sign in",
+        "link": "Sign in"
+      },
+      "signup": {
+        "title": "Create account",
+        "subtitle": "Sign up to get an API key and start calling Claude.",
+        "submit": "Create account",
+        "link": "Sign up"
+      },
+      "forgotPassword": "Forgot your password?",
+      "resendVerification": "Resend email"
+    },
+    "overview": {
+      "metaTitle": "Overview",
+      "loading": "Loading usage...",
+      "loadFailed": "Could not load usage data.",
+      "retry": "Try again",
+      "stats": {
+        "cost30d": "Cost, 30 days",
+        "cost30dHint": "Total for every request recorded in the last 30 days.",
+        "requests30d": "Requests, 30 days",
+        "requestsHintClean": "No failed requests in this period.",
+        "requestsHintErrors": "{count} failed requests, charged nothing.",
+        "tokens30d": "Tokens, 30 days",
+        "tokensHint": "{input} in, {output} out.",
+        "activeKeys": "Active keys",
+        "activeKeysHint": "All-time cost: {total}."
+      },
+      "estimatedBadge": "Contains estimates",
+      "estimatedNotice": "{count} of {total} requests have estimated output tokens because upstream returned no count. Cost is based on that estimate.",
+      "unpricedBadge": "Missing price",
+      "unpricedNotice": "{count} requests were served with no rate on file, so they cost nothing. Operations has been alerted.",
+      "chartTitle": "Daily cost",
+      "chartDescription": "Days are cut on Vietnam time, matching how invoices are calculated.",
+      "byModelTitle": "By model",
+      "byModelDescription": "Same 30-day window, ordered by cost.",
+      "byModelEmpty": "No requests in the last 30 days.",
+      "billingMode": {
+        "prepaid_wallet": "Prepaid wallet",
+        "metered_no_wallet": "Metered, not billed yet",
+        "manual_quota": "Manual quota"
+      },
+      "viewLedger": "View per-request detail"
+    },
+    "usage": {
+      "metaTitle": "Usage",
+      "title": "Request ledger",
+      "description": "One row per request, with tokens and cost so the total can be checked.",
+      "loading": "Loading records...",
+      "loadFailed": "Could not load usage records.",
+      "retry": "Try again",
+      "rangeLabel": "Date range",
+      "rangeDays": "{days} days",
+      "filterByKey": "Filter by key",
+      "allKeys": "All keys",
+      "stats": {
+        "cost": "Cost in range",
+        "rangeHint": "Across the selected {days}-day window.",
+        "requests": "Requests",
+        "errorHint": "{count} requests ended with an error.",
+        "tokens": "Tokens",
+        "tokenHint": "{input} in, {output} out.",
+        "quality": "Estimated requests",
+        "qualityHint": "{unpriced} requests have no price on file."
+      },
+      "chartTitle": "Cost over time",
+      "chartDescription": "Daily totals for the selected range, cut on Vietnam time.",
+      "emptyTitle": "Nothing here yet",
+      "emptyDescription": "No requests in this range. Records appear right after your first API call.",
+      "colTime": "Time",
+      "colModel": "Model",
+      "colKey": "Key",
+      "colDay": "Day",
+      "colRequests": "Requests",
+      "colTokens": "Tokens",
+      "colInput": "In",
+      "colOutput": "Out",
+      "colCacheRead": "Cache read",
+      "colLatency": "Latency",
+      "colCost": "Cost",
+      "status": {
+        "success": "Success",
+        "error": "Error",
+        "cancelled": "Cancelled"
+      },
+      "estimatedShort": "Estimated",
+      "estimatedTooltip": "Output tokens are estimated because upstream returned no count.",
+      "unpricedShort": "Unpriced",
+      "unpricedTooltip": "No rate on file for this model, so the request was charged nothing.",
+      "keyDeleted": "Key deleted",
+      "pageInfo": "Showing {from}–{to} of {total} requests",
+      "prev": "Previous",
+      "next": "Next",
+      "chartEmpty": "No data to chart yet.",
+      "chartLegend": "Cost per day",
+      "chartRequests": "{count} requests",
+      "chartTableCaption": "Cost and request count per day"
+    },
+    "keys": {
+      "metaTitle": "API keys",
+      "loading": "Loading keys...",
+      "loadFailed": "Could not load your keys.",
+      "createFailed": "Could not create the key.",
+      "updateFailed": "Could not update the key.",
+      "revokeFailed": "Could not revoke the key.",
+      "retry": "Try again",
+      "createTitle": "Create a key",
+      "createDescription": "Name it after where it runs, like \"work laptop\" or \"CI\".",
+      "nameLabel": "Key name",
+      "namePlaceholder": "Work laptop",
+      "createButton": "Create key",
+      "creating": "Creating...",
+      "needVerified": "Verify your email before creating keys.",
+      "revealTitle": "Copy this key now",
+      "revealDescription": "This is the only time the full key is shown. Only a hash is stored, so it cannot be recovered.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "savedIt": "I saved it",
+      "syncPendingHint": "The key is being pushed to the data plane. Give it a few seconds.",
+      "listTitle": "Your keys",
+      "listDescription": "Disable temporarily or revoke for good. Revoking cannot be undone.",
+      "emptyTitle": "No keys yet",
+      "emptyDescription": "Create your first key to start calling the API.",
+      "colName": "Name",
+      "colKey": "Key",
+      "colStatus": "Status",
+      "colRequests": "Requests",
+      "colTokens": "Tokens",
+      "colLastUsed": "Last used",
+      "colActions": "Actions",
+      "unnamed": "(unnamed)",
+      "never": "Never",
+      "testMode": "Test",
+      "status": {
+        "active": "Active",
+        "revoked": "Revoked",
+        "disabled": "Disabled",
+        "provisioning": "Provisioning"
+      },
+      "sync": {
+        "pending": "Syncing",
+        "synced": "Synced",
+        "failed": "Sync failed",
+        "delete_pending": "Deleting"
+      },
+      "enable": "Enable",
+      "disable": "Disable",
+      "revoke": "Revoke",
+      "revokeConfirm": "Revoke key \"{name}\"? Requests using it will be rejected immediately.",
+      "revokedAt": "Revoked {when}"
+    },
+    "verify": {
+      "metaTitle": "Verify email",
+      "verifying": "Verifying your email...",
+      "successEyebrow": "Done",
+      "successTitle": "Email verified",
+      "successBody": "Your account is ready. You can now create API keys and review usage.",
+      "goToConsole": "Open console",
+      "failedTitle": "Could not verify",
+      "failedBody": "This link no longer works.",
+      "failedHint": "Links work once and expire after 24 hours.",
+      "missingToken": "This address has no verification code. Open the link from your email instead.",
+      "networkError": "Could not reach the server. Check your connection and try again.",
+      "resendLink": "Send a new link",
+      "backToSignIn": "Back to sign in"
+    },
+    "forgot": {
+      "metaTitle": "Forgot password",
+      "title": "Forgot password",
+      "subtitle": "Enter your email and we will send a link to set a new password.",
+      "emailLabel": "Email",
+      "submit": "Send link",
+      "submitting": "Sending...",
+      "networkError": "Could not reach the server. Check your connection and try again.",
+      "sentTitle": "Sent, if the account exists",
+      "sentBody": "If {email} has a NapKey account, a reset link is on its way. The link expires in 1 hour.",
+      "backToSignIn": "Back to sign in"
+    },
+    "resend": {
+      "metaTitle": "Resend verification",
+      "title": "Resend verification email",
+      "subtitle": "Enter the email you signed up with and we will send a new verification link.",
+      "emailLabel": "Email",
+      "submit": "Resend",
+      "submitting": "Sending...",
+      "networkError": "Could not reach the server. Check your connection and try again.",
+      "sentTitle": "Sent, if the account exists",
+      "sentBody": "If {email} has an unverified account, a new link is on its way. The link expires in 24 hours.",
+      "backToSignIn": "Back to sign in"
+    },
+    "reset": {
+      "metaTitle": "Reset password",
+      "title": "Set a new password",
+      "subtitle": "Every signed-in device will be signed out once this is done.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "passwordHint": "At least 10 characters.",
+      "mismatch": "The two passwords do not match.",
+      "submit": "Reset password",
+      "submitting": "Working...",
+      "networkError": "Could not reach the server. Check your connection and try again.",
+      "missingTokenTitle": "Missing reset code",
+      "missingTokenBody": "This address has no reset code. Open the link from your email instead.",
+      "requestNew": "Request a new link",
+      "doneTitle": "Password changed",
+      "doneBody": "Your new password is active. Sign in again to continue.",
+      "goSignIn": "Sign in"
+    },
+    "wallet": {
+      "metaTitle": "Wallet and top up",
+      "loading": "Loading wallet...",
+      "loadFailed": "Could not load your wallet.",
+      "createFailed": "Could not create a top-up order.",
+      "balance": "Wallet balance",
+      "balanceHint": "Total credited balance before active holds.",
+      "available": "Available",
+      "availableHint": "Ready to spend on API requests.",
+      "held": "Reserved",
+      "heldHint": "Temporarily held for in-flight requests.",
+      "topupTitle": "Top up by bank transfer",
+      "topupDescription": "Choose an amount, then scan VietQR or copy the transfer details.",
+      "customAmount": "Amount (VND)",
+      "nonRefundable": "Important: wallet credit can only be used for NapKey API calls and cannot be withdrawn or refunded to a bank account.",
+      "create": "Create transfer order",
+      "creating": "Creating...",
+      "transferTitle": "Transfer instructions",
+      "transferDescription": "Transfer the exact amount and memo. Casso normally reconciles it within a few seconds.",
+      "bank": "Bank",
+      "accountNumber": "Account number",
+      "accountName": "Account name",
+      "amount": "Exact amount",
+      "memo": "Transfer memo",
+      "copy": "Copy",
+      "copied": "Copied",
+      "qrAlt": "VietQR code with amount and transfer memo",
+      "qrUnavailable": "VietQR is not configured",
+      "pollingNotice": "Waiting for the bank transaction. This screen updates automatically every 3 seconds.",
+      "paidNotice": "Payment received. Your wallet balance has been updated.",
+      "newOrder": "Create another top-up",
+      "status": { "pending": "Waiting", "paid": "Paid", "underpaid": "Underpaid", "expired": "Expired", "cancelled": "Cancelled" }
+    },
+    "settings": {
+      "metaTitle": "Settings",
+      "accountTitle": "Account",
+      "accountDescription": "Basic details for this account.",
+      "email": "Email",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "memberSince": "Created",
+      "sessionExpires": "Session expires",
+      "passwordTitle": "Change password",
+      "passwordDescription": "Changing it here does not sign out your other devices.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "passwordHint": "At least 10 characters.",
+      "mismatch": "The two passwords do not match.",
+      "submit": "Change password",
+      "submitting": "Working...",
+      "passwordUpdated": "Password changed.",
+      "networkError": "Could not reach the server. Check your connection and try again."
+    }
+  }
+}

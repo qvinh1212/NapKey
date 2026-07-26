@@ -1,0 +1,451 @@
+{
+  "meta": {
+    "title": "NapKey — API Claude trả trước theo ví",
+    "description": "Nạp tiền vào ví, nhận API key, trỏ Claude Code hoặc SDK của bạn vào endpoint NapKey. Dùng bao nhiêu trừ bấy nhiêu, tính bằng VNĐ, không gói tháng.",
+    "ogAlt": "NapKey — cổng API Claude trả trước theo ví"
+  },
+  "nav": {
+    "pricing": "Bảng giá",
+    "integrate": "Tích hợp",
+    "billing": "Cách tính tiền",
+    "signIn": "Đăng nhập",
+    "getStarted": "Bắt đầu",
+    "skipToContent": "Bỏ qua, đến nội dung chính",
+    "openMenu": "Mở menu",
+    "closeMenu": "Đóng menu",
+    "switchLanguage": "Đổi ngôn ngữ"
+  },
+  "hero": {
+    "badge": "Tương thích Anthropic và OpenAI",
+    "titleLine1": "Một API key",
+    "titleLine2": "cho mọi model Claude",
+    "subtitle": "Nạp tiền vào ví, đổi endpoint trong hai dòng, giữ nguyên phần code còn lại. Tính tiền bằng VNĐ theo token thực dùng — không gói tháng, không phí duy trì.",
+    "ctaPrimary": "Bắt đầu",
+    "ctaSecondary": "Xem tích hợp",
+    "note": "Tối thiểu 20.000 ₫ mỗi lần nạp. Số dư chỉ dùng để gọi API.",
+    "statusLabel": "Trạng thái",
+    "statusValue": "Đang trong giai đoạn mở sớm"
+  },
+  "value": {
+    "eyebrow": "Vì sao chọn NapKey",
+    "title": "Hạ tầng lo phần khó, bạn chỉ gọi API",
+    "cards": {
+      "streaming": {
+        "title": "Streaming dài phút không đứt",
+        "body": "Lớp proxy giữ kết nối SSE xuyên suốt phiên làm việc dài. Không buffer lại, không cắt giữa dòng."
+      },
+      "failover": {
+        "title": "Pool tài khoản tự dự phòng",
+        "body": "Request được chia vòng tròn qua nhiều tài khoản upstream. Một tài khoản lỗi thì chuyển tiếp, bạn không thấy gì."
+      },
+      "oneKey": {
+        "title": "Một key, mọi model",
+        "body": "Opus, Sonnet, Haiku cùng một key. Đổi model bằng một trường trong body, không phải đổi credential."
+      }
+    }
+  },
+  "integrate": {
+    "eyebrow": "Tích hợp",
+    "title": "Đổi endpoint trong hai dòng",
+    "subtitle": "NapKey nói cùng giao thức với Anthropic Messages API và OpenAI Chat Completions. Client hiện tại của bạn chạy được ngay.",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép",
+    "copyAria": "Sao chép đoạn code {name}",
+    "docsLink": "Đọc tài liệu tích hợp đầy đủ",
+    "tabs": {
+      "claudeCode": "Claude Code",
+      "anthropic": "Anthropic SDK",
+      "openai": "OpenAI SDK",
+      "curl": "cURL"
+    }
+  },
+  "pricing": {
+    "eyebrow": "Bảng giá",
+    "title": "Giá tính theo 1 triệu token",
+    "subtitle": "Đơn vị VNĐ. Input và output tính riêng vì chi phí khác nhau rõ rệt. Cache đọc rẻ hơn input thường đáng kể — prompt ổn định thì hoá đơn giảm theo.",
+    "filterAll": "Tất cả",
+    "filterAriaLabel": "Lọc theo họ model",
+    "table": {
+      "model": "Model",
+      "input": "Input",
+      "output": "Output",
+      "cacheRead": "Cache đọc",
+      "cacheWrite": "Cache ghi",
+      "perMillion": "₫ / 1M token",
+      "caption": "Giá bán của NapKey theo từng model, đơn vị đồng trên một triệu token."
+    },
+    "family": {
+      "opus": "Opus",
+      "sonnet": "Sonnet",
+      "haiku": "Haiku"
+    },
+    "tag": {
+      "strongest": "Mạnh nhất",
+      "balanced": "Cân bằng",
+      "fastest": "Nhanh nhất",
+      "thinking": "Có bản thinking"
+    },
+    "footnote": "Giá có thể thay đổi theo tỷ giá và giá gốc thượng nguồn. Mỗi lần đổi giá đều ghi nhận thời điểm hiệu lực — usage đã ghi trong quá khứ không bị tính lại.",
+    "thinkingNote": "Mọi model đều có biến thể -thinking dùng chung mức giá."
+  },
+  "billing": {
+    "eyebrow": "Cách tính tiền",
+    "title": "Trả trước, dùng bao nhiêu trừ bấy nhiêu",
+    "steps": {
+      "topup": {
+        "title": "Nạp vào ví",
+        "body": "Chuyển khoản ngân hàng, quét mã VietQR có sẵn số tiền và nội dung. Giao dịch được đối soát tự động."
+      },
+      "use": {
+        "title": "Gọi API",
+        "body": "Mỗi request trừ đúng số token thực dùng theo giá model. Không làm tròn lên, không phí tối thiểu mỗi request."
+      },
+      "track": {
+        "title": "Theo dõi từng dòng",
+        "body": "Mỗi request ghi một dòng usage: model, token vào, token ra, số tiền. Đối soát được đến từng request."
+      }
+    },
+    "faq": {
+      "title": "Điểm cần biết trước",
+      "items": {
+        "refund": {
+          "q": "Số dư có rút lại được không?",
+          "a": "Không. Số dư đã nạp chỉ dùng để gọi API, không hoàn về tài khoản ngân hàng. Cần cân nhắc điều này trước khi nạp."
+        },
+        "expiry": {
+          "q": "Số dư có hạn sử dụng không?",
+          "a": "Không hết hạn. Không phí duy trì, không phí không hoạt động."
+        },
+        "minimum": {
+          "q": "Nạp tối thiểu bao nhiêu?",
+          "a": "20.000 ₫. Dưới mức này chi phí xử lý và rủi ro đối soát không đáng."
+        },
+        "invoice": {
+          "q": "Có xuất hoá đơn không?",
+          "a": "Chưa hỗ trợ ở giai đoạn này. Nếu bạn cần hoá đơn VAT, hãy liên hệ trước khi nạp."
+        }
+      }
+    }
+  },
+  "cta": {
+    "title": "Sẵn sàng thử?",
+    "body": "Nạp 20.000 ₫, lấy key, đổi endpoint. Nếu không vừa ý thì bạn chỉ mất đúng số đó.",
+    "button": "Bắt đầu"
+  },
+  "footer": {
+    "tagline": "Cổng API Claude trả trước theo ví, tính bằng VNĐ.",
+    "product": "Sản phẩm",
+    "resources": "Tài nguyên",
+    "legal": "Pháp lý",
+    "links": {
+      "pricing": "Bảng giá",
+      "integrate": "Tích hợp",
+      "billing": "Cách tính tiền",
+      "status": "Trạng thái hệ thống",
+      "terms": "Điều khoản sử dụng",
+      "privacy": "Chính sách dữ liệu",
+      "contact": "Liên hệ"
+    },
+    "rights": "Mọi quyền được bảo lưu.",
+    "disclaimer": "NapKey là dịch vụ độc lập, không phải sản phẩm của Anthropic. Claude là thương hiệu của Anthropic PBC."
+  },
+  "console": {
+    "shell": {
+      "eyebrow": "Console",
+      "title": "Bảng điều khiển",
+      "navLabel": "Điều hướng console",
+      "tabs": {
+        "overview": "Tổng quan",
+        "usage": "Lịch sử dùng",
+        "wallet": "Ví & nạp tiền",
+        "keys": "API key",
+        "settings": "Cài đặt"
+      },
+      "signOut": "Đăng xuất",
+      "checkingSession": "Đang kiểm tra phiên đăng nhập...",
+      "redirectingToSignIn": "Đang chuyển tới trang đăng nhập...",
+      "unverifiedBadge": "Chưa xác minh",
+      "unverifiedMessage": "Hãy xác minh email trong hộp thư để tạo được API key. Các phần còn lại vẫn xem được bình thường.",
+      "resend": "Gửi lại email",
+      "resendSending": "Đang gửi...",
+      "resendSent": "Đã gửi, kiểm tra hộp thư.",
+      "resendRetry": "Thử lại"
+    },
+    "auth": {
+      "emailLabel": "Email",
+      "passwordLabel": "Mật khẩu",
+      "passwordHint": "Tối thiểu 10 ký tự.",
+      "submitting": "Đang xử lý...",
+      "genericError": "Không kết nối được. Kiểm tra mạng rồi thử lại.",
+      "noAccount": "Chưa có tài khoản?",
+      "haveAccount": "Đã có tài khoản?",
+      "backToSignIn": "Về trang đăng nhập",
+      "checkEmailTitle": "Kiểm tra hộp thư",
+      "checkEmailBody": "Đã gửi liên kết xác minh tới {email}. Mở liên kết đó để kích hoạt tài khoản rồi đăng nhập.",
+      "signin": {
+        "title": "Đăng nhập",
+        "subtitle": "Vào console để xem lịch sử dùng và quản lý API key.",
+        "submit": "Đăng nhập",
+        "link": "Đăng nhập"
+      },
+      "signup": {
+        "title": "Tạo tài khoản",
+        "subtitle": "Đăng ký để lấy API key và bắt đầu gọi Claude.",
+        "submit": "Tạo tài khoản",
+        "link": "Đăng ký"
+      },
+      "forgotPassword": "Quên mật khẩu?",
+      "resendVerification": "Gửi lại email"
+    },
+    "overview": {
+      "metaTitle": "Tổng quan",
+      "loading": "Đang tải số liệu...",
+      "loadFailed": "Không tải được số liệu dùng.",
+      "retry": "Thử lại",
+      "stats": {
+        "cost30d": "Chi phí 30 ngày",
+        "cost30dHint": "Tổng tiền của các request đã ghi trong 30 ngày gần nhất.",
+        "requests30d": "Request 30 ngày",
+        "requestsHintClean": "Không có request lỗi trong kỳ.",
+        "requestsHintErrors": "{count} request lỗi, không tính tiền.",
+        "tokens30d": "Token 30 ngày",
+        "tokensHint": "Vào {input}, ra {output}.",
+        "activeKeys": "Key đang hoạt động",
+        "activeKeysHint": "Tổng chi phí từ đầu: {total}."
+      },
+      "estimatedBadge": "Có ước lượng",
+      "estimatedNotice": "{count} trong {total} request có số token đầu ra là ước lượng, vì upstream không trả số đo. Chi phí tính theo con số ước lượng đó.",
+      "unpricedBadge": "Thiếu bảng giá",
+      "unpricedNotice": "{count} request được phục vụ nhưng chưa có giá trên sổ, nên tính 0 đồng. Bên vận hành đã nhận cảnh báo.",
+      "chartTitle": "Chi phí theo ngày",
+      "chartDescription": "Mốc ngày cắt theo giờ Việt Nam, trùng với cách tính hoá đơn.",
+      "byModelTitle": "Phân theo model",
+      "byModelDescription": "Cùng khoảng 30 ngày, xếp theo chi phí giảm dần.",
+      "byModelEmpty": "Chưa có request nào trong 30 ngày qua.",
+      "billingMode": {
+        "prepaid_wallet": "Ví trả trước",
+        "metered_no_wallet": "Đang đo, chưa thu tiền",
+        "manual_quota": "Quota thủ công"
+      },
+      "viewLedger": "Xem chi tiết từng request"
+    },
+    "usage": {
+      "metaTitle": "Lịch sử dùng",
+      "title": "Sổ chi tiết",
+      "description": "Mỗi dòng là một request, kèm token và chi phí để đối soát được.",
+      "loading": "Đang tải lịch sử...",
+      "loadFailed": "Không tải được lịch sử dùng.",
+      "retry": "Thử lại",
+      "rangeLabel": "Khoảng thời gian",
+      "rangeDays": "{days} ngày",
+      "filterByKey": "Lọc theo key",
+      "allKeys": "Tất cả key",
+      "stats": {
+        "cost": "Chi phí trong kỳ",
+        "rangeHint": "Tổng trong {days} ngày đang chọn.",
+        "requests": "Request",
+        "errorHint": "{count} request kết thúc với lỗi.",
+        "tokens": "Token",
+        "tokenHint": "{input} vào, {output} ra.",
+        "quality": "Request ước lượng",
+        "qualityHint": "{unpriced} request chưa có giá."
+      },
+      "chartTitle": "Chi phí theo thời gian",
+      "chartDescription": "Tổng theo ngày trong khoảng đang chọn, cắt theo giờ Việt Nam.",
+      "emptyTitle": "Chưa có dữ liệu",
+      "emptyDescription": "Chưa có request nào trong khoảng này. Số liệu xuất hiện ngay sau lần gọi API đầu tiên.",
+      "colTime": "Thời điểm",
+      "colModel": "Model",
+      "colKey": "Key",
+      "colDay": "Ngày",
+      "colRequests": "Request",
+      "colTokens": "Token",
+      "colInput": "Vào",
+      "colOutput": "Ra",
+      "colCacheRead": "Cache đọc",
+      "colLatency": "Độ trễ",
+      "colCost": "Chi phí",
+      "status": {
+        "success": "Thành công",
+        "error": "Lỗi",
+        "cancelled": "Đã huỷ"
+      },
+      "estimatedShort": "Ước lượng",
+      "estimatedTooltip": "Số token đầu ra là ước lượng vì upstream không trả số đo.",
+      "unpricedShort": "Chưa có giá",
+      "unpricedTooltip": "Model này chưa có giá trên sổ, request được tính 0 đồng.",
+      "keyDeleted": "Key đã xoá",
+      "pageInfo": "Đang xem {from}–{to} trong {total} request",
+      "prev": "Trước",
+      "next": "Sau",
+      "chartEmpty": "Chưa có dữ liệu để vẽ biểu đồ.",
+      "chartLegend": "Chi phí mỗi ngày",
+      "chartRequests": "{count} request",
+      "chartTableCaption": "Chi phí và số request theo từng ngày"
+    },
+    "keys": {
+      "metaTitle": "API key",
+      "loading": "Đang tải danh sách key...",
+      "loadFailed": "Không tải được danh sách key.",
+      "createFailed": "Không tạo được key.",
+      "updateFailed": "Không cập nhật được key.",
+      "revokeFailed": "Không thu hồi được key.",
+      "retry": "Thử lại",
+      "createTitle": "Tạo key mới",
+      "createDescription": "Đặt tên theo nơi dùng, ví dụ \"máy làm việc\" hay \"CI\".",
+      "nameLabel": "Tên key",
+      "namePlaceholder": "Máy làm việc",
+      "createButton": "Tạo key",
+      "creating": "Đang tạo...",
+      "needVerified": "Cần xác minh email trước khi tạo key.",
+      "revealTitle": "Sao chép key ngay",
+      "revealDescription": "Đây là lần duy nhất bản đầy đủ được hiển thị. Hệ thống chỉ lưu bản băm, không lấy lại được.",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép",
+      "savedIt": "Tôi đã lưu",
+      "syncPendingHint": "Key đang được đẩy sang lớp phục vụ, chờ vài giây rồi hãy gọi thử.",
+      "listTitle": "Key của bạn",
+      "listDescription": "Tắt tạm thời hoặc thu hồi hẳn. Thu hồi không hoàn lại được.",
+      "emptyTitle": "Chưa có key nào",
+      "emptyDescription": "Tạo key đầu tiên để bắt đầu gọi API.",
+      "colName": "Tên",
+      "colKey": "Key",
+      "colStatus": "Trạng thái",
+      "colRequests": "Request",
+      "colTokens": "Token",
+      "colLastUsed": "Dùng lần cuối",
+      "colActions": "Hành động",
+      "unnamed": "(không tên)",
+      "never": "Chưa dùng",
+      "testMode": "Test",
+      "status": {
+        "active": "Hoạt động",
+        "revoked": "Đã thu hồi",
+        "disabled": "Đã tắt",
+        "provisioning": "Đang chuẩn bị"
+      },
+      "sync": {
+        "pending": "Đang đồng bộ",
+        "synced": "Đã đồng bộ",
+        "failed": "Đồng bộ lỗi",
+        "delete_pending": "Đang xoá"
+      },
+      "enable": "Bật",
+      "disable": "Tắt",
+      "revoke": "Thu hồi",
+      "revokeConfirm": "Thu hồi key \"{name}\"? Mọi request dùng key này sẽ bị từ chối ngay.",
+      "revokedAt": "Thu hồi {when}"
+    },
+    "verify": {
+      "metaTitle": "Xác minh email",
+      "verifying": "Đang xác minh email...",
+      "successEyebrow": "Hoàn tất",
+      "successTitle": "Email đã được xác minh",
+      "successBody": "Tài khoản đã sẵn sàng. Giờ bạn có thể tạo API key và xem lịch sử dùng.",
+      "goToConsole": "Vào console",
+      "failedTitle": "Không xác minh được",
+      "failedBody": "Liên kết này không dùng được nữa.",
+      "failedHint": "Liên kết chỉ dùng một lần và hết hạn sau 24 giờ.",
+      "missingToken": "Địa chỉ này thiếu mã xác minh. Hãy mở đúng liên kết trong email.",
+      "networkError": "Không kết nối được. Kiểm tra mạng rồi thử lại.",
+      "resendLink": "Gửi lại liên kết",
+      "backToSignIn": "Về trang đăng nhập"
+    },
+    "forgot": {
+      "metaTitle": "Quên mật khẩu",
+      "title": "Quên mật khẩu",
+      "subtitle": "Nhập email của bạn, chúng tôi sẽ gửi liên kết đặt lại mật khẩu.",
+      "emailLabel": "Email",
+      "submit": "Gửi liên kết",
+      "submitting": "Đang gửi...",
+      "networkError": "Không kết nối được. Kiểm tra mạng rồi thử lại.",
+      "sentTitle": "Đã gửi, nếu email tồn tại",
+      "sentBody": "Nếu {email} có tài khoản NapKey, liên kết đặt lại mật khẩu đang trên đường tới. Liên kết hết hạn sau 1 giờ.",
+      "backToSignIn": "Về trang đăng nhập"
+    },
+    "resend": {
+      "metaTitle": "Gửi lại email xác minh",
+      "title": "Gửi lại email xác minh",
+      "subtitle": "Nhập email đã dùng để đăng ký, chúng tôi sẽ gửi lại liên kết xác minh.",
+      "emailLabel": "Email",
+      "submit": "Gửi lại",
+      "submitting": "Đang gửi...",
+      "networkError": "Không kết nối được. Kiểm tra mạng rồi thử lại.",
+      "sentTitle": "Đã gửi, nếu email tồn tại",
+      "sentBody": "Nếu {email} có tài khoản chưa xác minh, liên kết mới đang trên đường tới. Liên kết hết hạn sau 24 giờ.",
+      "backToSignIn": "Về trang đăng nhập"
+    },
+    "reset": {
+      "metaTitle": "Đặt lại mật khẩu",
+      "title": "Đặt mật khẩu mới",
+      "subtitle": "Sau khi đổi, mọi thiết bị đang đăng nhập sẽ bị đăng xuất.",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Nhập lại mật khẩu mới",
+      "passwordHint": "Tối thiểu 10 ký tự.",
+      "mismatch": "Hai mật khẩu không khớp.",
+      "submit": "Đặt lại mật khẩu",
+      "submitting": "Đang xử lý...",
+      "networkError": "Không kết nối được. Kiểm tra mạng rồi thử lại.",
+      "missingTokenTitle": "Thiếu mã đặt lại",
+      "missingTokenBody": "Địa chỉ này thiếu mã đặt lại. Hãy mở đúng liên kết trong email.",
+      "requestNew": "Yêu cầu liên kết mới",
+      "doneTitle": "Đã đổi mật khẩu",
+      "doneBody": "Mật khẩu mới đã có hiệu lực. Hãy đăng nhập lại để tiếp tục.",
+      "goSignIn": "Đăng nhập"
+    },
+    "wallet": {
+      "metaTitle": "Ví và nạp tiền",
+      "loading": "Đang tải số dư...",
+      "loadFailed": "Không tải được ví của bạn.",
+      "createFailed": "Không tạo được lệnh nạp tiền.",
+      "balance": "Số dư ví",
+      "balanceHint": "Tổng tiền đã ghi có trước các khoản đang giữ.",
+      "available": "Có thể sử dụng",
+      "availableHint": "Sẵn sàng thanh toán cho request API.",
+      "held": "Đang tạm giữ",
+      "heldHint": "Dành cho các request đang xử lý.",
+      "topupTitle": "Nạp tiền qua chuyển khoản",
+      "topupDescription": "Chọn số tiền, sau đó quét VietQR hoặc sao chép thông tin chuyển khoản.",
+      "customAmount": "Số tiền (VND)",
+      "nonRefundable": "Quan trọng: số dư chỉ dùng cho API NapKey, không thể rút hoặc hoàn lại về tài khoản ngân hàng.",
+      "create": "Tạo lệnh chuyển khoản",
+      "creating": "Đang tạo...",
+      "transferTitle": "Thông tin chuyển khoản",
+      "transferDescription": "Chuyển đúng số tiền và nội dung. Casso thường đối soát trong vài giây.",
+      "bank": "Ngân hàng",
+      "accountNumber": "Số tài khoản",
+      "accountName": "Tên tài khoản",
+      "amount": "Số tiền chính xác",
+      "memo": "Nội dung chuyển khoản",
+      "copy": "Chép",
+      "copied": "Đã chép",
+      "qrAlt": "Mã VietQR có sẵn số tiền và nội dung chuyển khoản",
+      "qrUnavailable": "Chưa cấu hình VietQR",
+      "pollingNotice": "Đang chờ giao dịch ngân hàng. Màn hình tự cập nhật mỗi 3 giây.",
+      "paidNotice": "Đã nhận tiền. Số dư ví của bạn đã được cập nhật.",
+      "newOrder": "Tạo lệnh nạp khác",
+      "status": { "pending": "Đang chờ", "paid": "Đã nhận", "underpaid": "Chuyển thiếu", "expired": "Hết hạn", "cancelled": "Đã hủy" }
+    },
+    "settings": {
+      "metaTitle": "Cài đặt",
+      "accountTitle": "Tài khoản",
+      "accountDescription": "Thông tin cơ bản của tài khoản này.",
+      "email": "Email",
+      "verified": "Đã xác minh",
+      "unverified": "Chưa xác minh",
+      "memberSince": "Tạo lúc",
+      "sessionExpires": "Phiên hết hạn",
+      "passwordTitle": "Đổi mật khẩu",
+      "passwordDescription": "Đổi qua đây không đăng xuất các thiết bị khác của bạn.",
+      "currentPassword": "Mật khẩu hiện tại",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Nhập lại mật khẩu mới",
+      "passwordHint": "Tối thiểu 10 ký tự.",
+      "mismatch": "Hai mật khẩu không khớp.",
+      "submit": "Đổi mật khẩu",
+      "submitting": "Đang xử lý...",
+      "passwordUpdated": "Đã đổi mật khẩu.",
+      "networkError": "Không kết nối được. Kiểm tra mạng rồi thử lại."
+    }
+  }
+}

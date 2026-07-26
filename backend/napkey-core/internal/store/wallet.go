@@ -1,0 +1,195 @@
+package store
+
+import (
+	"context"
+	"crypto/rand"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math/big"
+	"time"
+
+	"napkey-core/internal/pgwire"
+)
+
+const MinTopupMicros int64 = 20_000_000_000
+
+const (
+	TopupPending = "pending"
+	TopupPaid = "paid"
+	TopupUnderpaid = "underpaid"
+)
+
+type Wallet struct { UserID string; BalanceMicros, HeldMicros int64; Currency string; UpdatedAt time.Time }
+type WalletHold struct { ID, RequestID string; AmountMicros int64; ExpiresAt time.Time }
+type TopupOrder struct { ID, UserID, MemoCode, BankAccountNumber, Status string; ExpectedAmountMicros, ReceivedAmountMicros int64; ExpiresAt time.Time; PaidAt *time.Time; CreatedAt time.Time }
+
+func ValidateTopupAmount(amount int64) error {
+	if amount < MinTopupMicros { return errors.New("store: top-up must be at least 20,000 VND") }
+	return nil
+}
+
+func topupStatus(expected, received int64) string {
+	if received < expected { return TopupUnderpaid }
+	return TopupPaid
+}
+
+func (s *Store) GetWallet(ctx context.Context, userID string) (*Wallet, error) {
+	_, err := s.db.ExecContext(ctx, `INSERT INTO wallets(user_id) VALUES($1) ON CONFLICT DO NOTHING`, userID)
+	if err != nil { return nil, fmt.Errorf("store: ensuring wallet: %w", err) }
+	var w Wallet
+	err = s.db.QueryRowContext(ctx, `SELECT user_id, balance_micros, held_micros, currency, updated_at FROM wallets WHERE user_id=$1`, userID).Scan(&w.UserID,&w.BalanceMicros,&w.HeldMicros,&w.Currency,&w.UpdatedAt)
+	if err != nil { return nil, fmt.Errorf("store: loading wallet: %w", err) }
+	return &w,nil
+}
+
+func (s *Store) ReserveWallet(ctx context.Context,userID,keyID,requestID string,amountMicros int64)(*WalletHold,error){
+	if amountMicros<=0{return nil,errors.New("store: hold amount must be positive")}
+	var hold WalletHold
+	err:=s.withTx(ctx,&sql.TxOptions{Isolation:sql.LevelSerializable},func(tx *sql.Tx)error{
+		err:=tx.QueryRowContext(ctx,`SELECT id,request_id,amount_micros,expires_at FROM wallet_holds WHERE request_id=$1`,requestID).Scan(&hold.ID,&hold.RequestID,&hold.AmountMicros,&hold.ExpiresAt)
+		if err==nil{return nil};if !errors.Is(err,sql.ErrNoRows){return err}
+		if _,err:=tx.ExecContext(ctx,`INSERT INTO wallets(user_id) VALUES($1) ON CONFLICT DO NOTHING`,userID);err!=nil{return err}
+		var balance,held int64
+		err=tx.QueryRowContext(ctx,`UPDATE wallets SET held_micros=held_micros+$2,updated_at=now() WHERE user_id=$1 AND balance_micros-held_micros >= $2 RETURNING balance_micros,held_micros`,userID,amountMicros).Scan(&balance,&held)
+		if errors.Is(err,sql.ErrNoRows){return ErrInsufficientFunds};if err!=nil{return err}
+		err=tx.QueryRowContext(ctx,`INSERT INTO wallet_holds(user_id,api_key_id,request_id,amount_micros,expires_at) VALUES($1,$2,$3,$4,now()+interval '15 minutes') ON CONFLICT(request_id) DO UPDATE SET request_id=EXCLUDED.request_id RETURNING id,request_id,amount_micros,expires_at`,userID,keyID,requestID,amountMicros).Scan(&hold.ID,&hold.RequestID,&hold.AmountMicros,&hold.ExpiresAt)
+		if err!=nil{return err}
+		_,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'hold',$2,$3,$4,'request',$5,$6) ON CONFLICT(idempotency_key) DO NOTHING`,userID,-amountMicros,balance,held,requestID,"hold:"+requestID);return err
+	})
+	if err!=nil{return nil,err};return &hold,nil
+}
+
+func (s *Store) ReserveWalletForKey(ctx context.Context,keyID,requestID string,amountMicros int64)(*WalletHold,error){
+	var userID string
+	err:=s.db.QueryRowContext(ctx,`SELECT user_id FROM api_keys WHERE id=$1 AND revoked_at IS NULL AND enabled=true`,keyID).Scan(&userID)
+	if errors.Is(err,sql.ErrNoRows){return nil,ErrNotFound};if err!=nil{return nil,fmt.Errorf("store: resolving wallet owner: %w",err)}
+	return s.ReserveWallet(ctx,userID,keyID,requestID,amountMicros)
+}
+
+func (s *Store) ReleaseWallet(ctx context.Context,requestID string)error{
+	return s.withTx(ctx,&sql.TxOptions{Isolation:sql.LevelSerializable},func(tx *sql.Tx)error{
+		var holdID,userID,status string;var amount int64
+		err:=tx.QueryRowContext(ctx,`SELECT id,user_id,amount_micros,status FROM wallet_holds WHERE request_id=$1 FOR UPDATE`,requestID).Scan(&holdID,&userID,&amount,&status)
+		if errors.Is(err,sql.ErrNoRows){return ErrNotFound};if err!=nil{return err};if status!="open"{return nil}
+		var balance,held int64
+		err=tx.QueryRowContext(ctx,`UPDATE wallets SET held_micros=held_micros-$2,updated_at=now() WHERE user_id=$1 AND held_micros >= $2 RETURNING balance_micros,held_micros`,userID,amount).Scan(&balance,&held);if err!=nil{return err}
+		if _,err=tx.ExecContext(ctx,`UPDATE wallet_holds SET status='released',settled_at=now() WHERE id=$1`,holdID);err!=nil{return err}
+		_,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'hold_release',$2,$3,$4,'request',$5,$6) ON CONFLICT DO NOTHING`,userID,amount,balance,held,requestID,"release:"+requestID);return err
+	})
+}
+
+func (s *Store) SettleWallet(ctx context.Context,requestID string,actualMicros int64)error{
+	if actualMicros<0{return errors.New("store: settlement cannot be negative")}
+	return s.withTx(ctx,&sql.TxOptions{Isolation:sql.LevelSerializable},func(tx *sql.Tx)error{
+		return settleWalletTx(ctx,tx,requestID,actualMicros,false)
+	})
+}
+
+func settleWalletTx(ctx context.Context,tx *sql.Tx,requestID string,actualMicros int64,allowMissing bool)error{
+	var holdID,userID string;var reserved int64
+	err:=tx.QueryRowContext(ctx,`SELECT id,user_id,amount_micros FROM wallet_holds WHERE request_id=$1 AND status='open' FOR UPDATE`,requestID).Scan(&holdID,&userID,&reserved)
+	if errors.Is(err,sql.ErrNoRows){if allowMissing{return nil};return ErrNotFound};if err!=nil{return err}
+	if actualMicros>reserved{return errors.New("store: actual cost exceeds reserved hold")}
+	var balance,held int64
+	err=tx.QueryRowContext(ctx,`UPDATE wallets SET balance_micros=balance_micros-$2,held_micros=held_micros-$3,updated_at=now() WHERE user_id=$1 AND balance_micros >= $2 AND held_micros >= $3 RETURNING balance_micros,held_micros`,userID,actualMicros,reserved).Scan(&balance,&held);if err!=nil{return err}
+	if _,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'usage',$2,$3,$4,'request',$5,$6)`,userID,-actualMicros,balance,held,requestID,"settle:"+requestID);err!=nil{return err}
+	_,err=tx.ExecContext(ctx,`UPDATE wallet_holds SET status='settled',settled_at=now() WHERE id=$1`,holdID);return err
+}
+
+func (s *Store) ReleaseExpiredHolds(ctx context.Context,limit int)(int,error){
+	if limit<=0{limit=100};released:=0
+	for released<limit{
+		err:=s.withTx(ctx,nil,func(tx *sql.Tx)error{
+			var id,userID,requestID string;var amount int64
+			err:=tx.QueryRowContext(ctx,`SELECT id,user_id,request_id,amount_micros FROM wallet_holds WHERE status='open' AND expires_at<now() ORDER BY expires_at FOR UPDATE SKIP LOCKED LIMIT 1`).Scan(&id,&userID,&requestID,&amount)
+			if errors.Is(err,sql.ErrNoRows){return ErrNotFound};if err!=nil{return err}
+			var balance,held int64
+			err=tx.QueryRowContext(ctx,`UPDATE wallets SET held_micros=held_micros-$2,updated_at=now() WHERE user_id=$1 RETURNING balance_micros,held_micros`,userID,amount).Scan(&balance,&held);if err!=nil{return err}
+			if _,err=tx.ExecContext(ctx,`UPDATE wallet_holds SET status='expired',settled_at=now() WHERE id=$1`,id);err!=nil{return err}
+			_,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'hold_release',$2,$3,$4,'request',$5,$6) ON CONFLICT DO NOTHING`,userID,amount,balance,held,requestID,"expire:"+requestID);return err
+		});if errors.Is(err,ErrNotFound){break};if err!=nil{return released,err};released++
+	};return released,nil
+}
+
+func (s *Store) CreateTopupOrder(ctx context.Context, userID string, amount int64, bankAccount string) (*TopupOrder,error) {
+	if err := ValidateTopupAmount(amount); err != nil { return nil,err }
+	for attempt:=0; attempt<5; attempt++ {
+		memo,err:=newMemoCode(); if err!=nil{return nil,err}
+		var o TopupOrder
+		err=s.db.QueryRowContext(ctx, `INSERT INTO topup_orders(user_id,memo_code,expected_amount_micros,bank_account_number,expires_at) VALUES($1,$2,$3,$4,now()+interval '60 minutes') RETURNING id,user_id,memo_code,bank_account_number,status,expected_amount_micros,received_amount_micros,expires_at,paid_at,created_at`,userID,memo,amount,bankAccount).Scan(&o.ID,&o.UserID,&o.MemoCode,&o.BankAccountNumber,&o.Status,&o.ExpectedAmountMicros,&o.ReceivedAmountMicros,&o.ExpiresAt,&o.PaidAt,&o.CreatedAt)
+		if err==nil{return &o,nil}
+		if !pgwire.IsUniqueViolation(err){return nil,fmt.Errorf("store: creating top-up order: %w",err)}
+	}
+	return nil, errors.New("store: could not allocate a unique transfer memo")
+}
+
+func (s *Store) GetTopupOrder(ctx context.Context,userID,id string)(*TopupOrder,error){
+	if _,err:=s.db.ExecContext(ctx,`UPDATE topup_orders SET status='expired' WHERE id=$1 AND user_id=$2 AND status='pending' AND expires_at<now()`,id,userID);err!=nil{return nil,fmt.Errorf("store: expiring top-up order: %w",err)}
+	var o TopupOrder
+	err:=s.db.QueryRowContext(ctx,`SELECT id,user_id,memo_code,bank_account_number,status,expected_amount_micros,received_amount_micros,expires_at,paid_at,created_at FROM topup_orders WHERE id=$1 AND user_id=$2`,id,userID).Scan(&o.ID,&o.UserID,&o.MemoCode,&o.BankAccountNumber,&o.Status,&o.ExpectedAmountMicros,&o.ReceivedAmountMicros,&o.ExpiresAt,&o.PaidAt,&o.CreatedAt)
+	if errors.Is(err,sql.ErrNoRows){return nil,ErrNotFound}; if err!=nil{return nil,fmt.Errorf("store: loading top-up order: %w",err)}; return &o,nil
+}
+
+func newMemoCode()(string,error){
+	const alphabet="0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+	out:=make([]byte,8); copy(out,"NK")
+	for i:=2;i<len(out);i++{n,err:=rand.Int(rand.Reader,big.NewInt(int64(len(alphabet))));if err!=nil{return "",err};out[i]=alphabet[n.Int64()]}
+	return string(out),nil
+}
+
+type PaymentEventInput struct { ProviderTxID, BankReference string; SignatureVerified bool; Payload json.RawMessage; Status, ErrorMessage string }
+
+type PaymentEvent struct { ID int64; ProviderTxID string; Payload json.RawMessage }
+
+func (s *Store) InsertPaymentEvent(ctx context.Context,in PaymentEventInput)(int64,bool,error){
+	var id int64
+	err:=s.db.QueryRowContext(ctx,`INSERT INTO payment_events(provider,provider_tx_id,bank_reference,signature_verified,payload,status,error_message) VALUES('casso',$1,$2,$3,$4,$5,$6) ON CONFLICT(provider,provider_tx_id) DO NOTHING RETURNING id`,in.ProviderTxID,in.BankReference,in.SignatureVerified,[]byte(in.Payload),in.Status,in.ErrorMessage).Scan(&id)
+	if errors.Is(err,sql.ErrNoRows){return 0,true,nil}; if err!=nil{return 0,false,fmt.Errorf("store: inserting payment event: %w",err)}; return id,false,nil
+}
+
+func (s *Store) ClaimPaymentEvent(ctx context.Context) (*PaymentEvent,error) {
+	var event PaymentEvent
+	err:=s.withTx(ctx,nil,func(tx *sql.Tx) error{
+		err:=tx.QueryRowContext(ctx,`SELECT id,provider_tx_id,payload FROM payment_events WHERE status='received' OR (status='processing' AND processing_started_at < now()-interval '5 minutes') ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1`).Scan(&event.ID,&event.ProviderTxID,&event.Payload)
+		if errors.Is(err,sql.ErrNoRows){return ErrNotFound}; if err!=nil{return err}
+		_,err=tx.ExecContext(ctx,`UPDATE payment_events SET status='processing',processing_started_at=now(),error_message=NULL WHERE id=$1`,event.ID); return err
+	})
+	if err!=nil{return nil,err}; return &event,nil
+}
+
+func (s *Store) RejectPaymentEvent(ctx context.Context,eventID int64,status,message string) error {
+	_,err:=s.db.ExecContext(ctx,`UPDATE payment_events SET status=$2,error_message=$3,processed_at=now() WHERE id=$1 AND status='processing'`,eventID,status,message)
+	if err!=nil{return fmt.Errorf("store: rejecting payment event: %w",err)}; return nil
+}
+
+func (s *Store) CountStaleUnmatchedPayments(ctx context.Context,olderThan time.Duration)(int,error){
+	if olderThan<=0{olderThan=30*time.Minute};var count int
+	err:=s.db.QueryRowContext(ctx,`SELECT count(*)::integer FROM payment_events WHERE status='unmatched' AND received_at < now()-($1 * interval '1 second')`,int64(olderThan/time.Second)).Scan(&count)
+	if err!=nil{return 0,fmt.Errorf("store: counting unmatched payments: %w",err)};return count,nil
+}
+
+// CreditPaymentEvent atomically credits the real received amount and closes the event.
+func (s *Store) CreditPaymentEvent(ctx context.Context,eventID int64,providerTxID,memo string,amountMicros int64) error {
+	if amountMicros<=0{return errors.New("store: incoming payment amount must be positive")}
+	return s.withTx(ctx,&sql.TxOptions{Isolation:sql.LevelSerializable},func(tx *sql.Tx)error{
+		var eventStatus string
+		err:=tx.QueryRowContext(ctx,`SELECT status FROM payment_events WHERE id=$1 FOR UPDATE`,eventID).Scan(&eventStatus)
+		if errors.Is(err,sql.ErrNoRows){return ErrNotFound}; if err!=nil{return err}
+		if eventStatus=="credited"{return nil}
+		if eventStatus!="processing"{return fmt.Errorf("store: payment event is %s, not processing",eventStatus)}
+		var order TopupOrder
+		err=tx.QueryRowContext(ctx,`SELECT id,user_id,memo_code,expected_amount_micros,received_amount_micros FROM topup_orders WHERE memo_code=$1 FOR UPDATE`,memo).Scan(&order.ID,&order.UserID,&order.MemoCode,&order.ExpectedAmountMicros,&order.ReceivedAmountMicros)
+		if errors.Is(err,sql.ErrNoRows){return ErrNotFound}; if err!=nil{return err}
+		if _,err=tx.ExecContext(ctx,`INSERT INTO wallets(user_id) VALUES($1) ON CONFLICT DO NOTHING`,order.UserID);err!=nil{return err}
+		var balance,held int64
+		err=tx.QueryRowContext(ctx,`UPDATE wallets SET balance_micros=balance_micros+$2,updated_at=now() WHERE user_id=$1 RETURNING balance_micros,held_micros`,order.UserID,amountMicros).Scan(&balance,&held)
+		if err!=nil{return err}
+		_,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'topup',$2,$3,$4,'payment_event',$5,$6)`,order.UserID,amountMicros,balance,held,providerTxID,"casso:"+providerTxID)
+		if err!=nil{return err}
+		received:=order.ReceivedAmountMicros+amountMicros; status:=topupStatus(order.ExpectedAmountMicros,received)
+		_,err=tx.ExecContext(ctx,`UPDATE topup_orders SET received_amount_micros=$2,status=$3,paid_at=now() WHERE id=$1`,order.ID,received,status);if err!=nil{return err}
+		_,err=tx.ExecContext(ctx,`UPDATE payment_events SET status='credited',matched_order_id=$2,processed_at=now() WHERE id=$1 AND status='processing'`,eventID,order.ID);return err
+	})
+}

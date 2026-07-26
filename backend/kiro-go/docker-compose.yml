@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  kiro-go:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - CONFIG_PATH=/app/data/config.json
+      - NAPKEY_CORE_URL=${NAPKEY_CORE_URL:-http://host.docker.internal:8081}
+      - NAPKEY_INTERNAL_TOKEN=${NAPKEY_INTERNAL_TOKEN:-}
+    restart: unless-stopped

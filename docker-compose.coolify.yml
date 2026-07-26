@@ -1,0 +1,117 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: napkey
+      POSTGRES_USER: napkey
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U napkey -d napkey"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [napkey]
+
+  kiro-go:
+    build:
+      context: ./backend/kiro-go
+    restart: unless-stopped
+    environment:
+      CONFIG_PATH: /app/data/config.json
+      ADMIN_PASSWORD: ${KIRO_ADMIN_PASSWORD}
+      NAPKEY_CORE_URL: http://napkey-core:8081
+      NAPKEY_INTERNAL_TOKEN: ${KIRO_ADMIN_PASSWORD}
+    volumes:
+      - kiro-data:/app/data
+    expose: ["8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks: [napkey]
+
+  napkey-core:
+    build:
+      context: ./backend/napkey-core
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kiro-go:
+        condition: service_healthy
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8081
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgres://napkey:${POSTGRES_PASSWORD}@postgres:5432/napkey?sslmode=disable
+      DB_MAX_OPEN_CONNS: ${DB_MAX_OPEN_CONNS:-10}
+      DB_MAX_IDLE_CONNS: ${DB_MAX_IDLE_CONNS:-5}
+      SESSION_SECRET: ${SESSION_SECRET}
+      SESSION_TTL: ${SESSION_TTL:-336h}
+      SECURE_COOKIES: "true"
+      PUBLIC_BASE_URL: https://napkey.io.vn
+      KIRO_ADMIN_URL: http://kiro-go:8080
+      KIRO_ADMIN_PASSWORD: ${KIRO_ADMIN_PASSWORD}
+      KIRO_SYNC_INTERVAL: ${KIRO_SYNC_INTERVAL:-60s}
+      MAIL_PROVIDER: ${MAIL_PROVIDER:-smtp}
+      MAIL_FROM: ${MAIL_FROM}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      EMAIL_TOKEN_TTL: ${EMAIL_TOKEN_TTL:-24h}
+      DEFAULT_TOKEN_LIMIT: ${DEFAULT_TOKEN_LIMIT:-0}
+      DEFAULT_CREDIT_LIMIT: ${DEFAULT_CREDIT_LIMIT:-0}
+      MAX_KEYS_PER_USER: ${MAX_KEYS_PER_USER:-10}
+      CASSO_WEBHOOK_SECRET: ${CASSO_WEBHOOK_SECRET}
+      CASSO_API_KEY: ${CASSO_API_KEY}
+      BANK_NAME: ${BANK_NAME}
+      BANK_BIN: ${BANK_BIN}
+      BANK_ACCOUNT_NUMBER: ${BANK_ACCOUNT_NUMBER}
+      BANK_ACCOUNT_NAME: ${BANK_ACCOUNT_NAME}
+      WALLET_HOLD_VND: ${WALLET_HOLD_VND:-1000000}
+      ADMIN_EMAILS: ${ADMIN_EMAILS}
+    expose: ["8081"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8081/ready >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks: [napkey]
+
+  napkey-web:
+    build:
+      context: ./napkey-web
+      args:
+        NEXT_PUBLIC_SITE_URL: https://napkey.io.vn
+        NEXT_PUBLIC_API_BASE_URL: https://api.napkey.io.vn
+    restart: unless-stopped
+    depends_on:
+      napkey-core:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      NAPKEY_CORE_URL: http://napkey-core:8081
+      NEXT_PUBLIC_SITE_URL: https://napkey.io.vn
+      NEXT_PUBLIC_API_BASE_URL: https://api.napkey.io.vn
+    expose: ["3000"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/vi >/dev/null"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks: [napkey]
+
+volumes:
+  postgres-data:
+  kiro-data:
+
+networks:
+  napkey:
+
