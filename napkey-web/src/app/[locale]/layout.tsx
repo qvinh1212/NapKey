@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Inter, Manrope } from 'next/font/google';
+import localFont from 'next/font/local';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -10,17 +10,29 @@ import { SiteHeader } from '@/components/napkey/site-header';
 import { SiteFooter } from '@/components/napkey/site-footer';
 import '../globals.css';
 
-const manrope = Manrope({
-  subsets: ['latin', 'vietnamese'],
-  weight: ['600', '700'],
+// Font self-host thay vi next/font/google: build khong con phu thuoc
+// mang toi fonts.googleapis.com, nen CI va Docker build khong hong khi
+// Google Fonts cham hoac bi chan.
+const manrope = localFont({
+  src: [
+    { path: '../fonts/manrope-latin.woff2', weight: '600 700', style: 'normal' },
+    { path: '../fonts/manrope-latin-ext.woff2', weight: '600 700', style: 'normal' },
+    { path: '../fonts/manrope-vietnamese.woff2', weight: '600 700', style: 'normal' },
+  ],
   variable: '--font-manrope',
   display: 'swap',
+  fallback: ['ui-sans-serif', 'system-ui', 'sans-serif'],
 });
 
-const inter = Inter({
-  subsets: ['latin', 'vietnamese'],
+const inter = localFont({
+  src: [
+    { path: '../fonts/inter-latin.woff2', weight: '100 900', style: 'normal' },
+    { path: '../fonts/inter-latin-ext.woff2', weight: '100 900', style: 'normal' },
+    { path: '../fonts/inter-vietnamese.woff2', weight: '100 900', style: 'normal' },
+  ],
   variable: '--font-inter',
   display: 'swap',
+  fallback: ['ui-sans-serif', 'system-ui', 'sans-serif'],
 });
 
 export function generateStaticParams() {

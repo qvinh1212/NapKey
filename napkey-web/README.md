@@ -46,6 +46,10 @@ messages/                  # vi.json, en.json
 - **Gia** trong `src/lib/pricing.ts` dan xuat tu gia goc Anthropic (USD/MTok)
   qua hang so `VND_PER_USD_BILLED`. Doi gia thi sua hang so do, dong thoi ghi
   lai thoi diem hieu luc trong bang `model_prices` (xem `DESIGN.md` muc 5).
+- **Font** self-host trong `src/app/fonts/` va nap qua `next/font/local`.
+  Khong dung `next/font/google` vi buoc build se goi `fonts.googleapis.com`,
+  lam CI va Docker build hong khi mang bi chan. Chi giu subset latin,
+  latin-ext va vietnamese.
 - **Design token** trong `src/app/globals.css` trich tu computed style cua
   trang tham chieu, khong phai uoc luong. Doc `DESIGN.md` muc 7 truoc khi doi.
 - **Tien te** luon hien thi VND o ca hai ban ngon ngu. Doi don vi tien theo
