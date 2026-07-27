@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "NapKey — prepaid wallet API for Claude",
-    "description": "Top up your wallet, get an API key, point Claude Code or your SDK at the NapKey endpoint. Pay only for tokens you use, billed in VND, no monthly plan.",
+    "title": "NapKey — Claude Code billed in Vietnamese dong",
+    "description": "Top up from 20,000 d and run Claude Code or your Anthropic/OpenAI SDK through NapKey. No monthly plan, billed by actual token usage.",
     "ogAlt": "NapKey — prepaid wallet API gateway for Claude"
   },
   "nav": {
@@ -16,15 +16,31 @@
     "switchLanguage": "Switch language"
   },
   "hero": {
-    "badge": "Anthropic and OpenAI compatible",
-    "titleLine1": "One API key",
-    "titleLine2": "for every Claude model",
-    "subtitle": "Top up your wallet, change the endpoint in two lines, leave the rest of your code alone. Billed in VND by actual token use — no plans, no idle fees.",
-    "ctaPrimary": "Get started",
-    "ctaSecondary": "See integration",
-    "note": "Minimum top-up 20,000 d. Balance is usable for API calls only.",
-    "statusLabel": "Status",
-    "statusValue": "Early access"
+    "badge": "Built for Claude Code and your existing SDK",
+    "titleLine1": "Claude Code,",
+    "titleLine2": "billed in Vietnamese dong.",
+    "subtitle": "Top up from 20,000 d, get an API key, and run. Keep your Anthropic or OpenAI SDK — change only the endpoint and pay for what you use.",
+    "ctaPrimary": "Create an API key",
+    "ctaSecondary": "See the setup",
+    "note": "No monthly plan. No maintenance fee. Every request is recorded with its model, token usage, and actual cost.",
+    "terminalLabel": "30-second setup",
+    "terminalComment": "Keep Claude Code. Change only the gateway.",
+    "terminalTitle": "Claude Code → NapKey",
+    "terminalSubtitle": "Keep the workflow, change the gateway",
+    "terminalReady": "Ready",
+    "metrics": {
+      "topUp": { "value": "20K d", "label": "Minimum top-up" },
+      "protocols": { "value": "2", "label": "API protocols" },
+      "monthlyFee": { "value": "0 d", "label": "Maintenance fee" }
+    },
+    "worksWith": "Works with",
+    "tools": {
+      "claudeCode": "Claude Code",
+      "cursor": "Cursor",
+      "anthropicSdk": "Anthropic SDK",
+      "openaiSdk": "OpenAI SDK"
+    },
+    "statusLink": "Check the live API"
   },
   "value": {
     "eyebrow": "Why NapKey",

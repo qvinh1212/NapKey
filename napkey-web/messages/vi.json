@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "NapKey — API Claude trả trước theo ví",
-    "description": "Nạp tiền vào ví, nhận API key, trỏ Claude Code hoặc SDK của bạn vào endpoint NapKey. Dùng bao nhiêu trừ bấy nhiêu, tính bằng VNĐ, không gói tháng.",
+    "title": "NapKey — Claude Code thanh toán bằng VNĐ",
+    "description": "Nạp từ 20.000 ₫, lấy API key và chạy Claude Code hoặc SDK Anthropic/OpenAI qua NapKey. Không gói tháng, tính đúng token thực dùng.",
     "ogAlt": "NapKey — cổng API Claude trả trước theo ví"
   },
   "nav": {
@@ -16,15 +16,31 @@
     "switchLanguage": "Đổi ngôn ngữ"
   },
   "hero": {
-    "badge": "Tương thích Anthropic và OpenAI",
-    "titleLine1": "Một API key",
-    "titleLine2": "cho mọi model Claude",
-    "subtitle": "Nạp tiền vào ví, đổi endpoint trong hai dòng, giữ nguyên phần code còn lại. Tính tiền bằng VNĐ theo token thực dùng — không gói tháng, không phí duy trì.",
-    "ctaPrimary": "Bắt đầu",
-    "ctaSecondary": "Xem tích hợp",
-    "note": "Tối thiểu 20.000 ₫ mỗi lần nạp. Số dư chỉ dùng để gọi API.",
-    "statusLabel": "Trạng thái",
-    "statusValue": "Đang trong giai đoạn mở sớm"
+    "badge": "Dành cho Claude Code và SDK hiện tại của bạn",
+    "titleLine1": "Claude Code",
+    "titleLine2": "thanh toán bằng VNĐ.",
+    "subtitle": "Nạp từ 20.000 ₫, lấy API key và chạy ngay. Giữ nguyên Anthropic hoặc OpenAI SDK — chỉ đổi endpoint, dùng bao nhiêu trả bấy nhiêu.",
+    "ctaPrimary": "Tạo API key",
+    "ctaSecondary": "Xem cách kết nối",
+    "note": "Không gói tháng. Không phí duy trì. Mỗi request được ghi lại theo model, token và chi phí thực tế.",
+    "terminalLabel": "Thiết lập trong 30 giây",
+    "terminalComment": "Giữ Claude Code. Chỉ thay gateway.",
+    "terminalTitle": "Claude Code → NapKey",
+    "terminalSubtitle": "Giữ nguyên workflow, thay gateway",
+    "terminalReady": "Sẵn sàng",
+    "metrics": {
+      "topUp": { "value": "20K ₫", "label": "Nạp tối thiểu" },
+      "protocols": { "value": "2", "label": "Giao thức API" },
+      "monthlyFee": { "value": "0 ₫", "label": "Phí duy trì" }
+    },
+    "worksWith": "Hoạt động cùng",
+    "tools": {
+      "claudeCode": "Claude Code",
+      "cursor": "Cursor",
+      "anthropicSdk": "Anthropic SDK",
+      "openaiSdk": "OpenAI SDK"
+    },
+    "statusLink": "Kiểm tra API trực tiếp"
   },
   "value": {
     "eyebrow": "Vì sao chọn NapKey",
