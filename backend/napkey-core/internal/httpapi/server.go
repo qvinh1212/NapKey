@@ -83,6 +83,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/me/usage/records", s.requireVerified(s.handleListUsageRecords))
 	mux.HandleFunc("GET /v1/me/wallet", s.requireVerified(s.handleGetWallet))
 	mux.HandleFunc("POST /v1/me/topups", s.requireVerified(s.handleCreateTopup))
+	mux.HandleFunc("GET /v1/me/topups", s.requireVerified(s.handleListTopups))
 	mux.HandleFunc("GET /v1/me/topups/{id}", s.requireVerified(s.handleGetTopup))
 	mux.HandleFunc("GET /v1/keys", s.requireVerified(s.handleListKeys))
 	mux.HandleFunc("POST /v1/keys", s.requireVerified(s.handleCreateKey))

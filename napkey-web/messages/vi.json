@@ -620,6 +620,11 @@
       "pollingNotice": "Sau khi thanh toán, màn hình này tự cập nhật số dư mỗi 3 giây.",
       "paidNotice": "Đã nhận tiền. Số dư ví của bạn đã được cập nhật.",
       "newOrder": "Tạo lệnh nạp khác",
+      "historyTitle": "Lịch sử nạp tiền",
+      "historyDescription": "50 lệnh thanh toán gần nhất được lưu để bạn đối soát.",
+      "historyEmpty": "Bạn chưa có lệnh nạp tiền nào.",
+      "historyTime": "Thời gian tạo",
+      "historyStatus": "Trạng thái",
       "status": { "pending": "Đang chờ", "paid": "Đã nhận", "underpaid": "Chuyển thiếu", "expired": "Hết hạn", "cancelled": "Đã hủy" }
     },
     "settings": {

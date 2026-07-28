@@ -249,12 +249,17 @@ export type TopupOrderResponse = {
     receivedAmount: Money;
     expiresAt: string;
     paidAt: string | null;
+    createdAt: string;
     payment: {
       provider: 'payos';
       checkoutUrl: string;
       qrCode: string;
     };
   };
+};
+
+export type TopupHistoryResponse = {
+  orders: TopupOrderResponse['order'][];
 };
 
 /** Ma loi backend tra ve, de UI phan nhanh thay vi doc chuoi tieng Anh. */

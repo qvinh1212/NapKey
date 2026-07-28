@@ -62,6 +62,7 @@ func (s *Store) RefreshOperationsAlerts(ctx context.Context) error {
 	}
 	checks := []check{
 		{"payment-unmatched", "payment_unmatched", "warning", "Casso payments remain unmatched", `SELECT count(*) FROM payment_events WHERE status = 'unmatched' AND received_at < now() - interval '30 minutes'`},
+		{"payment-duplicate", "payment_duplicate", "warning", "Additional payment transactions require review", `SELECT count(*) FROM payment_events WHERE status = 'duplicate' AND received_at > now() - interval '24 hours'`},
 		{"payment-stuck", "payment_stuck", "critical", "Payment events are stuck processing", `SELECT count(*) FROM payment_events WHERE status = 'processing' AND received_at < now() - interval '10 minutes'`},
 		{"key-sync-failed", "key_sync_failed", "warning", "API keys failed to synchronize", `SELECT count(*) FROM api_keys WHERE sync_state = 'failed' AND revoked_at IS NULL`},
 		{"holds-expired-open", "wallet_hold_expired", "critical", "Wallet holds are open past expiry", `SELECT count(*) FROM wallet_holds WHERE status = 'open' AND expires_at < now()`},

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api/client';
-import type { TopupOrderResponse, WalletResponse } from '@/lib/api/types';
+import type { TopupHistoryResponse, TopupOrderResponse, WalletResponse } from '@/lib/api/types';
 import { Badge, Panel, PanelHeader, StatCard } from './ui';
 import { creditAmount } from '@/lib/format';
 import { creditsFromVnd, microcreditsFromVnd } from '@/lib/pricing';
@@ -14,6 +14,7 @@ export function WalletTopup() {
   const t = useTranslations('console.wallet');
   const locale = useLocale();
   const [wallet, setWallet] = useState<WalletResponse['wallet'] | null>(null);
+  const [history, setHistory] = useState<TopupHistoryResponse['orders']>([]);
   const [order, setOrder] = useState<TopupOrderResponse['order'] | null>(null);
   const [amount, setAmount] = useState(60_000);
   const [loading, setLoading] = useState(true);
@@ -25,11 +26,16 @@ export function WalletTopup() {
     setWallet(response.wallet);
   }, []);
 
+  const loadHistory = useCallback(async () => {
+    const response = await api.get<TopupHistoryResponse>('/v1/me/topups');
+    setHistory(response.orders);
+  }, []);
+
   useEffect(() => {
 	let active = true;
 	async function initialLoad() {
 		try {
-			await loadWallet();
+			await Promise.all([loadWallet(), loadHistory()]);
 		} catch {
 			if (active) setError(t('loadFailed'));
 		} finally {
@@ -38,7 +44,7 @@ export function WalletTopup() {
 	}
 	void initialLoad();
 	return () => { active = false; };
-  }, [loadWallet, t]);
+  }, [loadHistory, loadWallet, t]);
 
   useEffect(() => {
     if (!order || order.status === 'paid' || order.status === 'cancelled') return;
@@ -46,13 +52,13 @@ export function WalletTopup() {
       try {
         const response = await api.get<TopupOrderResponse>(`/v1/me/topups/${order.id}`);
         setOrder(response.order);
-        if (response.order.status === 'paid') await loadWallet();
+        if (response.order.status === 'paid') await Promise.all([loadWallet(), loadHistory()]);
       } catch {
         // Polling is best-effort; the next tick retries without disrupting the transfer screen.
       }
     }, 3000);
     return () => window.clearInterval(timer);
-  }, [loadWallet, order]);
+  }, [loadHistory, loadWallet, order]);
 
   async function createOrder(event: React.FormEvent) {
     event.preventDefault();
@@ -107,6 +113,32 @@ export function WalletTopup() {
           <div className="border-t border-line px-5 py-4"><button type="button" onClick={() => setOrder(null)} className="text-ui text-muted hover:text-fg">{t('newOrder')}</button></div>
         </Panel>
       )}
+
+      <Panel as="section">
+        <PanelHeader title={t('historyTitle')} description={t('historyDescription')} />
+        {history.length === 0 ? (
+          <p className="p-5 text-ui text-dim">{t('historyEmpty')}</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left text-ui">
+              <thead className="border-b border-line text-dim">
+                <tr><th className="px-5 py-3 font-medium">{t('historyTime')}</th><th className="px-5 py-3 font-medium">{t('memo')}</th><th className="px-5 py-3 font-medium">{t('amount')}</th><th className="px-5 py-3 font-medium">{t('credits')}</th><th className="px-5 py-3 font-medium">{t('historyStatus')}</th></tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {history.map((item) => (
+                  <tr key={item.id}>
+                    <td className="px-5 py-3 text-muted">{new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.createdAt))}</td>
+                    <td className="px-5 py-3 font-mono text-fg">{item.memoCode}</td>
+                    <td className="px-5 py-3 font-mono text-fg">{item.expectedAmount.formatted}</td>
+                    <td className="px-5 py-3 font-mono text-fg">{creditAmount(item.expectedCredits, locale)}</td>
+                    <td className="px-5 py-3"><Badge tone={item.status === 'paid' ? 'accent' : item.status === 'underpaid' ? 'warn' : 'info'}>{t(`status.${item.status}`)}</Badge></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Panel>
     </div>
   );
 }

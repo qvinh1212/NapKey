@@ -173,6 +173,26 @@ func (s *Store) GetTopupOrder(ctx context.Context,userID,id string)(*TopupOrder,
 	if errors.Is(err,sql.ErrNoRows){return nil,ErrNotFound}; if err!=nil{return nil,fmt.Errorf("store: loading top-up order: %w",err)}; return &o,nil
 }
 
+func (s *Store) ListTopupOrders(ctx context.Context, userID string, limit int) ([]TopupOrder, error) {
+	if limit <= 0 || limit > 100 { limit = 50 }
+	if _, err := s.db.ExecContext(ctx, `UPDATE topup_orders SET status='expired' WHERE user_id=$1 AND status='pending' AND expires_at<now()`, userID); err != nil {
+		return nil, fmt.Errorf("store: expiring top-up orders: %w", err)
+	}
+	rows, err := s.db.QueryContext(ctx, `SELECT id,user_id,memo_code,provider,coalesce(provider_order_code,0),coalesce(provider_payment_link_id,''),coalesce(checkout_url,''),coalesce(qr_code,''),coalesce(bank_account_number,''),status,expected_amount_micros,received_amount_micros,retail_vnd_per_credit,expires_at,paid_at,created_at FROM topup_orders WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2`, userID, limit)
+	if err != nil { return nil, fmt.Errorf("store: listing top-up orders: %w", err) }
+	defer rows.Close()
+	orders := make([]TopupOrder, 0)
+	for rows.Next() {
+		var o TopupOrder
+		if err := rows.Scan(&o.ID,&o.UserID,&o.MemoCode,&o.Provider,&o.ProviderOrderCode,&o.ProviderPaymentLinkID,&o.CheckoutURL,&o.QRCode,&o.BankAccountNumber,&o.Status,&o.ExpectedAmountMicros,&o.ReceivedAmountMicros,&o.RetailVNDPerCredit,&o.ExpiresAt,&o.PaidAt,&o.CreatedAt); err != nil {
+			return nil, fmt.Errorf("store: scanning top-up order: %w", err)
+		}
+		orders = append(orders, o)
+	}
+	if err := rows.Err(); err != nil { return nil, fmt.Errorf("store: listing top-up orders: %w", err) }
+	return orders, nil
+}
+
 func newProviderOrderCode()(int64,error){
 	const min int64=100_000_000_000
 	n,err:=rand.Int(rand.Reader,big.NewInt(900_000_000_000));if err!=nil{return 0,err};return min+n.Int64(),nil
@@ -190,7 +210,7 @@ func(s *Store)CreditPayOSPayment(ctx context.Context,in PayOSPaymentInput)(bool,
 		var order TopupOrder
 		err=tx.QueryRowContext(ctx,`SELECT id,user_id,status,expected_amount_micros,retail_vnd_per_credit FROM topup_orders WHERE provider='payos' AND provider_order_code=$1 FOR UPDATE`,in.OrderCode).Scan(&order.ID,&order.UserID,&order.Status,&order.ExpectedAmountMicros,&order.RetailVNDPerCredit)
 		if errors.Is(err,sql.ErrNoRows){_,_ = tx.ExecContext(ctx,`UPDATE payment_events SET status='unmatched',error_message='PayOS order was not found',processed_at=now() WHERE id=$1`,eventID);return nil};if err!=nil{return err}
-		if order.Status==TopupPaid{duplicate=true;_,_ = tx.ExecContext(ctx,`UPDATE payment_events SET status='duplicate',matched_order_id=$2,processed_at=now() WHERE id=$1`,eventID,order.ID);return nil}
+		if order.Status==TopupPaid{duplicate=true;_,_ = tx.ExecContext(ctx,`UPDATE payment_events SET status='duplicate',matched_order_id=$2,error_message='additional PayOS transaction received for an already paid order; review for refund',processed_at=now() WHERE id=$1`,eventID,order.ID);return nil}
 		if order.Status!=TopupPending{_,_ = tx.ExecContext(ctx,`UPDATE payment_events SET status='rejected',matched_order_id=$2,error_message='top-up order is not pending',processed_at=now() WHERE id=$1`,eventID,order.ID);return nil}
 		if in.AmountMicros!=order.ExpectedAmountMicros{_,_ = tx.ExecContext(ctx,`UPDATE payment_events SET status='rejected',matched_order_id=$2,error_message='amount does not match the PayOS order',processed_at=now() WHERE id=$1`,eventID,order.ID);return nil}
 		creditedMicros,err:=walletCreditMicros(in.AmountMicros,order.RetailVNDPerCredit);if err!=nil{return err}

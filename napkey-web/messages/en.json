@@ -620,6 +620,11 @@
       "pollingNotice": "After payment, this screen refreshes the wallet automatically every 3 seconds.",
       "paidNotice": "Payment received. Your wallet balance has been updated.",
       "newOrder": "Create another top-up",
+      "historyTitle": "Top-up history",
+      "historyDescription": "Your latest 50 payment orders, retained for reconciliation.",
+      "historyEmpty": "No top-up orders yet.",
+      "historyTime": "Created",
+      "historyStatus": "Status",
       "status": { "pending": "Waiting", "paid": "Paid", "underpaid": "Underpaid", "expired": "Expired", "cancelled": "Cancelled" }
     },
     "settings": {

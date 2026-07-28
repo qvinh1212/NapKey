@@ -84,8 +84,22 @@ func (s *Server) handleGetTopup(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, s.topupView(order))
 }
 
+func (s *Server) handleListTopups(w http.ResponseWriter, r *http.Request) {
+	su := sessionFromContext(r.Context())
+	orders, err := s.store.ListTopupOrders(r.Context(), su.User.ID, 50)
+	if err != nil {
+		writeStoreError(w, err, "loading top-up history")
+		return
+	}
+	items := make([]map[string]any, 0, len(orders))
+	for i := range orders {
+		items = append(items, s.topupView(&orders[i])["order"].(map[string]any))
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"orders": items})
+}
+
 func (s *Server) topupView(order *store.TopupOrder) map[string]any {
-	return map[string]any{"order": map[string]any{"id": order.ID, "memoCode": order.MemoCode, "status": order.Status, "expectedAmount": costView(order.ExpectedAmountMicros), "expectedCredits": creditsView(order.ExpectedAmountMicros / order.RetailVNDPerCredit), "receivedAmount": costView(order.ReceivedAmountMicros), "expiresAt": order.ExpiresAt.UTC().Format(time.RFC3339), "paidAt": formatOptionalTime(order.PaidAt), "payment": map[string]any{"provider": order.Provider, "checkoutUrl": order.CheckoutURL, "qrCode": order.QRCode}}}
+	return map[string]any{"order": map[string]any{"id": order.ID, "memoCode": order.MemoCode, "status": order.Status, "expectedAmount": costView(order.ExpectedAmountMicros), "expectedCredits": creditsView(order.ExpectedAmountMicros / order.RetailVNDPerCredit), "receivedAmount": costView(order.ReceivedAmountMicros), "expiresAt": order.ExpiresAt.UTC().Format(time.RFC3339), "paidAt": formatOptionalTime(order.PaidAt), "createdAt": order.CreatedAt.UTC().Format(time.RFC3339), "payment": map[string]any{"provider": order.Provider, "checkoutUrl": order.CheckoutURL, "qrCode": order.QRCode}}}
 }
 
 func formatOptionalTime(value *time.Time) any {
@@ -129,16 +143,25 @@ func (s *Server) handlePayOSWebhook(w http.ResponseWriter, r *http.Request) {
 	if !ok { writeError(w,http.StatusBadRequest,codeInvalidRequest,"PayOS orderCode is invalid");return }
 	amountVND, ok := payOSInt64(envelope.Data["amount"])
 	if !ok || amountVND <= 0 { writeError(w,http.StatusBadRequest,codeInvalidRequest,"PayOS amount is invalid");return }
-	paymentLinkID, _ := envelope.Data["paymentLinkId"].(string)
-	reference, _ := envelope.Data["reference"].(string)
-	providerTxID := strings.TrimSpace(paymentLinkID + ":" + reference)
-	if providerTxID == ":" || orderCode <= 0 { writeError(w,http.StatusBadRequest,codeInvalidRequest,"PayOS transaction identity is invalid");return }
+	providerTxID, ok := payOSTransactionID(envelope.Data)
+	if !ok || orderCode <= 0 { writeError(w,http.StatusBadRequest,codeInvalidRequest,"PayOS transaction identity is invalid");return }
 	amountMicros, err := pricing.MicrosFromVND(amountVND)
 	if err != nil { writeError(w,http.StatusBadRequest,codeInvalidRequest,"PayOS amount is outside the supported range");return }
 	if _, err := s.store.CreditPayOSPayment(r.Context(), store.PayOSPaymentInput{ProviderTxID:providerTxID,OrderCode:orderCode,AmountMicros:amountMicros,Payload:raw}); err != nil {
 		writeError(w,http.StatusServiceUnavailable,codeInternal,"could not record PayOS payment");return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
+}
+
+func payOSTransactionID(data map[string]any) (string, bool) {
+	paymentLinkID, linkOK := data["paymentLinkId"].(string)
+	reference, referenceOK := data["reference"].(string)
+	paymentLinkID = strings.TrimSpace(paymentLinkID)
+	reference = strings.TrimSpace(reference)
+	if !linkOK || !referenceOK || paymentLinkID == "" || reference == "" {
+		return "", false
+	}
+	return paymentLinkID + ":" + reference, true
 }
 
 func payOSInt64(value any)(int64,bool){
