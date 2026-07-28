@@ -15,7 +15,12 @@ import (
 	"napkey-core/internal/pricing"
 )
 
-const MinTopupMicros int64 = 20_000_000_000
+const (
+	MinTopupVND    int64 = 10_000
+	TopupStepVND   int64 = 1_000
+	MinTopupMicros int64 = MinTopupVND * pricing.MicrosPerVND
+	TopupStepMicros int64 = TopupStepVND * pricing.MicrosPerVND
+)
 
 const (
 	TopupPending = "pending"
@@ -43,7 +48,8 @@ type TopupOrder struct {
 }
 
 func ValidateTopupAmount(amount int64) error {
-	if amount < MinTopupMicros { return errors.New("store: top-up must be at least 20,000 VND") }
+	if amount < MinTopupMicros { return errors.New("store: top-up must be at least 10,000 VND") }
+	if amount%TopupStepMicros != 0 { return errors.New("store: top-up must use 1,000 VND increments") }
 	return nil
 }
 

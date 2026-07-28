@@ -1,5 +1,8 @@
 export const VND_PER_CREDIT = 60;
 export const MICROCREDITS_PER_CREDIT = 1_000_000;
+export const MIN_TOPUP_VND = 10_000;
+export const TOPUP_STEP_VND = 1_000;
+export const TOPUP_PRESETS = [10_000, 30_000, 60_000, 120_000, 300_000] as const;
 
 export const creditPackages = [
   { credits: 1_000, vnd: 60_000, key: 'starter' },

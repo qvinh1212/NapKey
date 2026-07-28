@@ -10,11 +10,17 @@ import (
 )
 
 func TestValidateTopupAmount(t *testing.T) {
-	if err := ValidateTopupAmount(19_999_000_000); err == nil {
-		t.Fatal("top-up below 20,000 VND must be rejected")
+	if err := ValidateTopupAmount(9_999_000_000); err == nil {
+		t.Fatal("top-up below 10,000 VND must be rejected")
 	}
-	if err := ValidateTopupAmount(20_000_000_000); err != nil {
+	if err := ValidateTopupAmount(10_000_000_000); err != nil {
 		t.Fatalf("minimum top-up should be accepted: %v", err)
+	}
+	if err := ValidateTopupAmount(10_001_000_000); err == nil {
+		t.Fatal("top-up outside the 1,000 VND step must be rejected")
+	}
+	if err := ValidateTopupAmount(11_000_000_000); err != nil {
+		t.Fatalf("top-up on the 1,000 VND step should be accepted: %v", err)
 	}
 }
 

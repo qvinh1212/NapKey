@@ -37,8 +37,8 @@ func (s *Server) handleCreateTopup(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &req) {
 		return
 	}
-	if req.AmountVND < 20_000 || req.AmountVND > 1_000_000_000 {
-		writeError(w, http.StatusBadRequest, codeInvalidRequest, "amountVnd must be between 20,000 and 1,000,000,000")
+	if req.AmountVND < store.MinTopupVND || req.AmountVND > 1_000_000_000 || req.AmountVND%store.TopupStepVND != 0 {
+		writeError(w, http.StatusBadRequest, codeInvalidRequest, "amountVnd must be between 10,000 and 1,000,000,000 in 1,000 VND increments")
 		return
 	}
 	amount, err := pricing.MicrosFromVND(req.AmountVND)

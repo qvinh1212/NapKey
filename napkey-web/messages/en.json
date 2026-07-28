@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "NapKey — Claude Code billed in Vietnamese dong",
-    "description": "Top up from 20,000 d and run Claude Code or your Anthropic/OpenAI SDK through NapKey. No monthly plan, billed by actual token usage.",
+    "description": "Top up from 10,000 d and run Claude Code or your Anthropic/OpenAI SDK through NapKey. No monthly plan, billed by actual token usage.",
     "ogAlt": "NapKey — prepaid wallet API gateway for Claude"
   },
   "nav": {
@@ -22,7 +22,7 @@
     "badge": "Built for Claude Code and your existing SDK",
     "titleLine1": "Claude Code,",
     "titleLine2": "billed in Vietnamese dong.",
-    "subtitle": "Top up from 20,000 d, get an API key, and run. Keep your Anthropic or OpenAI SDK — change only the endpoint and pay for what you use.",
+    "subtitle": "Top up from 10,000 d, get an API key, and run. Keep your Anthropic or OpenAI SDK — change only the endpoint and pay for what you use.",
     "ctaPrimary": "Create an API key",
     "ctaSecondary": "See the setup",
     "note": "No monthly plan. No maintenance fee. Every request is recorded with its model, token usage, and actual cost.",
@@ -261,7 +261,7 @@
         },
         "minimum": {
           "q": "What is the minimum top-up?",
-          "a": "20,000 d. Below that, processing cost and reconciliation risk are not worth it."
+          "a": "10,000 d. You can increase the amount in 1,000 d steps."
         },
         "invoice": {
           "q": "Do you issue tax invoices?",
@@ -272,7 +272,7 @@
   },
   "cta": {
     "title": "Want to try it?",
-    "body": "Put in 20,000 d, grab a key, change the endpoint. If it is not for you, that is all you spent.",
+    "body": "Put in 10,000 d, grab a key, change the endpoint. If it is not for you, that is all you spent.",
     "button": "Get started"
   },
   "footer": {

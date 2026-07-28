@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "NapKey — Claude Code thanh toán bằng VNĐ",
-    "description": "Nạp từ 20.000 ₫, lấy API key và chạy Claude Code hoặc SDK Anthropic/OpenAI qua NapKey. Không gói tháng, tính theo credit thực dùng.",
+    "description": "Nạp từ 10.000 ₫, lấy API key và chạy Claude Code hoặc SDK Anthropic/OpenAI qua NapKey. Không gói tháng, tính theo credit thực dùng.",
     "ogAlt": "NapKey — cổng API Claude trả trước theo ví"
   },
   "nav": {
@@ -22,7 +22,7 @@
     "badge": "Dành cho Claude Code và SDK hiện tại của bạn",
     "titleLine1": "Claude Code",
     "titleLine2": "thanh toán bằng VNĐ.",
-    "subtitle": "Nạp từ 20.000 ₫, lấy API key và chạy ngay. Giữ nguyên Anthropic hoặc OpenAI SDK — chỉ đổi endpoint, dùng bao nhiêu trả bấy nhiêu.",
+    "subtitle": "Nạp từ 10.000 ₫, lấy API key và chạy ngay. Giữ nguyên Anthropic hoặc OpenAI SDK — chỉ đổi endpoint, dùng bao nhiêu trả bấy nhiêu.",
     "ctaPrimary": "Tạo API key",
     "ctaSecondary": "Xem cách kết nối",
     "note": "Không gói tháng. Không phí duy trì. Mỗi request được ghi lại theo model, token và chi phí thực tế.",
@@ -261,7 +261,7 @@
         },
         "minimum": {
           "q": "Nạp tối thiểu bao nhiêu?",
-          "a": "20.000 ₫. Dưới mức này chi phí xử lý và rủi ro đối soát không đáng."
+          "a": "10.000 ₫. Bạn có thể nạp thêm theo từng bước 1.000 ₫."
         },
         "invoice": {
           "q": "Có xuất hoá đơn không?",
@@ -272,7 +272,7 @@
   },
   "cta": {
     "title": "Sẵn sàng thử?",
-    "body": "Nạp 20.000 ₫, lấy key, đổi endpoint. Nếu không vừa ý thì bạn chỉ mất đúng số đó.",
+    "body": "Nạp 10.000 ₫, lấy key, đổi endpoint. Nếu không vừa ý thì bạn chỉ mất đúng số đó.",
     "button": "Bắt đầu"
   },
   "footer": {
