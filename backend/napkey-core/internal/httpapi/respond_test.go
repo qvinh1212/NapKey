@@ -73,10 +73,10 @@ func TestClientIPIgnoresForwardedHeaderWhenUntrusted(t *testing.T) {
 
 	// Trusting this header without a proxy in front lets anyone forge the identifier
 	// that rate limiting keys on, which makes the limit meaningless.
-	if got := clientIP(r, false); got != "203.0.113.9" {
+	if got := clientIP(r, 0); got != "203.0.113.9" {
 		t.Errorf("clientIP(untrusted) = %q, want the socket address", got)
 	}
-	if got := clientIP(r, true); got != "1.2.3.4" {
+	if got := clientIP(r, 1); got != "1.2.3.4" {
 		t.Errorf("clientIP(trusted) = %q, want the forwarded address", got)
 	}
 }
@@ -86,17 +86,26 @@ func TestClientIPRejectsMalformedForwardedValue(t *testing.T) {
 	r.RemoteAddr = "203.0.113.9:44444"
 	r.Header.Set("X-Forwarded-For", "not-an-ip, 5.6.7.8")
 	// A junk value must not become the rate-limit key.
-	if got := clientIP(r, true); got != "203.0.113.9" {
-		t.Errorf("clientIP = %q, want a fallback to the socket address", got)
+	if got := clientIP(r, 1); got != "5.6.7.8" {
+		t.Errorf("clientIP = %q, want the rightmost address set by the trusted proxy", got)
 	}
 }
 
-func TestClientIPUsesLeftmostForwardedEntry(t *testing.T) {
+func TestClientIPIgnoresSpoofedForwardedPrefix(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	r.RemoteAddr = "10.0.0.1:1234"
-	r.Header.Set("X-Forwarded-For", "198.51.100.7, 10.0.0.2, 10.0.0.3")
-	if got := clientIP(r, true); got != "198.51.100.7" {
-		t.Errorf("clientIP = %q, want the original client", got)
+	r.Header.Set("X-Forwarded-For", "1.2.3.4, 198.51.100.7")
+	if got := clientIP(r, 1); got != "198.51.100.7" {
+		t.Errorf("clientIP = %q, want the address appended by the trusted proxy", got)
+	}
+}
+
+func TestClientIPSupportsAConfiguredProxyChain(t *testing.T) {
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	r.RemoteAddr = "10.0.0.1:1234"
+	r.Header.Set("X-Forwarded-For", "1.2.3.4, 198.51.100.7, 10.0.0.2")
+	if got := clientIP(r, 2); got != "198.51.100.7" {
+		t.Errorf("clientIP = %q, want the client before two trusted proxies", got)
 	}
 }
 

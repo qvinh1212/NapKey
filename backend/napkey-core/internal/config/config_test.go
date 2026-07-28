@@ -27,8 +27,28 @@ func TestLoadWithValidEnvironment(t *testing.T) {
 	if !cfg.SecureCookies {
 		t.Error("SecureCookies should default to true")
 	}
+	if cfg.TrustedProxyHops != 1 {
+		t.Errorf("TrustedProxyHops = %d, want one Coolify/Traefik proxy", cfg.TrustedProxyHops)
+	}
 	if cfg.MailProvider != "log" {
 		t.Errorf("MailProvider = %q, want log", cfg.MailProvider)
+	}
+}
+
+func TestLoadValidatesTrustedProxyHops(t *testing.T) {
+	setValidEnv(t)
+	t.Setenv("TRUSTED_PROXY_HOPS", "2")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.TrustedProxyHops != 2 {
+		t.Fatalf("TrustedProxyHops = %d, want 2", cfg.TrustedProxyHops)
+	}
+
+	t.Setenv("TRUSTED_PROXY_HOPS", "6")
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "TRUSTED_PROXY_HOPS") {
+		t.Fatalf("unsafe proxy hop count should be rejected: %v", err)
 	}
 }
 

@@ -24,7 +24,7 @@ func testConfig() *config.Config {
 // serverForMiddleware builds a Server with no database, which is enough for the
 // checks that run before any query.
 func serverForMiddleware() *Server {
-	return &Server{cfg: testConfig(), trustProxy: true}
+	return &Server{cfg: testConfig(), trustProxy: 1}
 }
 
 func TestRequireSessionRejectsMissingCookie(t *testing.T) {

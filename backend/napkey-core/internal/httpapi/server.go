@@ -31,8 +31,8 @@ type Server struct {
 	kiro   *kiro.Client
 	mailer mail.Sender
 	payos  *payos.Client
-	// trustProxy is on when running behind Traefik, so X-Forwarded-For is usable.
-	trustProxy        bool
+	// trustProxy is the number of reverse-proxy hops trusted in X-Forwarded-For.
+	trustProxy        int
 	startedAt         time.Time
 	statusMu          sync.Mutex
 	publicStatusCache map[string]any
@@ -47,9 +47,7 @@ func New(cfg *config.Config, st *store.Store, kiroClient *kiro.Client, mailer ma
 		kiro:   kiroClient,
 		mailer: mailer,
 		payos:  payos.NewClient(cfg.PayOSClientID, cfg.PayOSAPIKey, cfg.PayOSChecksumKey),
-		// Coolify terminates TLS at Traefik and forwards, so the header is set by
-		// infrastructure rather than the client.
-		trustProxy: true,
+		trustProxy: cfg.TrustedProxyHops,
 		startedAt:  time.Now(),
 	}
 }

@@ -34,6 +34,9 @@ type Config struct {
 	SessionTTL time.Duration
 	// SecureCookies sets the Secure attribute. Off only for local http.
 	SecureCookies bool
+	// TrustedProxyHops is the number of reverse proxies in front of the API.
+	// It is used to select the client address from the right side of X-Forwarded-For.
+	TrustedProxyHops int
 
 	// PublicBaseURL is the console origin, used to build email links and to
 	// decide CORS. No trailing slash.
@@ -99,6 +102,7 @@ func Load() (*Config, error) {
 		MaxIdleConns:       envInt("DB_MAX_IDLE_CONNS", 5),
 		SessionTTL:         envDuration("SESSION_TTL", 14*24*time.Hour),
 		SecureCookies:      envBool("SECURE_COOKIES", true),
+		TrustedProxyHops:   envInt("TRUSTED_PROXY_HOPS", 1),
 		PublicBaseURL:      strings.TrimRight(env("PUBLIC_BASE_URL", "http://localhost:3000"), "/"),
 		KiroAdminURL:       strings.TrimRight(strings.TrimSpace(os.Getenv("KIRO_ADMIN_URL")), "/"),
 		KiroAdminPassword:  os.Getenv("KIRO_ADMIN_PASSWORD"),
@@ -181,6 +185,9 @@ func Load() (*Config, error) {
 	}
 	if c.SessionTTL <= 0 {
 		problems = append(problems, "SESSION_TTL must be positive")
+	}
+	if c.TrustedProxyHops < 0 || c.TrustedProxyHops > 5 {
+		problems = append(problems, "TRUSTED_PROXY_HOPS must be between 0 and 5")
 	}
 	if c.EmailTokenTTL <= 0 {
 		problems = append(problems, "EMAIL_TOKEN_TTL must be positive")

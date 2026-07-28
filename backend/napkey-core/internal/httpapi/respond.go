@@ -127,16 +127,19 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
 
 // clientIP extracts the caller's address.
 //
-// X-Forwarded-For is only trusted when trustProxy is set, which is correct behind
-// Coolify's Traefik. Trusting it unconditionally would let anyone spoof the
-// identifier that rate limiting keys on, making the limit useless.
-func clientIP(r *http.Request, trustProxy bool) string {
-	if trustProxy {
+// X-Forwarded-For is selected from the right according to the configured number
+// of trusted proxies. Taking the leftmost value lets a client prepend an arbitrary
+// address and rotate the rate-limit key on every request.
+func clientIP(r *http.Request, trustedProxyHops int) string {
+	if trustedProxyHops > 0 {
 		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-			// Leftmost entry is the original client; the rest are proxies.
-			first := strings.TrimSpace(strings.Split(xff, ",")[0])
-			if first != "" && net.ParseIP(first) != nil {
-				return first
+			chain := strings.Split(xff, ",")
+			index := len(chain) - trustedProxyHops
+			if index >= 0 {
+				candidate := strings.TrimSpace(chain[index])
+				if candidate != "" && net.ParseIP(candidate) != nil {
+					return candidate
+				}
 			}
 		}
 		if real := strings.TrimSpace(r.Header.Get("X-Real-IP")); real != "" && net.ParseIP(real) != nil {
