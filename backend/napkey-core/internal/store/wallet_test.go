@@ -1,8 +1,12 @@
 package store
 
 import (
+	"context"
 	"math"
+	"strings"
 	"testing"
+
+	"napkey-core/internal/pgtest"
 )
 
 func TestValidateTopupAmount(t *testing.T) {
@@ -38,5 +42,43 @@ func TestWalletCreditValuePreservesLegacyPurchases(t *testing.T) {
 	}
 	if _, err := walletCreditMicros(math.MaxInt64, 1); err == nil {
 		t.Fatal("overflowing credit conversion should fail")
+	}
+}
+
+func TestGetWalletQualifiesPromotionalColumnsDuringExpiry(t *testing.T) {
+	srv := pgtest.New(t)
+	srv.On("SELECT user_id, balance_micros", func(pgtest.Query) pgtest.Response {
+		created := "2026-01-01 00:00:00+00"
+		return pgtest.Response{
+			Columns: []pgtest.Column{
+				{Name: "user_id"}, {Name: "balance_micros", OID: 20},
+				{Name: "held_micros", OID: 20}, {Name: "promotional_micros", OID: 20},
+				{Name: "promotional_expires_at", OID: 1184}, {Name: "currency"},
+				{Name: "updated_at", OID: 1184},
+			},
+			Rows: [][]*string{{
+				pgtest.Text(pgtest.UUID(1)), pgtest.Text("3000000000"), pgtest.Text("0"),
+				pgtest.Text("3000000000"), pgtest.Text(created), pgtest.Text("VND"), pgtest.Text(created),
+			}},
+			Tag: "SELECT 1",
+		}
+	})
+	st := openTestStore(t, srv)
+
+	if _, err := st.GetWallet(context.Background(), pgtest.UUID(1)); err != nil {
+		t.Fatalf("GetWallet: %v", err)
+	}
+	q, ok := srv.FindQuery("UPDATE wallets w")
+	if !ok {
+		t.Fatal("promotional expiry query was not executed")
+	}
+	for _, fragment := range []string{
+		"w.balance_micros-c.removable",
+		"w.promotional_micros-c.removable",
+		"ELSE w.promotional_expires_at",
+	} {
+		if !strings.Contains(q.SQL, fragment) {
+			t.Errorf("promotional expiry query is missing qualified reference %q", fragment)
+		}
 	}
 }

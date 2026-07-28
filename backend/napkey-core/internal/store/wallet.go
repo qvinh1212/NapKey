@@ -94,9 +94,9 @@ func expirePromotionalWalletTx(ctx context.Context, tx *sql.Tx, userID string) e
 			FOR UPDATE
 		), updated AS (
 			UPDATE wallets w
-			SET balance_micros=balance_micros-c.removable,
-			    promotional_micros=promotional_micros-c.removable,
-			    promotional_expires_at=CASE WHEN promotional_micros-c.removable=0 THEN NULL ELSE promotional_expires_at END,
+			SET balance_micros=w.balance_micros-c.removable,
+			    promotional_micros=w.promotional_micros-c.removable,
+			    promotional_expires_at=CASE WHEN w.promotional_micros-c.removable=0 THEN NULL ELSE w.promotional_expires_at END,
 			    updated_at=now()
 			FROM current c WHERE w.user_id=c.user_id
 			RETURNING c.removable, w.balance_micros, w.held_micros
