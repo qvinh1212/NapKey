@@ -106,6 +106,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/admin/usage-audit", s.requirePermission(permissionBillingRead, s.handleAdminUsageAudit))
 	mux.HandleFunc("POST /v1/admin/keys/{id}/rebuild-counters", s.requirePermission(permissionKeysWrite, s.handleAdminRebuildCounters))
 	mux.HandleFunc("GET /v1/admin/operations/summary", s.requirePermission(permissionOperationsRead, s.handleAdminOperationsSummary))
+	mux.HandleFunc("GET /v1/admin/business/summary", s.requirePermission(permissionBillingRead, s.handleAdminBusinessSummary))
 	mux.HandleFunc("GET /v1/admin/operations/alerts", s.requirePermission(permissionOperationsRead, s.handleAdminOperationsAlerts))
 	mux.HandleFunc("POST /v1/admin/operations/reconcile-wallets", s.requirePermission(permissionBillingReconcile, s.handleAdminReconcileWallets))
 	mux.HandleFunc("GET /v1/admin/users/{id}/roles", s.requirePermission(permissionUsersRead, s.handleAdminGetRoles))

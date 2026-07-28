@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api/client';
-import type { OperationsAlert, OperationsSummary } from '@/lib/api/types';
+import type { BusinessSummary, OperationsAlert, OperationsSummary } from '@/lib/api/types';
 import { normalizeOperationsReliability } from '@/lib/operations-reliability';
 import { useSession } from './session-provider';
 import { Badge, Panel, PanelHeader, StatCard } from './ui';
+import { BusinessCockpit } from './business-cockpit';
 
 export function OperationsDashboard() {
   const session = useSession();
@@ -13,20 +14,24 @@ export function OperationsDashboard() {
   const [error, setError] = useState('');
   const [reconciling, setReconciling] = useState(false);
   const [alerts, setAlerts] = useState<OperationsAlert[]>([]);
+  const [business, setBusiness] = useState<BusinessSummary | null>(null);
+  const canReadBusiness = session.status === 'authenticated' && session.permissions.includes('billing.read');
 
   const load = useCallback(async () => {
     try {
-		const [summary, alertResponse] = await Promise.all([
+		const [summary, alertResponse, businessResponse] = await Promise.all([
 			api.get<OperationsSummary>('/v1/admin/operations/summary?days=30'),
 			api.get<{ alerts: OperationsAlert[] }>('/v1/admin/operations/alerts'),
+			canReadBusiness ? api.get<BusinessSummary>('/v1/admin/business/summary?days=30').catch(() => null) : Promise.resolve(null),
 		]);
 		setData(summary);
 		setAlerts(alertResponse.alerts);
+		setBusiness(businessResponse);
       setError('');
     } catch {
       setError('Không tải được trạng thái vận hành.');
     }
-  }, []);
+  }, [canReadBusiness]);
 
   useEffect(() => {
     if (session.status !== 'authenticated' || !session.permissions.includes('operations.read')) return;
@@ -73,6 +78,8 @@ export function OperationsDashboard() {
         <StatCard label="Biên gộp" value={data.margin.formatted} tone="accent" hint="Doanh thu trừ chi phí ước tính" />
         <StatCard label="Cảnh báo mở" value={String(data.openAlerts)} tone={data.openAlerts ? 'danger' : 'default'} />
       </div>
+
+      {business ? <BusinessCockpit data={business} /> : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
 		<Panel>

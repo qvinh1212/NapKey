@@ -59,6 +59,38 @@ func (s *Server) handleAdminOperationsSummary(w http.ResponseWriter, r *http.Req
 	})
 }
 
+func (s *Server) handleAdminBusinessSummary(w http.ResponseWriter, r *http.Request) {
+	days := 30
+	if value := strings.TrimSpace(r.URL.Query().Get("days")); value != "" {
+		if parsed, err := strconv.Atoi(value); err == nil && parsed >= 1 && parsed <= 365 {
+			days = parsed
+		}
+	}
+	summary, err := s.store.GetBusinessSummary(r.Context(), time.Now().AddDate(0, 0, -days))
+	if err != nil {
+		writeStoreError(w, err, "loading business summary")
+		return
+	}
+	averageOrderMicros := int64(0)
+	if summary.PaidOrders > 0 {
+		averageOrderMicros = summary.CashCollectedMicros / summary.PaidOrders
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"windowDays": days,
+		"funnel": map[string]int64{
+			"newUsers": summary.NewUsers, "verifiedUsers": summary.VerifiedUsers,
+			"activatedUsers": summary.ActivatedUsers, "newPayingUsers": summary.NewPayingUsers,
+		},
+		"customers": map[string]int64{"paying": summary.PayingCustomers, "repeat": summary.RepeatCustomers},
+		"payments": map[string]any{
+			"paidOrders": summary.PaidOrders, "cashCollected": costView(summary.CashCollectedMicros),
+			"averageOrder": costView(averageOrderMicros),
+		},
+		"walletLiability": costView(summary.WalletLiabilityMicros),
+		"generatedAt": time.Now().UTC(),
+	})
+}
+
 func (s *Server) handleAdminReconcileWallets(w http.ResponseWriter, r *http.Request) {
 	su := sessionFromContext(r.Context())
 	count, err := s.store.ReconcileWalletBalances(r.Context())

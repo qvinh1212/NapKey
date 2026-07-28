@@ -14,3 +14,8 @@ test('keeps internal control-plane endpoints private', () => {
   assert.equal(isProxyPathAllowed('/internal/usage'), false);
   assert.equal(isProxyPathAllowed('/webhooks/casso'), false);
 });
+
+test('allows the permission-protected business summary only by exact path', () => {
+  assert.equal(isProxyPathAllowed('/v1/admin/business/summary'), true);
+  assert.equal(isProxyPathAllowed('/v1/admin/business/summary/export'), false);
+});

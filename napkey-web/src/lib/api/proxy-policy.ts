@@ -19,6 +19,7 @@ const ALLOWED: readonly (RegExp | string)[] = [
   '/v1/keys',
   /^\/v1\/keys\/[A-Za-z0-9-]{1,64}$/,
   '/v1/admin/operations/summary',
+  '/v1/admin/business/summary',
   '/v1/admin/operations/alerts',
   '/v1/admin/operations/reconcile-wallets',
   /^\/v1\/admin\/users\/[A-Za-z0-9-]{1,64}\/roles$/,

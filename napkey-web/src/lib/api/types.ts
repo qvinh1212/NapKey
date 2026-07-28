@@ -93,6 +93,20 @@ export type OperationsAlert = {
   openedAt: string;
 };
 
+export type BusinessSummary = {
+  windowDays: number;
+  funnel: {
+    newUsers: number;
+    verifiedUsers: number;
+    activatedUsers: number;
+    newPayingUsers: number;
+  };
+  customers: { paying: number; repeat: number };
+  payments: { paidOrders: number; cashCollected: Money; averageOrder: Money };
+  walletLiability: Money;
+  generatedAt: string;
+};
+
 /** Trang thai dong bo key sang data plane. Key chi dung duoc khi da `synced`. */
 export type KeySyncState = 'pending' | 'synced' | 'failed' | 'delete_pending';
 

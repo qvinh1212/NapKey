@@ -57,6 +57,7 @@ func TestUnauthenticatedRequestsAreRejected(t *testing.T) {
 		{http.MethodGet, "/v1/auth/session"},
 		{http.MethodGet, "/v1/admin/users"},
 		{http.MethodGet, "/v1/admin/audit"},
+		{http.MethodGet, "/v1/admin/business/summary"},
 	}
 	for _, route := range routes {
 		w := h.do(route.method, route.path, nil)
