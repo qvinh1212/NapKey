@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/button';
@@ -8,20 +8,33 @@ import { Logo } from './logo';
 import { LocaleSwitcher } from './locale-switcher';
 
 const sections = [
-  { key: 'pricing', href: '#pricing' },
-  { key: 'integrate', href: '#integrate' },
-  { key: 'billing', href: '#billing' },
+  { key: 'pricing', href: '/#pricing' },
+  { key: 'integrate', href: '/#integrate' },
+  { key: 'billing', href: '/#billing' },
+  { key: 'trust', href: '/#trust' },
 ] as const;
 
 export function SiteHeader() {
   const t = useTranslations('nav');
   const [open, setOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileNavRef = useRef<HTMLElement>(null);
 
   // Chan scroll khi menu mobile dang mo.
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
+    if (open) {
+      mobileNavRef.current?.querySelector<HTMLElement>('a, button')?.focus();
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape' || !open) return;
+      setOpen(false);
+      menuButtonRef.current?.focus();
+    }
+    document.addEventListener('keydown', onKeyDown);
     return () => {
       document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeyDown);
     };
   }, [open]);
 
@@ -38,13 +51,13 @@ export function SiteHeader() {
 
           <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
             {sections.map(({ key, href }) => (
-              <a
+              <Link
                 key={key}
                 href={href}
                 className="rounded-full px-4 py-2 text-ui text-subtle transition-colors duration-150 ease-[var(--ease-smooth)] hover:bg-surface-hover hover:text-fg"
               >
                 {t(key)}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -60,6 +73,7 @@ export function SiteHeader() {
               {t('getStarted')}
             </ButtonLink>
             <button
+              ref={menuButtonRef}
               type="button"
               aria-expanded={open}
               aria-controls="mobile-nav"
@@ -76,19 +90,20 @@ export function SiteHeader() {
 
         {open ? (
           <nav
+            ref={mobileNavRef}
             id="mobile-nav"
             aria-label="Mobile"
             className="mt-4 flex flex-col gap-1 rounded-xl border border-line bg-black/95 p-4 backdrop-blur md:hidden"
           >
             {sections.map(({ key, href }) => (
-              <a
+              <Link
                 key={key}
                 href={href}
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-3 text-base text-muted transition-colors hover:bg-surface-hover hover:text-fg"
               >
                 {t(key)}
-              </a>
+              </Link>
             ))}
             <Link
               href="/signin"

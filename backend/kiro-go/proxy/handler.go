@@ -301,8 +301,22 @@ func NewHandler() *Handler {
 	// 启动后台统计保存 (每30秒保存一次)
 	go h.backgroundStatsSaver()
 	// 清理过期的 stored responses（>30 天）
-	go purgeExpiredResponses(responsesDefaultTTL)
+	go h.backgroundResponsePurge()
 	return h
+}
+
+func (h *Handler) backgroundResponsePurge() {
+	purgeExpiredResponses(responsesDefaultTTL)
+	ticker := time.NewTicker(time.Hour)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			purgeExpiredResponses(responsesDefaultTTL)
+		case <-h.stopRefresh:
+			return
+		}
+	}
 }
 
 // backgroundRefresh 后台定时刷新账户信息
@@ -398,25 +412,51 @@ func (h *Handler) authenticateForOpenAI(w http.ResponseWriter, r *http.Request) 
 	return withApiKeyContext(r, entry)
 }
 
-func (h *Handler) reserveBillingForClaude(w http.ResponseWriter,r *http.Request)(*http.Request,*billingLease){
-	return h.reserveBilling(w,r,true)
+func (h *Handler) reserveBillingForClaude(w http.ResponseWriter, r *http.Request) (*http.Request, *billingLease) {
+	return h.reserveBilling(w, r, true)
 }
 
-func (h *Handler) reserveBillingForOpenAI(w http.ResponseWriter,r *http.Request)(*http.Request,*billingLease){
-	return h.reserveBilling(w,r,false)
+func (h *Handler) reserveBillingForOpenAI(w http.ResponseWriter, r *http.Request) (*http.Request, *billingLease) {
+	return h.reserveBilling(w, r, false)
 }
 
-func (h *Handler) reserveBilling(w http.ResponseWriter,r *http.Request,claude bool)(*http.Request,*billingLease){
-	client:=BillingClient();remoteID:=apiKeyIDFromContext(r.Context());if client==nil||remoteID==""{return r,nil}
-	entry:=config.GetApiKeyEntry(remoteID);if entry==nil{return r,nil};keyID:=napkeyKeyIDFromName(entry.Name);if keyID==""{return r,nil}
-	model,inputTokens,maxOutputTokens,err:=estimateBillingRequest(r);if err!=nil{return r,nil}
-	lease,err:=client.Reserve(r.Context(),keyID,model,inputTokens,maxOutputTokens);if err!=nil{
-		status:=http.StatusServiceUnavailable;message:="Billing service is temporarily unavailable";code:="api_error"
-		if errors.Is(err,errWalletInsufficient){status=http.StatusPaymentRequired;message="Wallet balance is insufficient";code="payment_required"}
-		if claude{h.sendClaudeError(w,status,code,message)}else{h.sendOpenAIError(w,status,code,message)};return nil,nil
+func (h *Handler) reserveBilling(w http.ResponseWriter, r *http.Request, claude bool) (*http.Request, *billingLease) {
+	client := BillingClient()
+	remoteID := apiKeyIDFromContext(r.Context())
+	if client == nil || remoteID == "" {
+		return r, nil
+	}
+	entry := config.GetApiKeyEntry(remoteID)
+	if entry == nil {
+		return r, nil
+	}
+	keyID := napkeyKeyIDFromName(entry.Name)
+	if keyID == "" {
+		return r, nil
+	}
+	model, inputTokens, maxOutputTokens, err := estimateBillingRequest(r)
+	if err != nil {
+		return r, nil
+	}
+	lease, err := client.Reserve(r.Context(), keyID, model, inputTokens, maxOutputTokens)
+	if err != nil {
+		status := http.StatusServiceUnavailable
+		message := "Billing service is temporarily unavailable"
+		code := "api_error"
+		if errors.Is(err, errWalletInsufficient) {
+			status = http.StatusPaymentRequired
+			message = "Wallet balance is insufficient"
+			code = "payment_required"
+		}
+		if claude {
+			h.sendClaudeError(w, status, code, message)
+		} else {
+			h.sendOpenAIError(w, status, code, message)
+		}
+		return nil, nil
 	}
 	w.Header().Set("x-request-id", lease.RequestID)
-	return withBillingLease(r,lease),lease
+	return withBillingLease(r, lease), lease
 }
 
 // ServeHTTP 路由分发
@@ -448,7 +488,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if !h.enforceRateLimit(w, ar, true) {
 			return
 		}
-		ar,lease := h.reserveBillingForClaude(w,ar);if ar==nil{return};defer lease.releaseIfUnused()
+		ar, lease := h.reserveBillingForClaude(w, ar)
+		if ar == nil {
+			return
+		}
+		defer lease.releaseIfUnused()
 		h.handleClaudeMessages(w, ar)
 	case path == "/v1/messages/count_tokens" || path == "/messages/count_tokens":
 		ar := h.authenticateForClaude(w, r)
@@ -464,7 +508,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if !h.enforceRateLimit(w, ar, false) {
 			return
 		}
-		ar,lease := h.reserveBillingForOpenAI(w,ar);if ar==nil{return};defer lease.releaseIfUnused()
+		ar, lease := h.reserveBillingForOpenAI(w, ar)
+		if ar == nil {
+			return
+		}
+		defer lease.releaseIfUnused()
 		h.handleOpenAIChat(w, ar)
 	case path == "/v1/responses" || path == "/responses":
 		ar := h.authenticateForOpenAI(w, r)
@@ -474,7 +522,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if !h.enforceRateLimit(w, ar, false) {
 			return
 		}
-		ar,lease := h.reserveBillingForOpenAI(w,ar);if ar==nil{return};defer lease.releaseIfUnused()
+		ar, lease := h.reserveBillingForOpenAI(w, ar)
+		if ar == nil {
+			return
+		}
+		defer lease.releaseIfUnused()
 		h.handleOpenAIResponses(w, ar)
 	case path == "/v1/models" || path == "/models":
 		h.handleModels(w, r)
@@ -1354,7 +1406,7 @@ func (h *Handler) handleClaudeStream(w http.ResponseWriter, payload *KiroPayload
 		}
 
 		h.recordSuccessForApiKey(apiKeyID, inputTokens, outputTokens, credits, usageDetail{
-			Billing: billing,
+			Billing:   billing,
 			Model:     model,
 			AccountID: account.ID,
 			// Split so each kind is billed at its own rate. billedClaudeInputTokens
@@ -1492,7 +1544,9 @@ func (h *Handler) recordSuccessForApiKey(apiKeyID string, inputTokens, outputTok
 		logger.Warnf("[ApiKey] failed to record usage for key %s: %v", apiKeyID, err)
 	}
 	if len(detail) > 0 {
-		if h.reportUsage(apiKeyID, outputTokens, detail[0]) && detail[0].Billing != nil { detail[0].Billing.consumed.Store(true) }
+		if h.reportUsage(apiKeyID, outputTokens, detail[0]) && detail[0].Billing != nil {
+			detail[0].Billing.consumed.Store(true)
+		}
 	}
 }
 
@@ -1541,7 +1595,9 @@ func (h *Handler) reportUsage(apiKeyID string, outputTokens int, d usageDetail) 
 }
 
 func usageRequestID(d usageDetail) string {
-	if d.Billing != nil { return d.Billing.RequestID }
+	if d.Billing != nil {
+		return d.Billing.RequestID
+	}
 	return newUsageRequestID(d.AccountID)
 }
 
@@ -1709,7 +1765,7 @@ func (h *Handler) handleClaudeNonStream(w http.ResponseWriter, payload *KiroPayl
 		}
 
 		h.recordSuccessForApiKey(apiKeyID, inputTokens, outputTokens, credits, usageDetail{
-			Billing: billing,
+			Billing:             billing,
 			Model:               model,
 			AccountID:           account.ID,
 			BillableInputTokens: billedClaudeInputTokens(inputTokens, cacheUsage),
@@ -2175,7 +2231,7 @@ func (h *Handler) handleOpenAIStream(w http.ResponseWriter, payload *KiroPayload
 		// cache-heavy traffic; it is not corrected by guessing a split here, since a
 		// guessed cache ratio is worse than a known-conservative one.
 		h.recordSuccessForApiKey(apiKeyID, inputTokens, outputTokens, credits, usageDetail{
-			Billing: billing,
+			Billing:             billing,
 			Model:               model,
 			AccountID:           account.ID,
 			BillableInputTokens: inputTokens,
@@ -2291,7 +2347,7 @@ func (h *Handler) handleOpenAINonStream(w http.ResponseWriter, payload *KiroPayl
 		}
 
 		h.recordSuccessForApiKey(apiKeyID, inputTokens, outputTokens, credits, usageDetail{
-			Billing: billing,
+			Billing:             billing,
 			Model:               model,
 			AccountID:           account.ID,
 			BillableInputTokens: inputTokens,

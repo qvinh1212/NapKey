@@ -253,28 +253,24 @@ func (c *Client) do(ctx context.Context, method, path string, body, out any) err
 	case resp.StatusCode == http.StatusNotFound:
 		return ErrNotFound
 	case resp.StatusCode >= 300:
-		return fmt.Errorf("kiro: %s %s returned %d: %s",
-			method, path, resp.StatusCode, truncate(string(payload), 300))
+		var known struct {
+			Error string `json:"error"`
+		}
+		if json.Unmarshal(payload, &known) == nil && known.Error == "api key already exists" {
+			return fmt.Errorf("kiro: api key already exists")
+		}
+		return fmt.Errorf("kiro: %s %s returned %d", method, path, resp.StatusCode)
 	}
 
 	if out == nil || len(payload) == 0 {
 		return nil
 	}
 	if err := json.Unmarshal(payload, out); err != nil {
-		return fmt.Errorf("kiro: decoding response from %s %s: %w (body: %s)",
-			method, path, err, truncate(string(payload), 200))
+		return fmt.Errorf("kiro: decoding response from %s %s: %w", method, path, err)
 	}
 	return nil
 }
 
 func isAlreadyExists(err error) bool {
 	return err != nil && strings.Contains(strings.ToLower(err.Error()), "already exists")
-}
-
-func truncate(s string, n int) string {
-	s = strings.TrimSpace(s)
-	if len(s) <= n {
-		return s
-	}
-	return s[:n] + "..."
 }

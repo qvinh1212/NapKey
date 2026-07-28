@@ -78,7 +78,7 @@ func FetchOverageStatus(account *config.Account) (*OverageSnapshot, error) {
 		return nil, err
 	}
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
 
 	var parsed upstreamOverageResponse
@@ -148,9 +148,9 @@ func SetOverageStatus(account *config.Account, enabled bool) (*OverageSnapshot, 
 	}
 	defer resp.Body.Close()
 
-	respBody, _ := io.ReadAll(resp.Body)
+	_, _ = io.Copy(io.Discard, resp.Body)
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("setUserPreference HTTP %d: %s", resp.StatusCode, string(respBody))
+		return nil, fmt.Errorf("setUserPreference HTTP %d", resp.StatusCode)
 	}
 
 	logger.Infof("[Overage] account=%s flipped overageStatus=%s upstream", account.Email, status)

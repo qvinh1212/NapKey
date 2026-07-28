@@ -5,6 +5,7 @@ import { ValueProps } from '@/components/sections/value-props';
 import { Integration } from '@/components/sections/integration';
 import { PricingTable } from '@/components/sections/pricing-table';
 import { Billing } from '@/components/sections/billing';
+import { DeveloperTrust } from '@/components/sections/developer-trust';
 import { FinalCta } from '@/components/sections/final-cta';
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
@@ -18,6 +19,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <Integration />
       <PricingTable />
       <Billing />
+      <DeveloperTrust />
       <FinalCta />
     </>
   );

@@ -8,6 +8,7 @@
     "pricing": "Bảng giá",
     "integrate": "Tích hợp",
     "billing": "Cách tính tiền",
+    "trust": "Độ tin cậy",
     "signIn": "Đăng nhập",
     "getStarted": "Bắt đầu",
     "skipToContent": "Bỏ qua, đến nội dung chính",
@@ -40,7 +41,7 @@
       "anthropicSdk": "Anthropic SDK",
       "openaiSdk": "OpenAI SDK"
     },
-    "statusLink": "Kiểm tra API trực tiếp"
+    "statusLink": "Kiểm tra liveness gateway"
   },
   "value": {
     "eyebrow": "Vì sao chọn NapKey",
@@ -58,6 +59,82 @@
         "title": "Một key, mọi model",
         "body": "Opus, Sonnet, Haiku cùng một key. Đổi model bằng một trường trong body, không phải đổi credential."
       }
+    }
+  },
+  "trustSection": {
+    "eyebrow": "Niềm tin cho developer",
+    "title": "Bằng chứng, không phải huy hiệu bảo mật",
+    "subtitle": "Câu hỏi hữu ích không phải gateway có tự nhận an toàn hay không. Quan trọng là bạn có kiểm tra được sức khoẻ API, đối chiếu request, kiểm toán chi phí và hiểu dữ liệu đi đâu hay không.",
+    "manifestLabel": "Nguyên tắc vận hành",
+    "manifest": "Mỗi khoản trừ phải truy ngược được về một request. Mỗi giới hạn phải được nói rõ trước khi bạn nạp tiền.",
+    "manifestBody": "NapKey công khai các cơ chế developer có thể kiểm tra: liveness probe công khai, request ID, usage từng lần gọi, ranh giới upstream và trạng thái lan truyền khi thu hồi key.",
+    "readTrust": "Đọc trung tâm tin cậy",
+    "liveStatus": "Kiểm tra liveness gateway",
+    "proofs": {
+      "requestId": { "title": "Đối chiếu request", "body": "Request có tính phí trả về x-request-id trùng với dòng trong sổ usage." },
+      "ledger": { "title": "Chi phí kiểm toán được", "body": "Model, token vào, token ra, cache, độ trễ và chi phí được giữ theo từng request." },
+      "keys": { "title": "Kiểm soát credential", "body": "API quản lý chỉ trả định danh đã che. Thao tác tắt và thu hồi hiện trạng thái đồng bộ thay vì giả định lan truyền luôn thành công." },
+      "prompts": { "title": "Giới hạn lưu nội dung", "body": "Prompt không bị dump vào debug log request; lưu trữ Responses API được công khai riêng với chính sách dọn sau 30 ngày." }
+    }
+  },
+  "trustPage": {
+    "metaTitle": "Niềm tin cho developer",
+    "eyebrow": "Trung tâm tin cậy",
+    "title": "NapKey chứng minh được gì — và không thể hứa gì",
+    "intro": "Mô tả kỹ thuật về danh tính dịch vụ, cách xử lý key, metadata request, tính phí và ranh giới upstream. Viết để kiểm tra, không phải để lướt qua.",
+    "statusLink": "Kiểm tra liveness gateway",
+    "privacyLink": "Đọc chính sách dữ liệu",
+    "sections": {
+      "identity": { "title": "Dịch vụ độc lập", "body": "NapKey là gateway API và dịch vụ tính phí trả trước độc lập. NapKey không phải Anthropic, AWS hay Kiro và không ngụ ý được các công ty đó bảo chứng." },
+      "keyHandling": { "title": "Xử lý API key", "body": "Key mới chỉ hiện đầy đủ một lần trong console và control plane lưu bản băm. Data plane hiện giữ bearer credential trong cấu hình server bị giới hạn quyền vì cần xác thực request; API quản lý chỉ trả định danh đã che. Thu hồi được đẩy sang data plane và có thể vào trạng thái retry hiển thị nếu lan truyền lỗi, vì vậy hãy coi key bị lộ vẫn dùng được cho tới khi xoá đồng bộ xong." },
+      "requestData": { "title": "Dữ liệu request", "body": "Sổ usage lưu request ID, model, các nhóm token, chi phí, trạng thái và độ trễ. Prompt đầy đủ không được ghi vào debug log request production. Request vẫn đi qua NapKey và upstream đã cấu hình. File Responses API đủ điều kiện xoá sau 30 ngày; job chạy mỗi giờ và lúc khởi động sẽ dọn file hết hạn." },
+      "billing": { "title": "Bằng chứng tính phí", "body": "Phản hồi có tính phí mang x-request-id. Cùng ID đó được dùng khi quyết toán hold và ghi sổ usage, nên một khoản phí đối chiếu được về đúng một lần gọi. Usage cũ không bị tính lại khi giá thay đổi." },
+      "upstream": { "title": "Ranh giới upstream", "body": "Kết quả model phụ thuộc vào tài khoản và dịch vụ upstream ngoài quyền kiểm soát trực tiếp của NapKey. Pool và failover giảm lỗi của từng tài khoản nhưng không tạo ra cam kết hoạt động không gián đoạn." },
+      "limits": { "title": "Giới hạn hiện tại", "body": "NapKey hiện chưa có SLA chính thức, chưa xuất hoá đơn thuế và không cho rút số dư về ngân hàng. Trang trạng thái công khai phản ánh khả năng truy cập hiện tại, không phải cam kết uptime lịch sử." }
+    }
+  },
+  "statusPage": {
+    "metaTitle": "Trạng thái hệ thống",
+    "eyebrow": "Trạng thái trực tiếp",
+    "title": "Liveness của gateway, kiểm tra ngay lúc này",
+    "intro": "Trang này đọc health endpoint của process mỗi lần mở. Nó chứng minh gateway process có phản hồi, không chứng minh model upstream hay phụ thuộc billing đã sẵn sàng.",
+    "reachable": "Process truy cập được",
+    "unavailable": "Không lấy được trạng thái",
+    "gatewayProcess": "Gateway process công khai",
+    "reachableBody": "Gateway process đã trả lời liveness endpoint.",
+    "unavailableBody": "Health probe không trả về phản hồi thành công hợp lệ. Request hiện tại cũng có thể bị ảnh hưởng.",
+    "endpoint": "Endpoint",
+    "version": "Phiên bản",
+    "uptime": "Thời gian process chạy",
+    "scope": "Phạm vi: chỉ liveness của process. Sức chứa tài khoản, billing và model upstream có thể thay đổi độc lập.",
+    "checkedAt": "Quan sát lúc {time}"
+  },
+  "privacyPage": {
+    "metaTitle": "Chính sách dữ liệu",
+    "eyebrow": "Chính sách dữ liệu",
+    "title": "Dữ liệu nào đi qua NapKey",
+    "intro": "Mô tả dễ hiểu về dữ liệu cần thiết để vận hành tài khoản, chuyển tiếp request và đối soát usage trả trước.",
+    "sections": {
+      "account": { "title": "Dữ liệu tài khoản", "body": "NapKey lưu email, bản băm mật khẩu, trạng thái xác minh và thời điểm tài khoản để vận hành đăng nhập và khôi phục tài khoản." },
+      "prompts": { "title": "Prompt và phản hồi", "body": "Nội dung prompt và phản hồi đi qua gateway và upstream đã cấu hình. Prompt đầy đủ bị loại khỏi debug log request production. File lưu response của Responses API chứa input, instruction và output; file đủ điều kiện xoá sau 30 ngày và được dọn mỗi giờ cũng như lúc khởi động. Đừng gửi secret hoặc dữ liệu được quản lý đặc biệt nếu đánh giá rủi ro của bạn không cho phép." },
+      "usage": { "title": "Metadata usage", "body": "NapKey giữ request ID, định danh API key, model, số token, chi phí, độ trễ, trạng thái và thời gian để tính phí, hỗ trợ và đối soát." },
+      "payments": { "title": "Dữ liệu thanh toán", "body": "Lệnh nạp và webhook ngân hàng giữ mã giao dịch, số tiền, trạng thái xử lý và metadata đối soát. Payload thanh toán chỉ dành cho quyền truy cập vận hành." },
+      "cookies": { "title": "Cookie", "body": "Console dùng cookie phiên và CSRF bảo mật để đăng nhập và bảo vệ request. NapKey không thêm pixel quảng cáo hay phân tích hành vi của bên thứ ba." },
+      "choices": { "title": "Quyền kiểm soát của bạn", "body": "Bạn có thể thu hồi API key bất kỳ lúc nào và đổi mật khẩu tài khoản. Hãy liên hệ hỗ trợ trước khi gửi dữ liệu chẩn đoán nhạy cảm; luôn che API key và credential." }
+    }
+  },
+  "termsPage": {
+    "metaTitle": "Điều khoản sử dụng",
+    "eyebrow": "Điều khoản",
+    "title": "Điều kiện sử dụng NapKey",
+    "intro": "Các điều kiện vận hành cần hiểu trước khi nạp ví hoặc chuyển traffic production qua NapKey.",
+    "sections": {
+      "service": { "title": "Dịch vụ", "body": "NapKey cung cấp gateway tương thích độc lập và sổ usage trả trước. Khả năng truy cập phụ thuộc vào hạ tầng NapKey và dịch vụ upstream của bên thứ ba." },
+      "balance": { "title": "Số dư ví", "body": "Tiền trong ví là tín dụng dịch vụ trả trước, hiện không hết hạn và không thể rút về tài khoản ngân hàng. Chỉ nạp số tiền bạn dự kiến sẽ dùng." },
+      "acceptableUse": { "title": "Sử dụng chấp nhận được", "body": "Không dùng NapKey để vi phạm pháp luật, dò quét hoặc phá hệ thống, vượt hạn chế của nhà cung cấp, phát tán mã độc hay sử dụng credential của người khác." },
+      "availability": { "title": "Khả dụng", "body": "Dịch vụ hiện chưa có SLA uptime chính thức. Bảo trì, thay đổi upstream, hết quota và tình trạng tài khoản có thể làm gián đoạn request." },
+      "pricing": { "title": "Giá", "body": "Giá có thể đổi theo tỷ giá và giá upstream. Giá mới áp dụng từ thời điểm hiệu lực; usage đã ghi vẫn giữ nguyên chi phí đã quyết toán." },
+      "independence": { "title": "Độc lập thương hiệu", "body": "NapKey không phải sản phẩm của Anthropic, AWS hay Kiro. Claude và các tên liên quan thuộc chủ sở hữu tương ứng." }
     }
   },
   "integrate": {
@@ -158,6 +235,7 @@
       "integrate": "Tích hợp",
       "billing": "Cách tính tiền",
       "status": "Trạng thái hệ thống",
+      "trust": "Trung tâm tin cậy",
       "terms": "Điều khoản sử dụng",
       "privacy": "Chính sách dữ liệu",
       "contact": "Liên hệ"
@@ -316,7 +394,7 @@
       "needVerified": "Cần xác minh email trước khi tạo key.",
       "finishOnboardingFirst": "Hãy lưu xong key hiện tại trước khi tạo key khác.",
       "revealTitle": "Sao chép key ngay",
-      "revealDescription": "Đây là lần duy nhất bản đầy đủ được hiển thị. Hệ thống chỉ lưu bản băm, không lấy lại được.",
+      "revealDescription": "Đây là lần duy nhất console hiển thị key đầy đủ. Hãy lưu an toàn; API quản lý không thể hiện lại key này.",
       "copy": "Sao chép",
       "copied": "Đã sao chép",
       "savedIt": "Tôi đã lưu",
@@ -329,7 +407,7 @@
         "copyKey": "Sao chép key",
         "copied": "Đã sao chép",
         "savedConfirm": "Tôi đã lưu key này vào trình quản lý mật khẩu hoặc biến môi trường.",
-        "securityNote": "NapKey chỉ lưu bản băm. Đóng bảng này sẽ xoá vĩnh viễn bản secret duy nhất đang hiển thị.",
+        "securityNote": "Đây là lần duy nhất console hiện đầy đủ key. Hãy lưu vào secret manager của bạn và thu hồi ngay nếu bị lộ.",
         "connectLabel": "Chọn client",
         "toolLabel": "Công cụ kết nối",
         "tools": { "claudeCode": "Claude Code", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL" },

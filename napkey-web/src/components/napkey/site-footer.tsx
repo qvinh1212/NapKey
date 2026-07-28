@@ -1,20 +1,22 @@
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { Logo } from './logo';
 
 const groups = [
   { title: 'product', links: ['pricing', 'integrate', 'billing'] },
-  { title: 'resources', links: ['status', 'contact'] },
+  { title: 'resources', links: ['trust', 'status', 'contact'] },
   { title: 'legal', links: ['terms', 'privacy'] },
 ] as const;
 
 const hrefs: Record<string, string> = {
-  pricing: '#pricing',
-  integrate: '#integrate',
-  billing: '#billing',
-  status: '#billing',
-  contact: '#cta',
-  terms: '#billing',
-  privacy: '#billing',
+  pricing: '/#pricing',
+  integrate: '/#integrate',
+  billing: '/#billing',
+  trust: '/trust',
+  status: '/status',
+  contact: '/#cta',
+  terms: '/terms',
+  privacy: '/privacy',
 };
 
 export function SiteFooter() {
@@ -38,12 +40,12 @@ export function SiteFooter() {
               <ul className="space-y-3">
                 {group.links.map((link) => (
                   <li key={link}>
-                    <a
-                      href={hrefs[link]}
+                    <Link
+                      href={hrefs[link]!}
                       className="text-ui text-muted transition-colors duration-150 hover:text-fg"
                     >
                       {t(`links.${link}`)}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>

@@ -270,8 +270,6 @@ func callMcpAPI(account *config.Account, mcpReq *McpRequest) (*McpResponse, erro
 	if err != nil {
 		return nil, err
 	}
-	logger.Debugf("[MCP] Request: %s", string(reqBody))
-
 	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, err
@@ -302,10 +300,10 @@ func callMcpAPI(account *config.Account, mcpReq *McpRequest) (*McpResponse, erro
 	if err != nil {
 		return nil, err
 	}
-	logger.Debugf("[MCP] Response (%d): %s", resp.StatusCode, string(body))
+	logger.Debugf("[MCP] Response status: %d", resp.StatusCode)
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("MCP request failed: HTTP %d: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("MCP request failed: HTTP %d", resp.StatusCode)
 	}
 
 	var mcpResp McpResponse
@@ -317,11 +315,7 @@ func callMcpAPI(account *config.Account, mcpReq *McpRequest) (*McpResponse, erro
 		if mcpResp.Error.Code != nil {
 			code = *mcpResp.Error.Code
 		}
-		msg := "Unknown error"
-		if mcpResp.Error.Message != nil {
-			msg = *mcpResp.Error.Message
-		}
-		return nil, fmt.Errorf("MCP error: %d - %s", code, msg)
+		return nil, fmt.Errorf("MCP error: code %d", code)
 	}
 	if mcpResp.Result != nil && mcpResp.Result.IsError {
 		return nil, fmt.Errorf("MCP tool error for web_search")
@@ -349,7 +343,7 @@ func parseSearchResults(mcpResp *McpResponse) *WebSearchResults {
 		return nil
 	}
 	if results.Error != nil && strings.TrimSpace(*results.Error) != "" {
-		logger.Warnf("[MCP] Search result payload error: %s", *results.Error)
+		logger.Warnf("[MCP] Search result payload reported an error")
 		return nil
 	}
 	return &results
@@ -509,7 +503,7 @@ func (h *Handler) handleWebSearchRequest(w http.ResponseWriter, req *ClaudeReque
 		return
 	}
 
-	logger.Infof("[WebSearch] Processing query: %s (stream=%v)", query, req.Stream)
+	logger.Infof("[WebSearch] Processing query (length=%d, stream=%v)", len([]rune(query)), req.Stream)
 	reqStart := time.Now()
 
 	results, toolUseID, account, err := h.performWebSearch(req.Model, query)

@@ -8,6 +8,7 @@
     "pricing": "Pricing",
     "integrate": "Integrate",
     "billing": "Billing",
+    "trust": "Trust",
     "signIn": "Sign in",
     "getStarted": "Get started",
     "skipToContent": "Skip to main content",
@@ -40,7 +41,7 @@
       "anthropicSdk": "Anthropic SDK",
       "openaiSdk": "OpenAI SDK"
     },
-    "statusLink": "Check the live API"
+    "statusLink": "Check gateway liveness"
   },
   "value": {
     "eyebrow": "Why NapKey",
@@ -58,6 +59,82 @@
         "title": "One key, every model",
         "body": "Opus, Sonnet and Haiku share a single key. Switch models with one field in the body, not a new credential."
       }
+    }
+  },
+  "trustSection": {
+    "eyebrow": "Developer trust",
+    "title": "Evidence, not a trust badge",
+    "subtitle": "The useful question is not whether a gateway says it is secure. It is whether you can inspect health, correlate a request, audit its charge, and understand where data goes.",
+    "manifestLabel": "Operating principle",
+    "manifest": "Every charge should trace back to one request. Every limitation should be written down before you top up.",
+    "manifestBody": "NapKey exposes the mechanics developers can verify: a public liveness probe, request IDs, per-call usage records, explicit upstream boundaries, and visible key-revocation propagation state.",
+    "readTrust": "Read the trust center",
+    "liveStatus": "Check gateway liveness",
+    "proofs": {
+      "requestId": { "title": "Request correlation", "body": "Billable calls return an x-request-id that matches the request ledger." },
+      "ledger": { "title": "Auditable charges", "body": "Model, input, output, cache tokens, latency and cost remain visible per request." },
+      "keys": { "title": "Controlled credentials", "body": "Management APIs return masked identifiers. Disable and revoke actions expose their synchronization state instead of pretending propagation cannot fail." },
+      "prompts": { "title": "Bounded content retention", "body": "Prompt payloads are excluded from request debug logs; Responses API storage is separately disclosed with its 30-day cleanup policy." }
+    }
+  },
+  "trustPage": {
+    "metaTitle": "Developer trust",
+    "eyebrow": "Trust center",
+    "title": "What NapKey can prove — and what it cannot",
+    "intro": "A technical account of identity, key handling, request metadata, billing and the upstream boundary. Written to be checked, not skimmed.",
+    "statusLink": "Check gateway liveness",
+    "privacyLink": "Read the data policy",
+    "sections": {
+      "identity": { "title": "Independent service", "body": "NapKey is an independent API gateway and prepaid billing service. It is not Anthropic, AWS or Kiro, and does not imply endorsement by those companies." },
+      "keyHandling": { "title": "API key handling", "body": "A new key is shown once in the console and the control plane stores its hash. The data plane currently retains the bearer credential in restricted server configuration because it must authenticate calls; management responses expose only a masked identifier. Revocation is pushed to the data plane and may enter a visible retry state if propagation fails, so treat an exposed key as usable until deletion is synchronized." },
+      "requestData": { "title": "Request records", "body": "The customer ledger stores request ID, model, token categories, cost, status and latency. Full prompts are not written to production request debug logs. Requests still pass through NapKey and the configured upstream provider. Responses API files become eligible for deletion after 30 days; an hourly cleanup job and startup sweep remove expired files." },
+      "billing": { "title": "Billing evidence", "body": "A billable response carries x-request-id. The same ID is used for hold settlement and the usage ledger, so one charge can be reconciled to one call. Historical usage is not repriced after a rate change." },
+      "upstream": { "title": "Upstream boundary", "body": "Model output depends on upstream accounts and services outside NapKey's direct control. Pooling and failover reduce individual account failures but do not create a guarantee of uninterrupted availability." },
+      "limits": { "title": "Current limits", "body": "NapKey does not currently offer a formal SLA, tax invoices or bank withdrawals of wallet balance. Public status reports current reachability, not historical uptime guarantees." }
+    }
+  },
+  "statusPage": {
+    "metaTitle": "System status",
+    "eyebrow": "Live status",
+    "title": "Gateway liveness, checked now",
+    "intro": "This page reads the public process health endpoint on every visit. It proves the gateway process answered, not that an upstream model or billing dependency is ready.",
+    "reachable": "Process reachable",
+    "unavailable": "Probe unavailable",
+    "gatewayProcess": "Public gateway process",
+    "reachableBody": "The gateway process answered its liveness endpoint.",
+    "unavailableBody": "The health probe did not return a valid success response. Existing requests may also be affected.",
+    "endpoint": "Endpoint",
+    "version": "Version",
+    "uptime": "Process uptime",
+    "scope": "Scope: process liveness only. Account capacity, billing and upstream model availability can vary independently.",
+    "checkedAt": "Observed {time}"
+  },
+  "privacyPage": {
+    "metaTitle": "Data policy",
+    "eyebrow": "Data policy",
+    "title": "What data moves through NapKey",
+    "intro": "A plain-language description of data required to operate accounts, proxy requests and reconcile prepaid usage.",
+    "sections": {
+      "account": { "title": "Account data", "body": "NapKey stores your email address, password hash, verification state and account timestamps to operate authentication and account recovery." },
+      "prompts": { "title": "Prompts and responses", "body": "Prompt and response content passes through the gateway and configured upstream provider. Full prompt payloads are excluded from production request debug logs. Responses API stored-response files contain input, instructions and output; they become eligible for deletion after 30 days and are removed by hourly and startup cleanup. Do not send secrets or regulated data unless your own risk assessment permits it." },
+      "usage": { "title": "Usage metadata", "body": "NapKey retains request ID, API key identifier, model, token counts, cost, latency, status and time for billing, support and reconciliation." },
+      "payments": { "title": "Payment records", "body": "Top-up orders and bank webhook events retain transaction references, amounts, processing status and reconciliation metadata. Payment payloads are restricted to operational access." },
+      "cookies": { "title": "Cookies", "body": "The console uses secure session and CSRF cookies for sign-in and request protection. NapKey does not add advertising pixels or third-party behavioral analytics." },
+      "choices": { "title": "Your choices", "body": "You can revoke API keys at any time and change your account password. Contact support before sharing sensitive diagnostic material; always redact API keys and credentials." }
+    }
+  },
+  "termsPage": {
+    "metaTitle": "Terms of service",
+    "eyebrow": "Terms",
+    "title": "Terms for using NapKey",
+    "intro": "The operational conditions you should understand before funding a wallet or routing production traffic.",
+    "sections": {
+      "service": { "title": "Service", "body": "NapKey provides an independent compatibility gateway and prepaid usage ledger. Access depends on NapKey infrastructure and third-party upstream services." },
+      "balance": { "title": "Wallet balance", "body": "Wallet funds are prepaid service credit, do not expire under the current policy and cannot be withdrawn to a bank account. Top up only an amount you expect to use." },
+      "acceptableUse": { "title": "Acceptable use", "body": "Do not use NapKey to violate law, probe or disrupt systems, bypass provider restrictions, distribute malware, or expose credentials belonging to another person." },
+      "availability": { "title": "Availability", "body": "The service is provided without a formal uptime SLA at this stage. Maintenance, upstream changes, quota exhaustion and account availability may interrupt requests." },
+      "pricing": { "title": "Pricing", "body": "Rates may change with exchange rates and upstream pricing. New rates apply from their effective time; usage already recorded keeps its original settled cost." },
+      "independence": { "title": "Brand independence", "body": "NapKey is not an Anthropic, AWS or Kiro product. Claude and related names belong to their respective owners." }
     }
   },
   "integrate": {
@@ -158,6 +235,7 @@
       "integrate": "Integrate",
       "billing": "Billing",
       "status": "System status",
+      "trust": "Trust center",
       "terms": "Terms of service",
       "privacy": "Data policy",
       "contact": "Contact"
@@ -316,7 +394,7 @@
       "needVerified": "Verify your email before creating keys.",
       "finishOnboardingFirst": "Finish saving the current key before creating another one.",
       "revealTitle": "Copy this key now",
-      "revealDescription": "This is the only time the full key is shown. Only a hash is stored, so it cannot be recovered.",
+      "revealDescription": "This is the only time the console shows the full key. Store it securely; management APIs cannot reveal it again.",
       "copy": "Copy",
       "copied": "Copied",
       "savedIt": "I saved it",
@@ -329,7 +407,7 @@
         "copyKey": "Copy key",
         "copied": "Copied",
         "savedConfirm": "I saved this key in a password manager or environment variable.",
-        "securityNote": "NapKey stores only a hash. Closing this panel permanently removes the only visible copy.",
+        "securityNote": "This is the only full copy the console will show. Store it in your own secret manager and revoke it immediately if exposed.",
         "connectLabel": "Choose your client",
         "toolLabel": "Client tool",
         "tools": { "claudeCode": "Claude Code", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL" },

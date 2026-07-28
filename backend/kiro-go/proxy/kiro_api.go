@@ -172,8 +172,8 @@ func GetUsageLimits(account *config.Account) (*UsageLimitsResponse, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+		_, _ = io.Copy(io.Discard, resp.Body)
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
 
 	var result UsageLimitsResponse
@@ -203,8 +203,8 @@ func GetUserInfo(account *config.Account) (*UserInfoResponse, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+		_, _ = io.Copy(io.Discard, resp.Body)
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
 
 	var result UserInfoResponse
@@ -238,8 +238,8 @@ func ListAvailableModels(account *config.Account) ([]ModelInfo, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+		_, _ = io.Copy(io.Discard, resp.Body)
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
 
 	var result struct {
@@ -532,7 +532,13 @@ func listKiroProfilesInRegionContext(
 		if resp.StatusCode != http.StatusOK {
 			body, _ := io.ReadAll(io.LimitReader(resp.Body, maxProfileErrorBytes))
 			resp.Body.Close()
-			return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+			var known struct {
+				Message string `json:"message"`
+			}
+			if json.Unmarshal(body, &known) == nil && known.Message == "AWS Builder ID is not supported for this operation." {
+				return nil, fmt.Errorf("HTTP %d: AWS Builder ID is not supported for this operation", resp.StatusCode)
+			}
+			return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 		}
 
 		responseBody, err := io.ReadAll(io.LimitReader(resp.Body, maxProfileResponseBytes+1))

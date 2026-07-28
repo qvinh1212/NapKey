@@ -6,6 +6,9 @@
 .design-ref/
 .go-cache/
 .gocache/
+.gocache-review/
+.codex-gocache-*/
+**/.codex-gocache-*/
 .npm-cache/
 
 **/node_modules/
@@ -26,4 +29,3 @@ build-summary.json
 lint-summary.txt
 .DS_Store
 Thumbs.db
-

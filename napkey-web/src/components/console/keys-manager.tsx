@@ -221,7 +221,7 @@ export function KeysManager() {
                           {t(`status.${key.status}`)}
                         </Badge>
                         {/* Chi noi ve sync khi no chua xong - `synced` la mac dinh, khong can nhac. */}
-                        {key.syncState !== 'synced' && !isRevoked ? (
+                        {key.syncState !== 'synced' ? (
                           <Badge tone={syncTone[key.syncState]} title={key.syncError}>
                             {t(`sync.${key.syncState}`)}
                           </Badge>

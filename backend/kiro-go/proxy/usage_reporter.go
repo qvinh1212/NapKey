@@ -322,9 +322,6 @@ func (r *usageReporter) post(body []byte) (status string, retryable bool, err er
 
 	var decoded struct {
 		Status string `json:"status"`
-		Error  struct {
-			Message string `json:"message"`
-		} `json:"error"`
 	}
 	_ = json.NewDecoder(resp.Body).Decode(&decoded)
 
@@ -336,11 +333,11 @@ func (r *usageReporter) post(body []byte) (status string, retryable bool, err er
 		// control plane with rejected requests.
 		return "", false, fmt.Errorf("the control plane rejected the internal token (401)")
 	case resp.StatusCode >= 400 && resp.StatusCode < 500:
-		return "", false, fmt.Errorf("http %d: %s", resp.StatusCode, decoded.Error.Message)
+		return "", false, fmt.Errorf("http %d", resp.StatusCode)
 	default:
 		// 5xx, including the 503 napkey-core returns when its database is
 		// unavailable. Retry.
-		return "", true, fmt.Errorf("http %d: %s", resp.StatusCode, decoded.Error.Message)
+		return "", true, fmt.Errorf("http %d", resp.StatusCode)
 	}
 }
 
