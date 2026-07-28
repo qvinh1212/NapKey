@@ -415,6 +415,7 @@ func (h *Handler) reserveBilling(w http.ResponseWriter,r *http.Request,claude bo
 		if errors.Is(err,errWalletInsufficient){status=http.StatusPaymentRequired;message="Wallet balance is insufficient";code="payment_required"}
 		if claude{h.sendClaudeError(w,status,code,message)}else{h.sendOpenAIError(w,status,code,message)};return nil,nil
 	}
+	w.Header().Set("x-request-id", lease.RequestID)
 	return withBillingLease(r,lease),lease
 }
 

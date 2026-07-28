@@ -6,6 +6,7 @@ import { api, ApiError } from '@/lib/api/client';
 import type { ApiKey, CreateKeyResponse, KeyListResponse, KeySyncState } from '@/lib/api/types';
 import { compact, dateTime } from '@/lib/format';
 import { useSession } from './session-provider';
+import { KeyOnboarding } from './key-onboarding';
 import { Badge, EmptyState, ErrorNotice, Panel, PanelHeader, SkeletonRows, TableScroll, Td, Th, type BadgeTone } from './ui';
 
 /**
@@ -47,7 +48,6 @@ export function KeysManager() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<CreateKeyResponse | null>(null);
-  const [copied, setCopied] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -83,7 +83,6 @@ export function KeysManager() {
       // mat dai han nam trong storage la mot bi mat cho bi lay.
       setRevealed(created);
       setName('');
-      setCopied(false);
       reload();
     } catch (error) {
       setCreateError(error instanceof ApiError ? error.message : t('createFailed'));
@@ -125,51 +124,9 @@ export function KeysManager() {
     }
   }
 
-  async function copySecret(secret: string) {
-    try {
-      await navigator.clipboard.writeText(secret);
-      setCopied(true);
-    } catch {
-      // Clipboard API can quyen va HTTPS. That bai thi khong sao - key van dang hien
-      // tren man hinh de chon tay.
-      setCopied(false);
-    }
-  }
-
   return (
     <div className="flex flex-col gap-6">
-      {/*
-        Ban tho hien mot lan. Panel nay chi bien mat khi khach tu bam da luu.
-      */}
-      {revealed ? (
-        <Panel as="section" className="border-accent/40 bg-accent-soft">
-          <PanelHeader title={t('revealTitle')} description={t('revealDescription')} />
-          <div className="px-5 py-5">
-            <code className="block overflow-x-auto rounded-md border border-accent/30 bg-black/40 px-4 py-3 font-mono text-ui text-accent-light">
-              {revealed.key}
-            </code>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={() => void copySecret(revealed.key)}
-                className="rounded-full bg-fg px-5 py-2 text-ui font-medium text-bg transition-colors hover:bg-white/90"
-              >
-                {copied ? t('copied') : t('copy')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setRevealed(null)}
-                className="rounded-full border border-line px-5 py-2 text-ui text-muted transition-colors hover:bg-white/10 hover:text-fg"
-              >
-                {t('savedIt')}
-              </button>
-              {revealed.details.syncState === 'pending' ? (
-                <span className="text-ui text-dim">{t('syncPendingHint')}</span>
-              ) : null}
-            </div>
-          </div>
-        </Panel>
-      ) : null}
+      {revealed ? <KeyOnboarding key={revealed.details.id} created={revealed} onDone={() => setRevealed(null)} /> : null}
 
       <Panel as="section">
         <PanelHeader title={t('createTitle')} description={t('createDescription')} />
@@ -185,6 +142,7 @@ export function KeysManager() {
               // 60 la maxKeyNameLength cua napkey-core. Chan o day de nguoi dung
               // biet gioi han truoc khi gui, thay vi nhan mot loi tu server.
               maxLength={60}
+              disabled={revealed !== null}
               onChange={(event) => setName(event.target.value)}
               placeholder={t('namePlaceholder')}
               className="w-full rounded-md border border-line bg-surface-hover px-4 py-2.5 text-ui text-fg placeholder:text-dim focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -192,12 +150,13 @@ export function KeysManager() {
           </div>
           <button
             type="submit"
-            disabled={creating || !canCreate}
+            disabled={creating || !canCreate || revealed !== null}
             className="rounded-full bg-fg px-6 py-2.5 text-ui font-medium text-bg transition-colors hover:bg-white/90 disabled:pointer-events-none disabled:opacity-50"
           >
             {creating ? t('creating') : t('createButton')}
           </button>
           {!canCreate ? <p className="text-ui text-warn">{t('needVerified')}</p> : null}
+          {revealed ? <p className="text-ui text-info">{t('finishOnboardingFirst')}</p> : null}
         </form>
         {createError ? (
           <div className="px-5 pb-5">
