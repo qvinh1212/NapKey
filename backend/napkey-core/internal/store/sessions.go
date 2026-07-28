@@ -198,7 +198,7 @@ func (s *Store) VerifyEmailAndGrantTrial(ctx context.Context, tokenHash, ipHash 
 		}
 		_, err = tx.ExecContext(ctx, `
 			INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key,metadata)
-			VALUES($1,'trial',$2,$3,$4,'trial_grant',$5,$6,jsonb_build_object('expiresAt',$7))`,
+			VALUES($1,'trial',$2,$3,$4,'trial_grant',$5,$6,jsonb_build_object('expiresAt',$7::timestamptz))`,
 			userID, amountMicros, balance, held, grantID, "trial:"+userID, expiresAt)
 		if err == nil {
 			granted = true

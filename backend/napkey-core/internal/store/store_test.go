@@ -319,6 +319,10 @@ func TestVerifyEmailAndGrantTrialCreditsWalletOnce(t *testing.T) {
 			t.Errorf("successful trial grant is missing %q", query)
 		}
 	}
+	ledgerQuery, ok := srv.FindQuery("INSERT INTO ledger_entries")
+	if !ok || !strings.Contains(ledgerQuery.SQL, "$7::timestamptz") {
+		t.Fatal("trial ledger must type its expiry parameter explicitly for PostgreSQL")
+	}
 }
 
 func TestVerifyEmailStillSucceedsWhenTrialFingerprintWasUsed(t *testing.T) {
