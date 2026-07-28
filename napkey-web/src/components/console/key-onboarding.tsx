@@ -133,10 +133,10 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
         ))}
       </ol>
 
-      <div className="grid lg:grid-cols-[0.78fr_1.22fr]">
-        <div className="border-b border-line p-5 lg:border-r lg:border-b-0">
+      <div className="grid min-w-0 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]">
+        <div className="min-w-0 border-b border-line p-5 lg:border-r lg:border-b-0">
           <p className="font-mono text-label tracking-[0.12em] text-dim uppercase">01 / {t('saveLabel')}</p>
-          <code className="mt-3 block overflow-x-auto rounded-md border border-accent/30 bg-black/40 px-4 py-3 font-mono text-ui text-accent-light">
+          <code className="mt-3 block max-w-full overflow-x-auto rounded-md border border-accent/30 bg-black/40 px-4 py-3 font-mono text-ui whitespace-nowrap text-accent-light">
             {created.key}
           </code>
           <button type="button" onClick={() => void copy(created.key, 'key')} className="mt-3 rounded-full bg-fg px-4 py-2 text-ui font-medium text-bg hover:bg-white/90">
@@ -149,23 +149,23 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
           <p className="mt-3 text-ui leading-relaxed text-dim">{t('securityNote')}</p>
         </div>
 
-        <div className="p-5">
+        <div className="min-w-0 p-5">
           <p className="font-mono text-label tracking-[0.12em] text-dim uppercase">02 / {t('connectLabel')}</p>
-          <div role="tablist" aria-label={t('toolLabel')} className="mt-3 flex flex-wrap gap-2">
+          <div role="group" aria-label={t('toolLabel')} className="mt-3 flex max-w-full gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
             {tools.map((item) => (
-              <button key={item} type="button" role="tab" aria-selected={tool === item} onClick={() => setTool(item)} className={`rounded-full border px-3 py-1.5 text-ui transition-colors ${tool === item ? 'border-accent/50 bg-accent-soft text-accent-light' : 'border-line text-muted hover:bg-white/5'}`}>
+              <button key={item} type="button" aria-pressed={tool === item} onClick={() => setTool(item)} className={`shrink-0 rounded-full border px-3 py-1.5 text-ui whitespace-nowrap transition-colors ${tool === item ? 'border-accent/50 bg-accent-soft text-accent-light' : 'border-line text-muted hover:bg-white/5'}`}>
                 {t(`tools.${item}`)}
               </button>
             ))}
           </div>
-          <div className="mt-3 overflow-hidden rounded-md border border-line bg-black/40">
+          <div className="mt-3 min-w-0 max-w-full overflow-hidden rounded-md border border-line bg-black/40">
             <div className="flex items-center justify-between border-b border-line px-4 py-2">
               <span className="font-mono text-label text-dim">{snippet.lang}</span>
               <button type="button" onClick={() => void copy(snippet.code, 'snippet')} className="text-ui text-muted hover:text-fg">
                 {copied === 'snippet' ? t('copied') : t('copyConfig')}
               </button>
             </div>
-            <pre className="max-h-72 overflow-auto p-4 font-mono text-xs leading-relaxed text-muted"><code>{snippet.code}</code></pre>
+            <pre className="max-h-72 max-w-full overflow-auto p-4 font-mono text-xs leading-relaxed text-muted"><code>{snippet.code}</code></pre>
           </div>
 
           <div className="mt-5 border-t border-line pt-5">
