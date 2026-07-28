@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { isProxyPathAllowed } from './proxy-policy';
 
 /**
  * BFF chuyen tiep giua console va napkey-core.
@@ -21,43 +22,6 @@ import { NextResponse, type NextRequest } from 'next/server';
 const CORE_URL = (process.env.NAPKEY_CORE_URL ?? 'http://127.0.0.1:8081').replace(/\/+$/, '');
 
 /**
- * Duong dan console duoc phep goi.
- *
- * Danh sach cho phep, khong phai danh sach chan: mot endpoint moi ben backend phai
- * duoc them vao day mot cach co y thuc. Khong co `/v1/admin/*` va khong co
- * `/internal/*` - hai nhom do khong bao gio duoc di qua trinh duyet.
- */
-const ALLOWED: readonly (RegExp | string)[] = [
-  '/v1/auth/register',
-  '/v1/auth/login',
-  '/v1/auth/logout',
-  '/v1/auth/verify-email',
-  '/v1/auth/resend-verification',
-  '/v1/auth/forgot-password',
-  '/v1/auth/reset-password',
-  '/v1/auth/session',
-  '/v1/me/password',
-  '/v1/me/usage',
-  '/v1/me/usage/detail',
-  '/v1/me/usage/records',
-  '/v1/me/wallet',
-  '/v1/me/topups',
-  /^\/v1\/me\/topups\/[A-Za-z0-9-]{1,64}$/,
-  '/v1/keys',
-  /^\/v1\/keys\/[A-Za-z0-9-]{1,64}$/,
-	'/v1/admin/operations/summary',
-	'/v1/admin/operations/alerts',
-	'/v1/admin/operations/reconcile-wallets',
-	/^\/v1\/admin\/users\/[A-Za-z0-9-]{1,64}\/roles$/,
-];
-
-function isAllowed(pathname: string): boolean {
-  return ALLOWED.some((rule) =>
-    typeof rule === 'string' ? rule === pathname : rule.test(pathname),
-  );
-}
-
-/**
  * Header duoc chuyen tiep len napkey-core.
  *
  * Danh sach ngan co chu y. Dac biet KHONG co `X-Internal-Token` (bi mat giua hai
@@ -72,7 +36,7 @@ const FORWARD_RESPONSE_HEADERS = ['content-type', 'cache-control'];
 export async function proxyToCore(req: NextRequest, path: string[]): Promise<NextResponse> {
   const pathname = '/' + path.join('/');
 
-  if (!isAllowed(pathname)) {
+  if (!isProxyPathAllowed(pathname)) {
     // Tra 404 chu khong 403: xac nhan mot duong dan co ton tai la chi cho ke tan
     // cong biet cho de nham vao.
     return NextResponse.json({ error: { code: 'not_found', message: 'not found' } }, { status: 404 });
