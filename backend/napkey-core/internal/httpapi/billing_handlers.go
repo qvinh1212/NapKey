@@ -27,7 +27,7 @@ func (s *Server) handleGetWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	available := wallet.BalanceMicros - wallet.HeldMicros
-	writeJSON(w, http.StatusOK, map[string]any{"wallet": map[string]any{"balance": costView(wallet.BalanceMicros), "held": costView(wallet.HeldMicros), "available": costView(available), "credits": map[string]any{"balance": creditsView(wallet.BalanceMicros / pricing.RetailVNDPerCredit), "held": creditsView(wallet.HeldMicros / pricing.RetailVNDPerCredit), "available": creditsView(available / pricing.RetailVNDPerCredit), "vndPerCredit": pricing.RetailVNDPerCredit}, "currency": wallet.Currency}})
+	writeJSON(w, http.StatusOK, map[string]any{"wallet": map[string]any{"balance": costView(wallet.BalanceMicros), "held": costView(wallet.HeldMicros), "available": costView(available), "credits": map[string]any{"balance": creditsView(wallet.BalanceMicros / pricing.RetailVNDPerCredit), "held": creditsView(wallet.HeldMicros / pricing.RetailVNDPerCredit), "available": creditsView(available / pricing.RetailVNDPerCredit), "promotional": creditsView(wallet.PromotionalMicros / pricing.RetailVNDPerCredit), "promotionalExpiresAt": formatOptionalTime(wallet.PromotionalExpiresAt), "vndPerCredit": pricing.RetailVNDPerCredit}, "currency": wallet.Currency}})
 }
 
 func (s *Server) handleCreateTopup(w http.ResponseWriter, r *http.Request) {

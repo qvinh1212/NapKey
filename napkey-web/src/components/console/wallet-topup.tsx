@@ -78,8 +78,15 @@ export function WalletTopup() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label={t('balance')} value={creditAmount(wallet?.credits.available, locale)} hint={t('creditRate')} tone="accent" />
+        <StatCard
+          label={t('promotional')}
+          value={creditAmount(wallet?.credits.promotional, locale)}
+          hint={wallet?.credits.promotionalExpiresAt
+            ? t('promotionalExpiry', { date: new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(wallet.credits.promotionalExpiresAt)) })
+            : t('promotionalEmpty')}
+        />
         <StatCard label={t('available')} value={wallet?.available.formatted ?? '—'} hint={t('availableHint')} />
         <StatCard label={t('held')} value={wallet?.held.formatted ?? '—'} hint={wallet ? creditAmount(wallet.credits.held, locale) : t('heldHint')} />
       </div>

@@ -23,7 +23,13 @@ const (
 	TopupUnderpaid = "underpaid"
 )
 
-type Wallet struct { UserID string; BalanceMicros, HeldMicros int64; Currency string; UpdatedAt time.Time }
+type Wallet struct {
+	UserID string
+	BalanceMicros, HeldMicros, PromotionalMicros int64
+	PromotionalExpiresAt *time.Time
+	Currency string
+	UpdatedAt time.Time
+}
 type WalletHold struct { ID, RequestID string; AmountMicros int64; ExpiresAt time.Time }
 type TopupOrder struct {
 	ID, UserID, MemoCode, BankAccountNumber, Status string
@@ -64,12 +70,78 @@ func walletCreditMicros(amountMicros, orderVNDPerCredit int64) (int64, error) {
 }
 
 func (s *Store) GetWallet(ctx context.Context, userID string) (*Wallet, error) {
-	_, err := s.db.ExecContext(ctx, `INSERT INTO wallets(user_id) VALUES($1) ON CONFLICT DO NOTHING`, userID)
-	if err != nil { return nil, fmt.Errorf("store: ensuring wallet: %w", err) }
 	var w Wallet
-	err = s.db.QueryRowContext(ctx, `SELECT user_id, balance_micros, held_micros, currency, updated_at FROM wallets WHERE user_id=$1`, userID).Scan(&w.UserID,&w.BalanceMicros,&w.HeldMicros,&w.Currency,&w.UpdatedAt)
+	err := s.withTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable}, func(tx *sql.Tx) error {
+		if _, err := tx.ExecContext(ctx, `INSERT INTO wallets(user_id) VALUES($1) ON CONFLICT DO NOTHING`, userID); err != nil { return err }
+		if err := expirePromotionalWalletTx(ctx, tx, userID); err != nil { return err }
+		return tx.QueryRowContext(ctx, `SELECT user_id, balance_micros, held_micros, promotional_micros, promotional_expires_at, currency, updated_at FROM wallets WHERE user_id=$1`, userID).Scan(&w.UserID,&w.BalanceMicros,&w.HeldMicros,&w.PromotionalMicros,&w.PromotionalExpiresAt,&w.Currency,&w.UpdatedAt)
+	})
 	if err != nil { return nil, fmt.Errorf("store: loading wallet: %w", err) }
 	return &w,nil
+}
+
+// expirePromotionalWalletTx removes expired promotional funds that are not
+// protecting an open hold. A held portion remains until that request settles or
+// releases, at which point this helper runs again.
+func expirePromotionalWalletTx(ctx context.Context, tx *sql.Tx, userID string) error {
+	var expired, balance, held int64
+	err := tx.QueryRowContext(ctx, `
+		WITH current AS (
+			SELECT user_id, promotional_micros,
+			       least(promotional_micros, greatest(balance_micros-held_micros, 0)) AS removable
+			FROM wallets
+			WHERE user_id=$1 AND promotional_micros>0 AND promotional_expires_at<=now()
+			FOR UPDATE
+		), updated AS (
+			UPDATE wallets w
+			SET balance_micros=balance_micros-c.removable,
+			    promotional_micros=promotional_micros-c.removable,
+			    promotional_expires_at=CASE WHEN promotional_micros-c.removable=0 THEN NULL ELSE promotional_expires_at END,
+			    updated_at=now()
+			FROM current c WHERE w.user_id=c.user_id
+			RETURNING c.removable, w.balance_micros, w.held_micros
+		)
+		SELECT removable,balance_micros,held_micros FROM updated`, userID).Scan(&expired, &balance, &held)
+	if errors.Is(err, sql.ErrNoRows) { return nil }
+	if err != nil { return err }
+	if expired == 0 { return nil }
+	if _, err = tx.ExecContext(ctx, `UPDATE trial_grants SET remaining_micros=greatest(0,remaining_micros-$2) WHERE user_id=$1`, userID, expired); err != nil { return err }
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key,metadata)
+		VALUES($1,'adjustment',$2,$3,$4,'trial_expiry',$1,'trial-expiry:'||gen_random_uuid()::text,jsonb_build_object('reason','promotional_credit_expired'))`,
+		userID, -expired, balance, held)
+	return err
+}
+
+// ExpirePromotionalCredits sweeps dormant wallets so expired trial liability is
+// removed even when the owner never opens the console or sends another request.
+func (s *Store) ExpirePromotionalCredits(ctx context.Context, limit int) (int, error) {
+	if limit <= 0 || limit > 1000 { limit = 500 }
+	rows, err := s.db.QueryContext(ctx, `SELECT user_id FROM wallets WHERE promotional_micros>0 AND promotional_expires_at<=now() ORDER BY promotional_expires_at LIMIT $1`, limit)
+	if err != nil { return 0, fmt.Errorf("store: listing expired promotional wallets: %w", err) }
+	var userIDs []string
+	for rows.Next() {
+		var userID string
+		if err := rows.Scan(&userID); err != nil { rows.Close(); return 0, fmt.Errorf("store: scanning expired promotional wallet: %w", err) }
+		userIDs = append(userIDs, userID)
+	}
+	if err := rows.Close(); err != nil { return 0, fmt.Errorf("store: closing expired promotional wallets: %w", err) }
+	if err := rows.Err(); err != nil { return 0, fmt.Errorf("store: iterating expired promotional wallets: %w", err) }
+	expired := 0
+	for _, userID := range userIDs {
+		removed := false
+		err := s.withTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable}, func(tx *sql.Tx) error {
+			var before, after int64
+			if err := tx.QueryRowContext(ctx, `SELECT promotional_micros FROM wallets WHERE user_id=$1`, userID).Scan(&before); err != nil { return err }
+			if err := expirePromotionalWalletTx(ctx, tx, userID); err != nil { return err }
+			if err := tx.QueryRowContext(ctx, `SELECT promotional_micros FROM wallets WHERE user_id=$1`, userID).Scan(&after); err != nil { return err }
+			removed = after < before
+			return nil
+		})
+		if err != nil { return expired, fmt.Errorf("store: expiring promotional wallet: %w", err) }
+		if removed { expired++ }
+	}
+	return expired, nil
 }
 
 func (s *Store) ReserveWallet(ctx context.Context,userID,keyID,requestID string,amountMicros int64)(*WalletHold,error){
@@ -79,6 +151,7 @@ func (s *Store) ReserveWallet(ctx context.Context,userID,keyID,requestID string,
 		err:=tx.QueryRowContext(ctx,`SELECT id,request_id,amount_micros,expires_at FROM wallet_holds WHERE request_id=$1`,requestID).Scan(&hold.ID,&hold.RequestID,&hold.AmountMicros,&hold.ExpiresAt)
 		if err==nil{return nil};if !errors.Is(err,sql.ErrNoRows){return err}
 		if _,err:=tx.ExecContext(ctx,`INSERT INTO wallets(user_id) VALUES($1) ON CONFLICT DO NOTHING`,userID);err!=nil{return err}
+		if err:=expirePromotionalWalletTx(ctx,tx,userID);err!=nil{return err}
 		var balance,held int64
 		err=tx.QueryRowContext(ctx,`UPDATE wallets SET held_micros=held_micros+$2,updated_at=now() WHERE user_id=$1 AND balance_micros-held_micros >= $2 RETURNING balance_micros,held_micros`,userID,amountMicros).Scan(&balance,&held)
 		if errors.Is(err,sql.ErrNoRows){return ErrInsufficientFunds};if err!=nil{return err}
@@ -104,7 +177,8 @@ func (s *Store) ReleaseWallet(ctx context.Context,requestID string)error{
 		var balance,held int64
 		err=tx.QueryRowContext(ctx,`UPDATE wallets SET held_micros=held_micros-$2,updated_at=now() WHERE user_id=$1 AND held_micros >= $2 RETURNING balance_micros,held_micros`,userID,amount).Scan(&balance,&held);if err!=nil{return err}
 		if _,err=tx.ExecContext(ctx,`UPDATE wallet_holds SET status='released',settled_at=now() WHERE id=$1`,holdID);err!=nil{return err}
-		_,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'hold_release',$2,$3,$4,'request',$5,$6) ON CONFLICT DO NOTHING`,userID,amount,balance,held,requestID,"release:"+requestID);return err
+		if _,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'hold_release',$2,$3,$4,'request',$5,$6) ON CONFLICT DO NOTHING`,userID,amount,balance,held,requestID,"release:"+requestID);err!=nil{return err}
+		return expirePromotionalWalletTx(ctx,tx,userID)
 	})
 }
 
@@ -121,7 +195,8 @@ func settleWalletTx(ctx context.Context,tx *sql.Tx,requestID string,actualMicros
 	if errors.Is(err,sql.ErrNoRows){if allowMissing{return nil};return ErrNotFound};if err!=nil{return err}
 	if actualMicros>reserved{return errors.New("store: actual cost exceeds reserved hold")}
 	var balance,held int64
-	err=tx.QueryRowContext(ctx,`UPDATE wallets SET balance_micros=balance_micros-$2,held_micros=held_micros-$3,updated_at=now() WHERE user_id=$1 AND balance_micros >= $2 AND held_micros >= $3 RETURNING balance_micros,held_micros`,userID,actualMicros,reserved).Scan(&balance,&held);if err!=nil{return err}
+	err=tx.QueryRowContext(ctx,`UPDATE wallets SET balance_micros=balance_micros-$2,held_micros=held_micros-$3,promotional_micros=promotional_micros-least(promotional_micros,$2),promotional_expires_at=CASE WHEN promotional_micros-least(promotional_micros,$2)=0 THEN NULL ELSE promotional_expires_at END,updated_at=now() WHERE user_id=$1 AND balance_micros >= $2 AND held_micros >= $3 RETURNING balance_micros,held_micros`,userID,actualMicros,reserved).Scan(&balance,&held);if err!=nil{return err}
+	if _,err=tx.ExecContext(ctx,`UPDATE trial_grants SET remaining_micros=greatest(0,remaining_micros-$2) WHERE user_id=$1`,userID,actualMicros);err!=nil{return err}
 	if _,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'usage',$2,$3,$4,'request',$5,$6)`,userID,-actualMicros,balance,held,requestID,"settle:"+requestID);err!=nil{return err}
 	_,err=tx.ExecContext(ctx,`UPDATE wallet_holds SET status='settled',settled_at=now() WHERE id=$1`,holdID);return err
 }
@@ -136,7 +211,8 @@ func (s *Store) ReleaseExpiredHolds(ctx context.Context,limit int)(int,error){
 			var balance,held int64
 			err=tx.QueryRowContext(ctx,`UPDATE wallets SET held_micros=held_micros-$2,updated_at=now() WHERE user_id=$1 RETURNING balance_micros,held_micros`,userID,amount).Scan(&balance,&held);if err!=nil{return err}
 			if _,err=tx.ExecContext(ctx,`UPDATE wallet_holds SET status='expired',settled_at=now() WHERE id=$1`,id);err!=nil{return err}
-			_,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'hold_release',$2,$3,$4,'request',$5,$6) ON CONFLICT DO NOTHING`,userID,amount,balance,held,requestID,"expire:"+requestID);return err
+			if _,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'hold_release',$2,$3,$4,'request',$5,$6) ON CONFLICT DO NOTHING`,userID,amount,balance,held,requestID,"expire:"+requestID);err!=nil{return err}
+			return expirePromotionalWalletTx(ctx,tx,userID)
 		});if errors.Is(err,ErrNotFound){break};if err!=nil{return released,err};released++
 	};return released,nil
 }

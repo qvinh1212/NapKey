@@ -39,6 +39,11 @@ go run .                  # tự chạy migration lúc khởi động
 
 Với `MAIL_PROVIDER=log`, link xác minh email in ra log. Lấy từ đó để hoàn tất đăng ký khi chưa có SMTP.
 
+Đặt `TRIAL_FINGERPRINT_SECRET` thành một chuỗi ngẫu nhiên tối thiểu 32 byte
+và giữ nguyên qua các lần đổi `SESSION_SECRET`. Nếu bỏ trống, service tạm dùng
+`SESSION_SECRET`; cách đó tương thích ngược nhưng việc đổi session secret sẽ làm
+thay đổi fingerprint chống nhận trial nhiều lần.
+
 Chỉ chạy migration rồi thoát:
 
 ```bash

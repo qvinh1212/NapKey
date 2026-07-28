@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { isProxyPathAllowed } from './proxy-policy';
+import { trustedClientIP } from './proxy-client-ip';
 
 /**
  * BFF chuyen tiep giua console va napkey-core.
@@ -54,6 +55,8 @@ export async function proxyToCore(req: NextRequest, path: string[]): Promise<Nex
   // Origin phai la origin cua console, vi napkey-core kiem CORS theo PUBLIC_BASE_URL.
   // Lay tu request thay vi hardcode, de dev tren localhost khong phai sua config.
   headers.set('Origin', req.nextUrl.origin);
+  const clientIP = trustedClientIP(req.headers.get('x-forwarded-for'), req.headers.get('x-real-ip'));
+  if (clientIP) headers.set('X-Forwarded-For', clientIP);
 
   let body: string | undefined;
   if (req.method !== 'GET' && req.method !== 'HEAD') {

@@ -12,6 +12,7 @@ import (
 	"napkey-core/internal/auth"
 	"napkey-core/internal/logger"
 	mailer "napkey-core/internal/mail"
+	"napkey-core/internal/pricing"
 	"napkey-core/internal/store"
 )
 
@@ -33,6 +34,8 @@ const (
 	emailMaxPerAddress = 3
 	emailWindow        = time.Hour
 	resetMaxPerAddress = 3
+	trialCredits       = int64(50)
+	trialDuration      = 7 * 24 * time.Hour
 )
 
 // Rate limit scopes.
@@ -275,7 +278,11 @@ func (s *Server) handleVerifyEmail(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, codeInvalidRequest, "token is required")
 		return
 	}
-	userID, err := s.store.ConsumeEmailToken(r.Context(), auth.HashToken(req.Token), "verify_email")
+	ip := clientIP(r, s.trustProxy)
+	userID, trialGranted, err := s.store.VerifyEmailAndGrantTrial(
+		r.Context(), auth.HashToken(req.Token), trialIPHash(s.cfg.TrialFingerprintSecret, ip),
+		trialCredits*pricing.RetailMicrosPerCredit, time.Now().Add(trialDuration),
+	)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			// Covers expired, already used, and never existed. Distinguishing them
@@ -287,17 +294,20 @@ func (s *Server) handleVerifyEmail(w http.ResponseWriter, r *http.Request) {
 		writeStoreError(w, err, "consuming verification token")
 		return
 	}
-	if err := s.store.MarkEmailVerified(r.Context(), userID); err != nil {
-		writeStoreError(w, err, "marking email verified")
-		return
-	}
 	if err := s.store.WriteAudit(r.Context(), store.AuditEntry{
 		ActorType: "user", ActorID: userID, Action: "user.email_verified",
-		TargetType: "user", TargetID: userID, IP: clientIP(r, s.trustProxy),
+		TargetType: "user", TargetID: userID, IP: ip,
 	}); err != nil {
 		logger.Warnf("writing audit log failed: %v", err)
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"status": "verified"})
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status": "verified",
+		"trial": map[string]any{
+			"granted": trialGranted,
+			"credits": trialCredits,
+			"expiresInDays": 7,
+		},
+	})
 }
 
 type resendVerificationRequest struct {

@@ -97,7 +97,7 @@ func (s *Store) GetOperationsSummary(ctx context.Context, since time.Time) (*Ope
 			FROM usage_records WHERE created_at >= $1 AND status = 'success'
 		), wallet_expected AS (
 			SELECT w.user_id, w.balance_micros,
-			       coalesce(sum(CASE WHEN l.kind IN ('topup','usage','refund','adjustment') THEN l.amount_micros ELSE 0 END), 0)::bigint expected
+			       coalesce(sum(CASE WHEN l.kind IN ('topup','trial','usage','refund','adjustment') THEN l.amount_micros ELSE 0 END), 0)::bigint expected
 			FROM wallets w LEFT JOIN ledger_entries l ON l.user_id = w.user_id GROUP BY w.user_id, w.balance_micros
 		), wallet_drift AS (
 			SELECT count(*) FILTER (WHERE balance_micros <> expected)::bigint drift_count,
@@ -133,7 +133,7 @@ func (s *Store) ReconcileWalletBalances(ctx context.Context) (int64, error) {
 	err := s.db.QueryRowContext(ctx, `
 		WITH expected AS (
 			SELECT w.user_id, w.balance_micros,
-			       coalesce(sum(CASE WHEN l.kind IN ('topup','usage','refund','adjustment') THEN l.amount_micros ELSE 0 END), 0)::bigint expected
+			       coalesce(sum(CASE WHEN l.kind IN ('topup','trial','usage','refund','adjustment') THEN l.amount_micros ELSE 0 END), 0)::bigint expected
 			FROM wallets w LEFT JOIN ledger_entries l ON l.user_id = w.user_id GROUP BY w.user_id, w.balance_micros
 		), drift AS (SELECT count(*)::bigint count FROM expected WHERE balance_micros <> expected)
 		SELECT count FROM drift`).Scan(&count)

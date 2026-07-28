@@ -245,6 +245,8 @@ export type WalletResponse = {
       balance: Credits;
       held: Credits;
       available: Credits;
+      promotional: Credits;
+      promotionalExpiresAt: string | null;
       vndPerCredit: 60;
     };
     currency: 'VND';

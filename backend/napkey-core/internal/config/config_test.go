@@ -85,6 +85,22 @@ func TestLoadRequiresSessionSecret(t *testing.T) {
 	}
 }
 
+func TestTrialFingerprintSecretIsStableAndValidated(t *testing.T) {
+	setValidEnv(t)
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load with fallback trial secret: %v", err)
+	}
+	if string(cfg.TrialFingerprintSecret) != string(cfg.SessionSecret) {
+		t.Fatal("an unset trial secret should fall back to the session secret")
+	}
+
+	t.Setenv("TRIAL_FINGERPRINT_SECRET", "too-short")
+	if _, err := Load(); err == nil || !strings.Contains(err.Error(), "TRIAL_FINGERPRINT_SECRET") {
+		t.Fatalf("a weak trial fingerprint secret should be rejected: %v", err)
+	}
+}
+
 func TestLoadRequiresDatabaseURL(t *testing.T) {
 	setValidEnv(t)
 	t.Setenv("DATABASE_URL", "")

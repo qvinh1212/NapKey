@@ -289,6 +289,77 @@ func TestConsumeEmailTokenIsSingleUse(t *testing.T) {
 	}
 }
 
+func TestVerifyEmailAndGrantTrialCreditsWalletOnce(t *testing.T) {
+	srv := pgtest.New(t)
+	srv.On("UPDATE email_tokens SET consumed_at", func(pgtest.Query) pgtest.Response {
+		return pgtest.Response{Columns: []pgtest.Column{{Name: "user_id"}}, Rows: [][]*string{{pgtest.Text(pgtest.UUID(7))}}, Tag: "UPDATE 1"}
+	})
+	srv.On("INSERT INTO trial_grants", func(pgtest.Query) pgtest.Response {
+		return pgtest.Response{Columns: []pgtest.Column{{Name: "id"}}, Rows: [][]*string{{pgtest.Text(pgtest.UUID(8))}}, Tag: "INSERT 1"}
+	})
+	srv.On("UPDATE wallets", func(pgtest.Query) pgtest.Response {
+		return pgtest.Response{
+			Columns: []pgtest.Column{{Name: "balance_micros", OID: 20}, {Name: "held_micros", OID: 20}},
+			Rows: [][]*string{{pgtest.Text("3000000000"), pgtest.Text("0")}}, Tag: "UPDATE 1",
+		}
+	})
+	st := openTestStore(t, srv)
+
+	userID, granted, err := st.VerifyEmailAndGrantTrial(
+		context.Background(), []byte("token"), []byte("ip-fingerprint"), 3_000_000_000, time.Now().Add(7*24*time.Hour),
+	)
+	if err != nil {
+		t.Fatalf("VerifyEmailAndGrantTrial: %v", err)
+	}
+	if userID != pgtest.UUID(7) || !granted {
+		t.Fatalf("userID=%q granted=%v", userID, granted)
+	}
+	for _, query := range []string{"UPDATE users SET email_verified_at", "INSERT INTO wallets", "INSERT INTO ledger_entries"} {
+		if _, ok := srv.FindQuery(query); !ok {
+			t.Errorf("successful trial grant is missing %q", query)
+		}
+	}
+}
+
+func TestVerifyEmailStillSucceedsWhenTrialFingerprintWasUsed(t *testing.T) {
+	srv := pgtest.New(t)
+	srv.On("UPDATE email_tokens SET consumed_at", func(pgtest.Query) pgtest.Response {
+		return pgtest.Response{Columns: []pgtest.Column{{Name: "user_id"}}, Rows: [][]*string{{pgtest.Text(pgtest.UUID(9))}}, Tag: "UPDATE 1"}
+	})
+	srv.On("INSERT INTO trial_grants", func(pgtest.Query) pgtest.Response {
+		return pgtest.Response{Columns: []pgtest.Column{{Name: "id"}}, Rows: nil, Tag: "INSERT 0"}
+	})
+	st := openTestStore(t, srv)
+
+	userID, granted, err := st.VerifyEmailAndGrantTrial(
+		context.Background(), []byte("token"), []byte("used-ip"), 3_000_000_000, time.Now().Add(7*24*time.Hour),
+	)
+	if err != nil || userID != pgtest.UUID(9) || granted {
+		t.Fatalf("userID=%q granted=%v err=%v", userID, granted, err)
+	}
+	if _, ok := srv.FindQuery("UPDATE wallets"); ok {
+		t.Fatal("a duplicate trial fingerprint must not credit the wallet")
+	}
+}
+
+func TestVerifyEmailWithoutUsableIPSkipsTrial(t *testing.T) {
+	srv := pgtest.New(t)
+	srv.On("UPDATE email_tokens SET consumed_at", func(pgtest.Query) pgtest.Response {
+		return pgtest.Response{Columns: []pgtest.Column{{Name: "user_id"}}, Rows: [][]*string{{pgtest.Text(pgtest.UUID(10))}}, Tag: "UPDATE 1"}
+	})
+	st := openTestStore(t, srv)
+
+	userID, granted, err := st.VerifyEmailAndGrantTrial(
+		context.Background(), []byte("token"), nil, 3_000_000_000, time.Now().Add(7*24*time.Hour),
+	)
+	if err != nil || userID != pgtest.UUID(10) || granted {
+		t.Fatalf("userID=%q granted=%v err=%v", userID, granted, err)
+	}
+	if _, ok := srv.FindQuery("INSERT INTO trial_grants"); ok {
+		t.Fatal("verification without a usable IP must not create a shared trial fingerprint")
+	}
+}
+
 func TestLookupSessionFiltersExpired(t *testing.T) {
 	srv := pgtest.New(t)
 	srv.On("FROM sessions s", func(pgtest.Query) pgtest.Response {

@@ -19,7 +19,7 @@ import { Panel } from './ui';
 
 type State =
   | { status: 'verifying' }
-  | { status: 'done' }
+  | { status: 'done'; trialGranted: boolean }
   | { status: 'failed'; message: string; expired: boolean };
 
 export function VerifyEmail({ token }: { token: string | null }) {
@@ -36,8 +36,8 @@ export function VerifyEmail({ token }: { token: string | null }) {
 
     async function run() {
       try {
-        await api.post('/v1/auth/verify-email', { token });
-        if (!controller.signal.aborted) setState({ status: 'done' });
+        const response = await api.post<{ trial?: { granted?: boolean } }>('/v1/auth/verify-email', { token });
+        if (!controller.signal.aborted) setState({ status: 'done', trialGranted: response.trial?.granted === true });
       } catch (error) {
         if (controller.signal.aborted) return;
         // Backend gop het het-han, da-dung, khong-ton-tai vao mot loi 400 de khong
@@ -71,6 +71,9 @@ export function VerifyEmail({ token }: { token: string | null }) {
         <h1 className="mt-3 text-xl tracking-[-0.02em]">{t('successTitle')}</h1>
         <p className="mx-auto mt-3 max-w-sm text-ui leading-relaxed text-muted">
           {t('successBody')}
+        </p>
+        <p className="mx-auto mt-3 max-w-sm rounded-md border border-line bg-surface-hover px-4 py-3 text-ui leading-relaxed text-muted">
+          {state.trialGranted ? t('trialGranted') : t('trialUnavailable')}
         </p>
         <Link
           href="/console"

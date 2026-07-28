@@ -1,6 +1,7 @@
 package store
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -100,6 +101,36 @@ func TestCreditUsageCacheBackfillsFromLedger(t *testing.T) {
 		if !strings.Contains(combined, required) {
 			t.Errorf("credit usage cache migration is missing %q", required)
 		}
+	}
+}
+
+func TestTrialCreditSchemaEnforcesOneTimeGrants(t *testing.T) {
+	migrations, err := loadMigrations()
+	if err != nil {
+		t.Fatalf("loadMigrations: %v", err)
+	}
+	combined := strings.ToLower(strings.Join(sqlOf(migrations), "\n"))
+	for _, required := range []string{
+		"create table trial_grants",
+		"user_id uuid not null unique",
+		"ip_hash bytea not null unique",
+		"promotional_micros",
+		"promotional_expires_at",
+		"'trial'",
+	} {
+		if !strings.Contains(combined, required) {
+			t.Errorf("trial credit migration is missing %q", required)
+		}
+	}
+}
+
+func TestWalletReconciliationIncludesTrialCredits(t *testing.T) {
+	source, err := os.ReadFile("operations.go")
+	if err != nil {
+		t.Fatalf("read operations.go: %v", err)
+	}
+	if got := strings.Count(string(source), "'topup','trial','usage','refund','adjustment'"); got != 2 {
+		t.Fatalf("wallet reconciliation includes trial credits %d times, want 2", got)
 	}
 }
 

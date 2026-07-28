@@ -138,6 +138,79 @@ func (s *Store) ConsumeEmailToken(ctx context.Context, tokenHash []byte, purpose
 	return userID, nil
 }
 
+// VerifyEmailAndGrantTrial atomically consumes a verification token, verifies
+// the account, and grants promotional wallet credit at most once per user and
+// source fingerprint. A duplicate fingerprint still verifies the account but
+// receives no promotional balance.
+func (s *Store) VerifyEmailAndGrantTrial(ctx context.Context, tokenHash, ipHash []byte, amountMicros int64, expiresAt time.Time) (string, bool, error) {
+	if amountMicros <= 0 || !expiresAt.After(time.Now()) {
+		return "", false, errors.New("store: invalid trial grant")
+	}
+	var userID string
+	granted := false
+	err := s.withTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable}, func(tx *sql.Tx) error {
+		err := tx.QueryRowContext(ctx, `
+			UPDATE email_tokens SET consumed_at = now()
+			WHERE token_hash = $1 AND purpose = 'verify_email'
+			  AND consumed_at IS NULL AND expires_at > now()
+			RETURNING user_id`, tokenHash).Scan(&userID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
+		if err != nil {
+			return err
+		}
+		if _, err = tx.ExecContext(ctx, `UPDATE users SET email_verified_at = coalesce(email_verified_at, now()) WHERE id = $1`, userID); err != nil {
+			return err
+		}
+		// A missing or malformed client address must never prevent email
+		// verification. It only makes the account ineligible for automatic trial
+		// credit, which is safer than assigning every unknown address one hash.
+		if len(ipHash) == 0 {
+			return nil
+		}
+		var grantID string
+		err = tx.QueryRowContext(ctx, `
+			INSERT INTO trial_grants(user_id, ip_hash, amount_micros, remaining_micros, expires_at)
+			VALUES($1,$2,$3,$3,$4)
+			ON CONFLICT DO NOTHING
+			RETURNING id`, userID, ipHash, amountMicros, expiresAt).Scan(&grantID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if _, err = tx.ExecContext(ctx, `INSERT INTO wallets(user_id) VALUES($1) ON CONFLICT DO NOTHING`, userID); err != nil {
+			return err
+		}
+		var balance, held int64
+		err = tx.QueryRowContext(ctx, `
+			UPDATE wallets
+			SET balance_micros = balance_micros + $2,
+			    promotional_micros = promotional_micros + $2,
+			    promotional_expires_at = $3,
+			    updated_at = now()
+			WHERE user_id = $1
+			RETURNING balance_micros, held_micros`, userID, amountMicros, expiresAt).Scan(&balance, &held)
+		if err != nil {
+			return err
+		}
+		_, err = tx.ExecContext(ctx, `
+			INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key,metadata)
+			VALUES($1,'trial',$2,$3,$4,'trial_grant',$5,$6,jsonb_build_object('expiresAt',$7))`,
+			userID, amountMicros, balance, held, grantID, "trial:"+userID, expiresAt)
+		if err == nil {
+			granted = true
+		}
+		return err
+	})
+	if err != nil {
+		return "", false, fmt.Errorf("store: verifying email and granting trial: %w", err)
+	}
+	return userID, granted, nil
+}
+
 // InvalidateEmailTokens consumes every outstanding token of a purpose for a user,
 // so issuing a new link retires the previous one.
 func (s *Store) InvalidateEmailTokens(ctx context.Context, userID, purpose string) error {

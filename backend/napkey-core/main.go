@@ -218,6 +218,11 @@ func runJanitor(ctx context.Context, st *store.Store) {
 		} else if n > 0 {
 			logger.Infof("released %d expired wallet hold(s)", n)
 		}
+		if n, err := st.ExpirePromotionalCredits(sweepCtx, 500); err != nil {
+			logger.Warnf("expiring promotional credits failed: %v", err)
+		} else if n > 0 {
+			logger.Infof("processed %d expired promotional wallet(s)", n)
+		}
 		if n,err:=st.CountStaleUnmatchedPayments(sweepCtx,30*time.Minute);err!=nil{logger.Warnf("checking unmatched Casso payments failed: %v",err)}else if n>0{logger.Warnf("%d Casso payment(s) have been unmatched for more than 30 minutes",n)}
 	}
 

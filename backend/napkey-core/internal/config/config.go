@@ -30,6 +30,10 @@ type Config struct {
 
 	// SessionSecret keys the session cookie HMAC. Must be >= 32 bytes.
 	SessionSecret []byte
+	// TrialFingerprintSecret keys privacy-preserving IP fingerprints. Keep it
+	// stable across session-secret rotations or the same network could receive a
+	// second trial after a rotation.
+	TrialFingerprintSecret []byte
 	// SessionTTL is how long a login lasts before re-authentication.
 	SessionTTL time.Duration
 	// SecureCookies sets the Secure attribute. Off only for local http.
@@ -138,6 +142,11 @@ func Load() (*Config, error) {
 
 	secret := os.Getenv("SESSION_SECRET")
 	c.SessionSecret = []byte(secret)
+	trialSecret := os.Getenv("TRIAL_FINGERPRINT_SECRET")
+	if trialSecret == "" {
+		trialSecret = secret
+	}
+	c.TrialFingerprintSecret = []byte(trialSecret)
 
 	var problems []string
 	if c.DatabaseURL == "" {
@@ -149,6 +158,9 @@ func Load() (*Config, error) {
 	// internally, which means less entropy than the algorithm implies.
 	if len(c.SessionSecret) < 32 {
 		problems = append(problems, "SESSION_SECRET must be at least 32 bytes (generate with: openssl rand -base64 48)")
+	}
+	if len(c.TrialFingerprintSecret) < 32 {
+		problems = append(problems, "TRIAL_FINGERPRINT_SECRET must be at least 32 bytes when set")
 	}
 	if c.Port < 1 || c.Port > 65535 {
 		problems = append(problems, "PORT must be between 1 and 65535")
