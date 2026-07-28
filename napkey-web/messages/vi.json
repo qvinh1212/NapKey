@@ -304,6 +304,7 @@
         "usage": "Lịch sử dùng",
         "wallet": "Ví & nạp tiền",
         "keys": "API key",
+        "developer": "Developer",
         "settings": "Cài đặt"
       },
       "signOut": "Đăng xuất",
@@ -526,6 +527,39 @@
       "revoke": "Thu hồi",
       "revokeConfirm": "Thu hồi key \"{name}\"? Mọi request dùng key này sẽ bị từ chối ngay.",
       "revokedAt": "Thu hồi {when}"
+    },
+    "developer": {
+      "metaTitle": "Không gian developer",
+      "workbenchTitle": "Bàn tích hợp API",
+      "workbenchDescription": "Chọn model đang được công bố và client, sau đó sao chép cấu hình giữ API key trong biến môi trường.",
+      "catalogLive": "Catalog trực tiếp",
+      "catalogFallback": "Catalog dự phòng",
+      "modelLabel": "Model",
+      "modelHint": "Catalog mô tả model ID được chấp nhận. Khả năng phục vụ thực tế vẫn có thể thay đổi khi gửi request.",
+      "clientLabel": "Client",
+      "tools": { "claudeCode": "Claude Code", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL", "powershell": "PowerShell" },
+      "secretTitle": "Giữ secret bên ngoài source code",
+      "secretBody": "Mọi snippet đều đọc key từ biến môi trường. Không dán key thật vào Git, ảnh chụp, tin nhắn hỗ trợ hoặc browser storage.",
+      "snippetLabel": "Cấu hình sẵn để sao chép",
+      "snippetHint": "Đặt NAPKEY_API_KEY trong shell hoặc secret manager trước khi chạy.",
+      "copy": "Chép snippet",
+      "copied": "Đã chép",
+      "copyEndpoint": "Chép endpoint",
+      "errorsTitle": "Hiểu lỗi nhanh",
+      "errorsDescription": "Đọc HTTP status và x-request-id trước khi sửa code hoặc thử lại.",
+      "retryable": "Có thể thử lại",
+      "actionRequired": "Kiểm tra request",
+      "errors": {
+        "request": { "title": "Request không hợp lệ", "body": "Kiểm tra JSON, model ID, header bắt buộc và giới hạn max token." },
+        "authentication": { "title": "Key bị từ chối", "body": "Xác nhận key đang bật và đã đồng bộ. Thu hồi ngay nếu key có thể đã lộ." },
+        "balance": { "title": "Không đủ số dư", "body": "Nạp thêm ví rồi gửi lại với một request ID mới." },
+        "rateLimit": { "title": "Chạm giới hạn tốc độ", "body": "Tôn trọng Retry-After và thử lại bằng exponential backoff có jitter." },
+        "upstream": { "title": "Dịch vụ chưa sẵn sàng", "body": "Kiểm tra trạng thái hệ thống, giữ lại x-request-id và chỉ retry tác vụ idempotent với backoff." }
+      },
+      "nextTitle": "Công cụ developer",
+      "manageKeys": "Quản lý API key",
+      "inspectUsage": "Kiểm tra sổ request",
+      "systemStatus": "Trạng thái hệ thống"
     },
     "verify": {
       "metaTitle": "Xác minh email",

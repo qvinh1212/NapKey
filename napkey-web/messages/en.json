@@ -304,6 +304,7 @@
         "usage": "Usage",
         "wallet": "Wallet",
         "keys": "API keys",
+        "developer": "Developer",
         "settings": "Settings"
       },
       "signOut": "Sign out",
@@ -526,6 +527,39 @@
       "revoke": "Revoke",
       "revokeConfirm": "Revoke key \"{name}\"? Requests using it will be rejected immediately.",
       "revokedAt": "Revoked {when}"
+    },
+    "developer": {
+      "metaTitle": "Developer workspace",
+      "workbenchTitle": "Integration workbench",
+      "workbenchDescription": "Choose a live model and client, then copy a configuration that keeps your API key in an environment variable.",
+      "catalogLive": "Live catalog",
+      "catalogFallback": "Fallback catalog",
+      "modelLabel": "Model",
+      "modelHint": "The catalog describes accepted model IDs. Live capacity can still vary when a request is sent.",
+      "clientLabel": "Client",
+      "tools": { "claudeCode": "Claude Code", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL", "powershell": "PowerShell" },
+      "secretTitle": "Keep the secret outside source code",
+      "secretBody": "Every snippet reads the key from your environment. Do not paste a live key into Git, screenshots, support messages, or browser storage.",
+      "snippetLabel": "Copy-ready configuration",
+      "snippetHint": "Set NAPKEY_API_KEY in your shell or secret manager before running it.",
+      "copy": "Copy snippet",
+      "copied": "Copied",
+      "copyEndpoint": "Copy endpoint",
+      "errorsTitle": "Understand failures quickly",
+      "errorsDescription": "Use the HTTP status and x-request-id before changing code or retrying.",
+      "retryable": "Retryable",
+      "actionRequired": "Check request",
+      "errors": {
+        "request": { "title": "Invalid request", "body": "Check the JSON shape, model ID, required headers and max token values." },
+        "authentication": { "title": "Key rejected", "body": "Confirm the key is enabled and synced. Revoke it immediately if it may have leaked." },
+        "balance": { "title": "Insufficient balance", "body": "Top up the wallet, then retry the same request with a new request ID." },
+        "rateLimit": { "title": "Rate limit reached", "body": "Respect Retry-After and retry with exponential backoff and jitter." },
+        "upstream": { "title": "Service unavailable", "body": "Check system status, retain x-request-id and retry only idempotent work with backoff." }
+      },
+      "nextTitle": "Developer controls",
+      "manageKeys": "Manage API keys",
+      "inspectUsage": "Inspect request ledger",
+      "systemStatus": "System status"
     },
     "verify": {
       "metaTitle": "Verify email",

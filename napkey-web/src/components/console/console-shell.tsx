@@ -22,6 +22,7 @@ const tabs = [
   { key: 'usage', href: '/console/usage' },
   { key: 'wallet', href: '/console/billing' },
   { key: 'keys', href: '/console/keys' },
+  { key: 'developer', href: '/console/developer' },
   { key: 'settings', href: '/console/settings' },
 ] as const;
 
