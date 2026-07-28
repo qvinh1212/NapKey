@@ -71,6 +71,24 @@ func TestPayOSConfigurationRequiresAllThreeSecrets(t *testing.T) {
 	}
 }
 
+func TestGoogleOAuthConfigurationRequiresClientPair(t *testing.T) {
+	setValidEnv(t)
+	t.Setenv("GOOGLE_CLIENT_ID", "client-id")
+	t.Setenv("GOOGLE_CLIENT_SECRET", "")
+	if _, err := Load(); err == nil {
+		t.Fatal("GOOGLE_CLIENT_ID without GOOGLE_CLIENT_SECRET should be rejected")
+	}
+
+	t.Setenv("GOOGLE_CLIENT_SECRET", "client-secret")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("complete Google OAuth config: %v", err)
+	}
+	if cfg.GoogleClientID != "client-id" || cfg.GoogleClientSecret != "client-secret" {
+		t.Fatal("Google OAuth credentials were not loaded")
+	}
+}
+
 func TestLoadRequiresSessionSecret(t *testing.T) {
 	setValidEnv(t)
 	// A short secret means less entropy than HMAC-SHA256 implies, so it is refused

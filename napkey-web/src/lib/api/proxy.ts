@@ -32,7 +32,7 @@ const CORE_URL = (process.env.NAPKEY_CORE_URL ?? 'http://127.0.0.1:8081').replac
 const FORWARD_REQUEST_HEADERS = ['content-type', 'cookie', 'x-csrf-token', 'accept-language'];
 
 /** Header duoc tra ve trinh duyet. */
-const FORWARD_RESPONSE_HEADERS = ['content-type', 'cache-control'];
+const FORWARD_RESPONSE_HEADERS = ['content-type', 'cache-control', 'location'];
 
 export async function proxyToCore(req: NextRequest, path: string[]): Promise<NextResponse> {
   const pathname = '/' + path.join('/');

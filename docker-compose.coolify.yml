@@ -76,6 +76,10 @@ services:
       BANK_ACCOUNT_NUMBER: ${BANK_ACCOUNT_NUMBER}
       BANK_ACCOUNT_NAME: ${BANK_ACCOUNT_NAME}
       WALLET_HOLD_VND: ${WALLET_HOLD_VND:-1000000}
+      # Google sign-in. Leave both blank to keep the console on email and password;
+      # napkey-core refuses to start with only one of the pair set.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       ADMIN_EMAILS: ${ADMIN_EMAILS}
     expose: ["8081"]
     healthcheck:

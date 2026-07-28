@@ -124,6 +124,24 @@ func TestTrialCreditSchemaEnforcesOneTimeGrants(t *testing.T) {
 	}
 }
 
+func TestGoogleIdentitySchemaUsesStableSubject(t *testing.T) {
+	migrations, err := loadMigrations()
+	if err != nil {
+		t.Fatalf("loadMigrations: %v", err)
+	}
+	combined := strings.ToLower(strings.Join(sqlOf(migrations), "\n"))
+	for _, required := range []string{
+		"create table oauth_identities",
+		"provider_subject text not null",
+		"unique(provider, provider_subject)",
+		"unique(user_id, provider)",
+	} {
+		if !strings.Contains(combined, required) {
+			t.Errorf("Google identity migration is missing %q", required)
+		}
+	}
+}
+
 func TestWalletReconciliationIncludesTrialCredits(t *testing.T) {
 	source, err := os.ReadFile("operations.go")
 	if err != nil {

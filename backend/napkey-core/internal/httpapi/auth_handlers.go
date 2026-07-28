@@ -34,7 +34,11 @@ const (
 	emailMaxPerAddress = 3
 	emailWindow        = time.Hour
 	resetMaxPerAddress = 3
-	trialCredits       = int64(50)
+	// Starting an OAuth redirect is cheap for us but each attempt writes state
+	// cookies and lands on Google, so one address gets a bounded budget.
+	googleStartMaxPerIP = 20
+	googleStartWindow   = 15 * time.Minute
+	trialCredits        = int64(50)
 	trialDuration      = 7 * 24 * time.Hour
 )
 
@@ -45,6 +49,7 @@ const (
 	scopeRegisterIP = "register_ip"
 	scopeVerifyMail = "verify_mail"
 	scopeResetMail  = "reset_mail"
+	scopeGoogleIP   = "google_ip"
 )
 
 type registerRequest struct {

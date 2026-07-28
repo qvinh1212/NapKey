@@ -2,6 +2,8 @@
 const ALLOWED: readonly (RegExp | string)[] = [
   '/v1/auth/register',
   '/v1/auth/login',
+  '/v1/auth/google/start',
+  '/v1/auth/google/callback',
   '/v1/auth/logout',
   '/v1/auth/verify-email',
   '/v1/auth/resend-verification',
