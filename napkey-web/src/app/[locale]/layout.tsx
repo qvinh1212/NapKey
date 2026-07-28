@@ -8,6 +8,7 @@ import { routing, locales, type Locale } from '@/i18n/routing';
 import { site } from '@/lib/site';
 import { SiteHeader } from '@/components/napkey/site-header';
 import { SiteFooter } from '@/components/napkey/site-footer';
+import { SessionProvider } from '@/components/console/session-provider';
 import '../globals.css';
 
 // Font self-host thay vi next/font/google: build khong con phu thuoc
@@ -95,7 +96,9 @@ export default async function LocaleLayout({
           >
             {t('skipToContent')}
           </a>
-          <SiteHeader />
+          <SessionProvider>
+            <SiteHeader />
+          </SessionProvider>
           <main id="main">{children}</main>
           <SiteFooter />
         </NextIntlClientProvider>

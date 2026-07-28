@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/button';
+import { useSession } from '@/components/console/session-provider';
+import { publicAuthAction } from '@/lib/session-ui';
 import { Logo } from './logo';
 import { LocaleSwitcher } from './locale-switcher';
 
@@ -17,6 +19,8 @@ const sections = [
 
 export function SiteHeader() {
   const t = useTranslations('nav');
+  const session = useSession();
+  const authAction = publicAuthAction(session.status);
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileNavRef = useRef<HTMLElement>(null);
@@ -64,15 +68,19 @@ export function SiteHeader() {
 
           <div className="flex items-center gap-3">
             <LocaleSwitcher />
-            <Link
-              href="/signin"
-              className="hidden rounded-full px-4 py-2 text-ui text-subtle transition-colors duration-150 ease-[var(--ease-smooth)] hover:bg-surface-hover hover:text-fg sm:inline-flex"
-            >
-              {t('signIn')}
-            </Link>
-            <ButtonLink href="/signup" variant="pill" className="hidden sm:inline-flex">
-              {t('getStarted')}
-            </ButtonLink>
+            {authAction ? (
+              <Link
+                href={authAction.href}
+                className="hidden rounded-full px-4 py-2 text-ui text-subtle transition-colors duration-150 ease-[var(--ease-smooth)] hover:bg-surface-hover hover:text-fg sm:inline-flex"
+              >
+                {t(authAction.labelKey)}
+              </Link>
+            ) : null}
+            {session.status === 'anonymous' ? (
+              <ButtonLink href="/signup" variant="pill" className="hidden sm:inline-flex">
+                {t('getStarted')}
+              </ButtonLink>
+            ) : null}
             <button
               ref={menuButtonRef}
               type="button"
@@ -106,16 +114,20 @@ export function SiteHeader() {
                 {t(key)}
               </Link>
             ))}
-            <Link
-              href="/signin"
-              onClick={() => setOpen(false)}
-              className="rounded-md px-3 py-3 text-base text-muted transition-colors hover:bg-surface-hover hover:text-fg"
-            >
-              {t('signIn')}
-            </Link>
-            <ButtonLink href="/signup" className="mt-3 w-full" onClick={() => setOpen(false)}>
-              {t('getStarted')}
-            </ButtonLink>
+            {authAction ? (
+              <Link
+                href={authAction.href}
+                onClick={() => setOpen(false)}
+                className="rounded-md px-3 py-3 text-base text-muted transition-colors hover:bg-surface-hover hover:text-fg"
+              >
+                {t(authAction.labelKey)}
+              </Link>
+            ) : null}
+            {session.status === 'anonymous' ? (
+              <ButtonLink href="/signup" className="mt-3 w-full" onClick={() => setOpen(false)}>
+                {t('getStarted')}
+              </ButtonLink>
+            ) : null}
           </nav>
         ) : null}
       </div>

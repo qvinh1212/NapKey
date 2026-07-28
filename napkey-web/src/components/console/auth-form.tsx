@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
 import { api, ApiError } from '@/lib/api/client';
 import { Field } from './field';
 import { useSession } from './session-provider';
 import { Panel } from './ui';
+import { shouldRedirectFromSignIn } from '@/lib/session-ui';
 
 /**
  * Form dang nhap va dang ky.
@@ -33,6 +34,12 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [registered, setRegistered] = useState(false);
+
+  useEffect(() => {
+    if (mode === 'signin' && shouldRedirectFromSignIn(session.status)) {
+      router.replace('/console');
+    }
+  }, [mode, router, session.status]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -90,6 +97,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
       </Panel>
     );
   }
+
+  if (mode === 'signin' && session.status !== 'anonymous') return null;
 
   return (
     <Panel className="p-8">
