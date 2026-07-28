@@ -20,6 +20,12 @@ var sonnetRate = Rate{
 	UpstreamCacheWritePer1k: 97_500_000,
 }
 
+func TestRetailCreditRate(t *testing.T) {
+	if RetailVNDPerCredit != 60 {
+		t.Fatalf("RetailVNDPerCredit = %d, want 60", RetailVNDPerCredit)
+	}
+}
+
 func TestCreditBillingUsesFixedPointArithmetic(t *testing.T) {
 	credits, err := CreditMicrosFromFloat(1.87)
 	if err != nil {

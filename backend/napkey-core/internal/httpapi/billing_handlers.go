@@ -85,7 +85,7 @@ func (s *Server) handleGetTopup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) topupView(order *store.TopupOrder) map[string]any {
-	return map[string]any{"order": map[string]any{"id": order.ID, "memoCode": order.MemoCode, "status": order.Status, "expectedAmount": costView(order.ExpectedAmountMicros), "expectedCredits": creditsView(order.ExpectedAmountMicros / pricing.RetailVNDPerCredit), "receivedAmount": costView(order.ReceivedAmountMicros), "expiresAt": order.ExpiresAt.UTC().Format(time.RFC3339), "paidAt": formatOptionalTime(order.PaidAt), "payment": map[string]any{"provider": order.Provider, "checkoutUrl": order.CheckoutURL, "qrCode": order.QRCode}}}
+	return map[string]any{"order": map[string]any{"id": order.ID, "memoCode": order.MemoCode, "status": order.Status, "expectedAmount": costView(order.ExpectedAmountMicros), "expectedCredits": creditsView(order.ExpectedAmountMicros / order.RetailVNDPerCredit), "receivedAmount": costView(order.ReceivedAmountMicros), "expiresAt": order.ExpiresAt.UTC().Format(time.RFC3339), "paidAt": formatOptionalTime(order.PaidAt), "payment": map[string]any{"provider": order.Provider, "checkoutUrl": order.CheckoutURL, "qrCode": order.QRCode}}}
 }
 
 func formatOptionalTime(value *time.Time) any {

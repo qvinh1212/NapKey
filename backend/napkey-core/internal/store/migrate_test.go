@@ -77,6 +77,19 @@ func TestSchemaEnforcesKeyHashUniqueness(t *testing.T) {
 	}
 }
 
+func TestCreditRepricingPreservesExistingWalletCredits(t *testing.T) {
+	migrations, err := loadMigrations()
+	if err != nil {
+		t.Fatalf("loadMigrations: %v", err)
+	}
+	combined := strings.ToLower(strings.Join(sqlOf(migrations), "\n"))
+	for _, required := range []string{"wallet-credit-reprice-45-to-60", "kind, amount_micros", "'adjustment'"} {
+		if !strings.Contains(combined, required) {
+			t.Errorf("credit repricing migration is missing %q", required)
+		}
+	}
+}
+
 func sqlOf(migrations []migration) []string {
 	out := make([]string, len(migrations))
 	for i, m := range migrations {

@@ -218,14 +218,14 @@
   "pricing": {
     "eyebrow": "Bảng giá",
     "title": "Một mức giá credit, dùng cho mọi model",
-    "subtitle": "Không cần tự quy đổi input, output hay cache token. NapKey ghi nhận đúng số credit Kiro báo về và trừ ví theo mức cố định 45 VNĐ mỗi credit.",
+    "subtitle": "Không cần tự quy đổi input, output hay cache token. NapKey ghi nhận đúng số credit Kiro báo về và trừ ví theo mức cố định 60 VNĐ mỗi credit.",
     "popular": "Phổ biến",
     "packages": {
       "starter": "Bắt đầu và thử nghiệm",
       "builder": "Dùng thường xuyên",
       "scale": "Khối lượng lớn"
     },
-    "packageNote": "Cùng đơn giá 45 VNĐ/credit, không khóa gói và không ép cam kết dài hạn.",
+    "packageNote": "Cùng đơn giá 60 VNĐ/credit, không khóa gói và không ép cam kết dài hạn.",
     "rateLabel": "Đơn giá công khai",
     "measurement": "Credit được đo từ usage thực tế do Kiro trả về. Dashboard lưu từng request, model, token tham chiếu, credit và số tiền đã trừ để bạn đối soát.",
     "footnote": "Credit trong ví NapKey không hết hạn theo chính sách hiện tại. Usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
@@ -578,7 +578,7 @@
       "loadFailed": "Không tải được ví của bạn.",
       "createFailed": "Không tạo được lệnh nạp tiền.",
       "balance": "Số dư ví",
-      "creditRate": "1.000 credit = 45.000 VNĐ. Credit không hết hạn.",
+      "creditRate": "1.000 credit = 60.000 VNĐ. Credit không hết hạn.",
       "balanceHint": "Tổng tiền đã ghi có trước các khoản đang giữ.",
       "available": "Có thể sử dụng",
       "availableHint": "Sẵn sàng thanh toán cho request API.",

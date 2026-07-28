@@ -223,7 +223,7 @@ export type WalletResponse = {
       balance: Credits;
       held: Credits;
       available: Credits;
-      vndPerCredit: 45;
+      vndPerCredit: 60;
     };
     currency: 'VND';
   };

@@ -8,14 +8,14 @@ import { Badge, Panel, PanelHeader, StatCard } from './ui';
 import { creditAmount } from '@/lib/format';
 import { creditsFromVnd, microcreditsFromVnd } from '@/lib/pricing';
 
-const PRESETS = [45_000, 90_000, 225_000, 450_000];
+const PRESETS = [60_000, 120_000, 300_000, 600_000];
 
 export function WalletTopup() {
   const t = useTranslations('console.wallet');
   const locale = useLocale();
   const [wallet, setWallet] = useState<WalletResponse['wallet'] | null>(null);
   const [order, setOrder] = useState<TopupOrderResponse['order'] | null>(null);
-  const [amount, setAmount] = useState(45_000);
+  const [amount, setAmount] = useState(60_000);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
