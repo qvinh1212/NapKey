@@ -12,6 +12,7 @@ import (
 	"napkey-core/internal/kiro"
 	"napkey-core/internal/logger"
 	"napkey-core/internal/mail"
+	"napkey-core/internal/payos"
 	"napkey-core/internal/store"
 )
 
@@ -28,6 +29,7 @@ type Server struct {
 	store  *store.Store
 	kiro   *kiro.Client
 	mailer mail.Sender
+	payos  *payos.Client
 	// trustProxy is on when running behind Traefik, so X-Forwarded-For is usable.
 	trustProxy bool
 	startedAt  time.Time
@@ -40,6 +42,7 @@ func New(cfg *config.Config, st *store.Store, kiroClient *kiro.Client, mailer ma
 		store:  st,
 		kiro:   kiroClient,
 		mailer: mailer,
+		payos:  payos.NewClient(cfg.PayOSClientID, cfg.PayOSAPIKey, cfg.PayOSChecksumKey),
 		// Coolify terminates TLS at Traefik and forwards, so the header is set by
 		// infrastructure rather than the client.
 		trustProxy: true,
@@ -110,7 +113,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /internal/wallet/reserve", s.requireInternalAuth(s.handleReserveWallet))
 	mux.HandleFunc("POST /internal/wallet/release", s.requireInternalAuth(s.handleReleaseWallet))
 
-	// Public Casso Webhook V2. Authentication is the HMAC signature, not session.
+	// Public payment webhooks. Authentication is the provider HMAC, not a session.
+	mux.HandleFunc("POST /webhooks/payos", s.handlePayOSWebhook)
 	mux.HandleFunc("POST /webhooks/casso", s.handleCassoWebhook)
 
 	return s.withCommonMiddleware(mux)

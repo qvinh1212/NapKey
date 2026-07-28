@@ -241,11 +241,10 @@ export type TopupOrderResponse = {
     receivedAmount: Money;
     expiresAt: string;
     paidAt: string | null;
-    bank: {
-      name: string;
-      bin: string;
-      accountNumber: string;
-      accountName: string;
+    payment: {
+      provider: 'payos';
+      checkoutUrl: string;
+      qrCode: string;
     };
   };
 };

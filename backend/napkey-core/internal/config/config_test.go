@@ -32,6 +32,25 @@ func TestLoadWithValidEnvironment(t *testing.T) {
 	}
 }
 
+func TestPayOSConfigurationRequiresAllThreeSecrets(t *testing.T) {
+	setValidEnv(t)
+	t.Setenv("PAYOS_CLIENT_ID", "client")
+	_, err := Load()
+	if err == nil || !strings.Contains(err.Error(), "PAYOS_API_KEY") || !strings.Contains(err.Error(), "PAYOS_CHECKSUM_KEY") {
+		t.Fatalf("partial PayOS configuration should name every missing secret: %v", err)
+	}
+
+	t.Setenv("PAYOS_API_KEY", "api")
+	t.Setenv("PAYOS_CHECKSUM_KEY", "checksum")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("complete PayOS configuration rejected: %v", err)
+	}
+	if cfg.PayOSClientID != "client" || cfg.PayOSAPIKey != "api" || cfg.PayOSChecksumKey != "checksum" {
+		t.Fatal("PayOS secrets were not loaded")
+	}
+}
+
 func TestLoadRequiresSessionSecret(t *testing.T) {
 	setValidEnv(t)
 	// A short secret means less entropy than HMAC-SHA256 implies, so it is refused

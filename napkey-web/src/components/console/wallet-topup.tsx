@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api/client';
 import type { TopupOrderResponse, WalletResponse } from '@/lib/api/types';
@@ -19,7 +19,6 @@ export function WalletTopup() {
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState<string | null>(null);
 
   const loadWallet = useCallback(async () => {
     const response = await api.get<WalletResponse>('/v1/me/wallet');
@@ -69,19 +68,6 @@ export function WalletTopup() {
     }
   }
 
-  async function copy(label: string, value: string) {
-    await navigator.clipboard.writeText(value);
-    setCopied(label);
-    window.setTimeout(() => setCopied(null), 1500);
-  }
-
-  const qrURL = useMemo(() => {
-    if (!order?.bank.bin) return null;
-    const base = `https://img.vietqr.io/image/${encodeURIComponent(order.bank.bin)}-${encodeURIComponent(order.bank.accountNumber)}-compact2.png`;
-    const query = new URLSearchParams({ amount: String(order.expectedAmount.vnd), addInfo: order.memoCode, accountName: order.bank.accountName });
-    return `${base}?${query}`;
-  }, [order]);
-
   if (loading) return <p role="status" className="text-ui text-dim">{t('loading')}</p>;
 
   return (
@@ -109,14 +95,12 @@ export function WalletTopup() {
       ) : (
         <Panel as="section">
           <PanelHeader title={t('transferTitle')} description={t('transferDescription')} action={<Badge tone={order.status === 'paid' ? 'accent' : order.status === 'underpaid' ? 'warn' : 'info'}>{t(`status.${order.status}`)}</Badge>} />
-          <div className="grid gap-6 p-5 md:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="grid gap-6 p-5 md:grid-cols-[minmax(0,1fr)_280px]">
             <dl className="divide-y divide-line rounded-lg border border-line">
-              {([{ label: t('bank'), value: order.bank.name }, { label: t('accountNumber'), value: order.bank.accountNumber }, { label: t('accountName'), value: order.bank.accountName }, { label: t('amount'), value: order.expectedAmount.formatted }, { label: t('credits'), value: creditAmount(order.expectedCredits, locale) }, { label: t('memo'), value: order.memoCode }]).map(({ label, value }) => <div key={label} className="flex items-center justify-between gap-4 px-4 py-3"><dt className="text-ui text-dim">{label}</dt><dd className="flex items-center gap-3 text-right font-mono text-ui text-fg"><span>{value}</span><button type="button" onClick={() => void copy(label, value)} className="text-accent-light">{copied === label ? t('copied') : t('copy')}</button></dd></div>)}
+              {([{ label: t('provider'), value: 'PayOS' }, { label: t('amount'), value: order.expectedAmount.formatted }, { label: t('credits'), value: creditAmount(order.expectedCredits, locale) }, { label: t('memo'), value: order.memoCode }]).map(({ label, value }) => <div key={label} className="flex items-center justify-between gap-4 px-4 py-3"><dt className="text-ui text-dim">{label}</dt><dd className="text-right font-mono text-ui text-fg">{value}</dd></div>)}
             </dl>
-            <div className="text-center">
-              {/* The VietQR URL is dynamic per order, so it cannot use Next's static image optimizer. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {qrURL ? <img src={qrURL} alt={t('qrAlt')} width={260} height={260} className="mx-auto rounded-lg bg-white" /> : <div className="flex aspect-square items-center justify-center rounded-lg border border-line text-ui text-dim">{t('qrUnavailable')}</div>}
+            <div className="flex flex-col justify-center rounded-lg border border-line bg-surface-hover p-5 text-center">
+              {order.status === 'paid' ? null : <a href={order.payment.checkoutUrl} target="_blank" rel="noreferrer" className="rounded-full bg-fg px-6 py-3 text-ui font-medium text-bg">{t('openCheckout')}</a>}
               <p className="mt-3 text-ui leading-relaxed text-dim">{order.status === 'paid' ? t('paidNotice') : t('pollingNotice')}</p>
             </div>
           </div>

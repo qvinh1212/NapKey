@@ -71,7 +71,11 @@ type Config struct {
 	// AdminEmails may reach /admin/* endpoints. Comma-separated in the env.
 	AdminEmails []string
 
-	// Stage 4 bank transfer and Casso Webhook V2 configuration.
+	// Payment providers. PayOS is used for new checkout orders; Casso remains
+	// optional so existing deployments can reconcile historical bank transfers.
+	PayOSClientID    string
+	PayOSAPIKey      string
+	PayOSChecksumKey string
 	CassoWebhookSecret string
 	CassoAPIKey        string
 	BankAccountNumber  string
@@ -110,6 +114,9 @@ func Load() (*Config, error) {
 		DefaultCreditLimit: envFloat("DEFAULT_CREDIT_LIMIT", 0),
 		MaxKeysPerUser:     envInt("MAX_KEYS_PER_USER", 10),
 		LogLevel:           env("LOG_LEVEL", "info"),
+		PayOSClientID:      strings.TrimSpace(os.Getenv("PAYOS_CLIENT_ID")),
+		PayOSAPIKey:        strings.TrimSpace(os.Getenv("PAYOS_API_KEY")),
+		PayOSChecksumKey:   os.Getenv("PAYOS_CHECKSUM_KEY"),
 		CassoWebhookSecret: os.Getenv("CASSO_WEBHOOK_SECRET"),
 		CassoAPIKey:        os.Getenv("CASSO_API_KEY"),
 		BankAccountNumber:  strings.TrimSpace(os.Getenv("BANK_ACCOUNT_NUMBER")),
@@ -181,8 +188,14 @@ func Load() (*Config, error) {
 	if c.WalletHoldMicros < 20_000_000_000 {
 		problems = append(problems, "WALLET_HOLD_VND must be at least 20,000")
 	}
+	payOSConfigured := c.PayOSClientID != "" || c.PayOSAPIKey != "" || c.PayOSChecksumKey != ""
+	if payOSConfigured {
+		for _, item := range []struct{ name, value string }{{"PAYOS_CLIENT_ID", c.PayOSClientID}, {"PAYOS_API_KEY", c.PayOSAPIKey}, {"PAYOS_CHECKSUM_KEY", c.PayOSChecksumKey}} {
+			if item.value == "" { problems = append(problems, item.name+" is required when PayOS top-ups are configured") }
+		}
+	}
 	walletConfigured:=c.CassoWebhookSecret!=""||c.CassoAPIKey!=""||c.BankAccountNumber!=""||c.BankAccountName!=""||c.BankName!=""||c.BankBin!=""
-	if walletConfigured{
+	if walletConfigured {
 		for _,item:=range []struct{name,value string}{{"CASSO_WEBHOOK_SECRET",c.CassoWebhookSecret},{"CASSO_API_KEY",c.CassoAPIKey},{"BANK_ACCOUNT_NUMBER",c.BankAccountNumber},{"BANK_ACCOUNT_NAME",c.BankAccountName},{"BANK_NAME",c.BankName},{"BANK_BIN",c.BankBin}}{if item.value==""{problems=append(problems,item.name+" is required when wallet top-ups are configured")}}
 	}
 

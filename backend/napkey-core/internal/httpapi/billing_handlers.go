@@ -7,9 +7,12 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"napkey-core/internal/casso"
+	"napkey-core/internal/payos"
 	"napkey-core/internal/pricing"
 	"napkey-core/internal/store"
 )
@@ -43,14 +46,29 @@ func (s *Server) handleCreateTopup(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, codeInvalidRequest, "amountVnd is too large")
 		return
 	}
-	if s.cfg.BankAccountNumber == "" {
-		writeError(w, http.StatusServiceUnavailable, codeInternal, "bank transfer is not configured")
+	if !s.payos.Configured() {
+		writeError(w, http.StatusServiceUnavailable, codeInternal, "PayOS is not configured")
 		return
 	}
 	su := sessionFromContext(r.Context())
-	order, err := s.store.CreateTopupOrder(r.Context(), su.User.ID, amount, s.cfg.BankAccountNumber)
+	order, err := s.store.CreateTopupOrder(r.Context(), su.User.ID, amount)
 	if err != nil {
 		writeStoreError(w, err, "creating top-up order")
+		return
+	}
+	checkout, err := s.payos.CreatePayment(r.Context(), payos.CreatePaymentRequest{
+		OrderCode: order.ProviderOrderCode, Amount: req.AmountVND, Description: "NAPKEY " + order.MemoCode,
+		CancelURL: s.cfg.PublicBaseURL + "/vi/console/wallet?payment=cancelled",
+		ReturnURL: s.cfg.PublicBaseURL + "/vi/console/wallet?payment=success",
+	})
+	if err != nil {
+		_ = s.store.CancelTopupOrder(r.Context(), su.User.ID, order.ID)
+		writeError(w, http.StatusBadGateway, codeUpstreamFailure, "could not create the PayOS checkout")
+		return
+	}
+	order, err = s.store.AttachPayOSCheckout(r.Context(), su.User.ID, order.ID, checkout.PaymentLinkID, checkout.CheckoutURL, checkout.QRCode)
+	if err != nil {
+		writeStoreError(w, err, "saving PayOS checkout")
 		return
 	}
 	writeJSON(w, http.StatusCreated, s.topupView(order))
@@ -67,7 +85,7 @@ func (s *Server) handleGetTopup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) topupView(order *store.TopupOrder) map[string]any {
-	return map[string]any{"order": map[string]any{"id": order.ID, "memoCode": order.MemoCode, "status": order.Status, "expectedAmount": costView(order.ExpectedAmountMicros), "expectedCredits": creditsView(order.ExpectedAmountMicros / pricing.RetailVNDPerCredit), "receivedAmount": costView(order.ReceivedAmountMicros), "expiresAt": order.ExpiresAt.UTC().Format(time.RFC3339), "paidAt": formatOptionalTime(order.PaidAt), "bank": map[string]any{"name": s.cfg.BankName, "bin": s.cfg.BankBin, "accountNumber": order.BankAccountNumber, "accountName": s.cfg.BankAccountName}}}
+	return map[string]any{"order": map[string]any{"id": order.ID, "memoCode": order.MemoCode, "status": order.Status, "expectedAmount": costView(order.ExpectedAmountMicros), "expectedCredits": creditsView(order.ExpectedAmountMicros / pricing.RetailVNDPerCredit), "receivedAmount": costView(order.ReceivedAmountMicros), "expiresAt": order.ExpiresAt.UTC().Format(time.RFC3339), "paidAt": formatOptionalTime(order.PaidAt), "payment": map[string]any{"provider": order.Provider, "checkoutUrl": order.CheckoutURL, "qrCode": order.QRCode}}}
 }
 
 func formatOptionalTime(value *time.Time) any {
@@ -75,6 +93,56 @@ func formatOptionalTime(value *time.Time) any {
 		return nil
 	}
 	return value.UTC().Format(time.RFC3339)
+}
+
+func (s *Server) handlePayOSWebhook(w http.ResponseWriter, r *http.Request) {
+	if s.cfg.PayOSChecksumKey == "" {
+		writeError(w, http.StatusServiceUnavailable, codeInternal, "PayOS is not configured")
+		return
+	}
+	raw, err := io.ReadAll(io.LimitReader(r.Body, maxCassoBody+1))
+	if err != nil || len(raw) > maxCassoBody {
+		writeError(w, http.StatusBadRequest, codeInvalidRequest, "invalid PayOS webhook body")
+		return
+	}
+	var envelope struct {
+		Code      string         `json:"code"`
+		Success   bool           `json:"success"`
+		Data      map[string]any `json:"data"`
+		Signature string         `json:"signature"`
+	}
+	decoder := json.NewDecoder(strings.NewReader(string(raw)))
+	decoder.UseNumber()
+	if err := decoder.Decode(&envelope); err != nil || envelope.Data == nil {
+		writeError(w, http.StatusBadRequest, codeInvalidRequest, "invalid PayOS webhook payload")
+		return
+	}
+	if err := payos.VerifyWebhookData(envelope.Data, envelope.Signature, s.cfg.PayOSChecksumKey); err != nil {
+		writeError(w, http.StatusUnauthorized, codeUnauthorized, "invalid PayOS webhook signature")
+		return
+	}
+	if !envelope.Success || envelope.Code != "00" {
+		writeJSON(w, http.StatusOK, map[string]any{"success": true})
+		return
+	}
+	orderCode, ok := payOSInt64(envelope.Data["orderCode"])
+	if !ok { writeError(w,http.StatusBadRequest,codeInvalidRequest,"PayOS orderCode is invalid");return }
+	amountVND, ok := payOSInt64(envelope.Data["amount"])
+	if !ok || amountVND <= 0 { writeError(w,http.StatusBadRequest,codeInvalidRequest,"PayOS amount is invalid");return }
+	paymentLinkID, _ := envelope.Data["paymentLinkId"].(string)
+	reference, _ := envelope.Data["reference"].(string)
+	providerTxID := strings.TrimSpace(paymentLinkID + ":" + reference)
+	if providerTxID == ":" || orderCode <= 0 { writeError(w,http.StatusBadRequest,codeInvalidRequest,"PayOS transaction identity is invalid");return }
+	amountMicros, err := pricing.MicrosFromVND(amountVND)
+	if err != nil { writeError(w,http.StatusBadRequest,codeInvalidRequest,"PayOS amount is outside the supported range");return }
+	if _, err := s.store.CreditPayOSPayment(r.Context(), store.PayOSPaymentInput{ProviderTxID:providerTxID,OrderCode:orderCode,AmountMicros:amountMicros,Payload:raw}); err != nil {
+		writeError(w,http.StatusServiceUnavailable,codeInternal,"could not record PayOS payment");return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true})
+}
+
+func payOSInt64(value any)(int64,bool){
+	switch v:=value.(type){case json.Number:n,err:=strconv.ParseInt(v.String(),10,64);return n,err==nil;case float64:return int64(v),v==float64(int64(v));default:return 0,false}
 }
 
 // handleCassoWebhook verifies and journals only; the payment worker credits later.

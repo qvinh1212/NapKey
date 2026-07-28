@@ -1,13 +1,43 @@
 package httpapi
 
 import (
+	"encoding/json"
 	"net/http"
 	"strings"
 	"testing"
 	"time"
 
 	"napkey-core/internal/pgtest"
+	"napkey-core/internal/payos"
 )
+
+func TestPayOSWebhookRejectsInvalidSignatureBeforeDatabaseWrites(t *testing.T) {
+	h := newHarness(t)
+	h.server.cfg.PayOSChecksumKey = "checksum-secret"
+	body := map[string]any{
+		"code": "00", "success": true, "signature": "00",
+		"data": map[string]any{"orderCode": json.Number("123456"), "amount": json.Number("45000"), "paymentLinkId": "link-1", "reference": "FT1"},
+	}
+	w := h.do(http.MethodPost, "/webhooks/payos", body)
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401; body: %s", w.Code, w.Body.String())
+	}
+	if _, ok := h.pg.FindQuery("INSERT INTO payment_events"); ok {
+		t.Fatal("an unverified PayOS webhook reached the payment ledger")
+	}
+}
+
+func TestPayOSWebhookSignatureCoversAmount(t *testing.T) {
+	data := map[string]any{"amount": json.Number("45000"), "orderCode": json.Number("123456"), "paymentLinkId": "link-1", "reference": "FT1"}
+	signature, err := payos.SignWebhookData(data, "checksum-secret")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data["amount"] = json.Number("90000")
+	if err := payos.VerifyWebhookData(data, signature, "checksum-secret"); err == nil {
+		t.Fatal("changing the credited amount did not invalidate the signature")
+	}
+}
 
 func TestUnauthenticatedRequestsAreRejected(t *testing.T) {
 	h := newHarness(t)

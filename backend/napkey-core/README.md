@@ -2,7 +2,7 @@
 
 Control plane cho NapKey: người dùng, phiên đăng nhập, API key, và việc đẩy key sang data plane `kiro-go`.
 
-NapKey core hiện bao phủ control-plane của Giai đoạn 2-5 trong `DESIGN.md`: người dùng và key tự phục vụ, usage ledger, bảng giá có cost basis, ví/Casso, RBAC và vận hành.
+NapKey core hiện bao phủ control-plane của Giai đoạn 2-5 trong `DESIGN.md`: người dùng và key tự phục vụ, usage ledger, bảng giá có cost basis, ví/PayOS, RBAC và vận hành.
 
 ## Phân vai
 
@@ -132,6 +132,6 @@ Model không có giá vẫn được ghi, cost bằng 0, cắm cờ `unpriced`. 
 ## Còn thiếu, thuộc giai đoạn sau
 
 - **Đường đua hạn mức** (`DESIGN.md` mục 3.5) vẫn còn. `usage_records` đã là sổ thật, nhưng nó ghi **sau** khi request chạy xong. Chặn key lúc cạn ví cần reserve/settle nguyên tử ở mục 6 — Giai đoạn 4.
-- **Ví, nạp tiền, Casso**: đã triển khai với ledger append-only, hold/settle và webhook idempotent.
+- **Ví, nạp tiền, PayOS**: checkout được ký phía server; webhook được xác minh HMAC và ghi có idempotent vào ledger append-only.
 - **RPM/TPM**: được thực thi nguyên tử theo cửa sổ phút tại `kiro-go`.
 - **Phân quyền admin**: role/permission nằm trong Postgres; `ADMIN_EMAILS` chỉ là bootstrap owner.
