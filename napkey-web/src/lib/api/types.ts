@@ -135,6 +135,8 @@ export type UsageSummaryResponse = {
     totalRequests: number;
     activeKeys: number;
     totalCost: Money;
+    /** Exact lifetime credits aggregated from the immutable usage ledger. */
+    credits: Credits;
     /** Con lai tu Giai doan 2, la float64 cua kiro-go. Khong dung de tinh tien. */
     totalCredits: number;
   };

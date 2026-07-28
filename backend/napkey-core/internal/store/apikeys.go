@@ -412,10 +412,11 @@ func (s *Store) DeleteSyncedKey(ctx context.Context, keyID string) error {
 
 // UsageSummary totals a user's consumption across keys.
 type UsageSummary struct {
-	TotalTokens   int64
-	TotalCredits  float64
-	TotalRequests int64
-	ActiveKeys    int64
+	TotalTokens        int64
+	TotalCredits       float64
+	TotalCreditsMicros int64
+	TotalRequests      int64
+	ActiveKeys         int64
 	// TotalCostMicros is the lifetime spend in micro-VND, summed from the integer
 	// column. TotalCredits is the legacy float64 kept for kiro-go compatibility and
 	// is not what the console bills against.
@@ -434,13 +435,14 @@ func (s *Store) GetUsageSummary(ctx context.Context, userID string) (*UsageSumma
 	err := s.db.QueryRowContext(ctx, `
 		SELECT coalesce(sum(u.tokens_used), 0),
 		       coalesce(sum(u.credits_used), 0),
+		       coalesce(sum(u.credits_micros), 0)::bigint,
 		       coalesce(sum(u.requests_count), 0),
 		       count(*) FILTER (WHERE k.revoked_at IS NULL AND k.enabled),
 		       coalesce(sum(u.cost_micros), 0)
 		FROM api_keys k
 		LEFT JOIN api_key_usage u ON u.api_key_id = k.id
 		WHERE k.user_id = $1`, userID).Scan(
-		&out.TotalTokens, &out.TotalCredits, &out.TotalRequests, &out.ActiveKeys,
+		&out.TotalTokens, &out.TotalCredits, &out.TotalCreditsMicros, &out.TotalRequests, &out.ActiveKeys,
 		&out.TotalCostMicros)
 	if err != nil {
 		return nil, fmt.Errorf("store: summarizing usage: %w", err)

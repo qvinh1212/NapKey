@@ -90,6 +90,19 @@ func TestCreditRepricingPreservesExistingWalletCredits(t *testing.T) {
 	}
 }
 
+func TestCreditUsageCacheBackfillsFromLedger(t *testing.T) {
+	migrations, err := loadMigrations()
+	if err != nil {
+		t.Fatalf("loadMigrations: %v", err)
+	}
+	combined := strings.ToLower(strings.Join(sqlOf(migrations), "\n"))
+	for _, required := range []string{"add column credits_micros", "sum(credits_micros)", "update api_key_usage"} {
+		if !strings.Contains(combined, required) {
+			t.Errorf("credit usage cache migration is missing %q", required)
+		}
+	}
+}
+
 func sqlOf(migrations []migration) []string {
 	out := make([]string, len(migrations))
 	for i, m := range migrations {

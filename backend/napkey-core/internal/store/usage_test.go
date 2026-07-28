@@ -108,6 +108,13 @@ func TestRecordUsagePricesFromTheLedgerRate(t *testing.T) {
 	if !strings.Contains(q.SQL, "cost_micros") {
 		t.Error("cost must be frozen onto the row at insert time")
 	}
+	counter, ok := srv.FindQuery("INSERT INTO api_key_usage")
+	if !ok {
+		t.Fatal("the usage counter update never ran")
+	}
+	if !strings.Contains(counter.SQL, "credits_micros") {
+		t.Error("the exact integer credit counter must move with the ledger insert")
+	}
 }
 
 // TestRecordUsageIsIdempotent covers the retry path. The data plane retries a
@@ -441,13 +448,13 @@ func TestFindCounterDriftComparesLedgerToCounters(t *testing.T) {
 		return pgtest.Response{
 			Columns: []pgtest.Column{
 				{Name: "id"}, {Name: "user_id"},
-				{Name: "requests_count", OID: 20}, {Name: "tokens_used", OID: 20}, {Name: "cost_micros", OID: 20},
-				{Name: "l_requests", OID: 20}, {Name: "l_tokens", OID: 20}, {Name: "l_cost", OID: 20},
+				{Name: "requests_count", OID: 20}, {Name: "tokens_used", OID: 20}, {Name: "credits_micros", OID: 20}, {Name: "cost_micros", OID: 20},
+				{Name: "l_requests", OID: 20}, {Name: "l_tokens", OID: 20}, {Name: "l_credits", OID: 20}, {Name: "l_cost", OID: 20},
 			},
 			Rows: [][]*string{{
 				pgtest.Text(pgtest.UUID(1)), pgtest.Text(pgtest.UUID(7)),
-				pgtest.Text("10"), pgtest.Text("5000"), pgtest.Text("900"),
-				pgtest.Text("9"), pgtest.Text("4500"), pgtest.Text("800"),
+				pgtest.Text("10"), pgtest.Text("5000"), pgtest.Text("1900000"), pgtest.Text("900"),
+				pgtest.Text("9"), pgtest.Text("4500"), pgtest.Text("1800000"), pgtest.Text("800"),
 			}},
 			Tag: "SELECT 1",
 		}
@@ -465,6 +472,9 @@ func TestFindCounterDriftComparesLedgerToCounters(t *testing.T) {
 	// ledger cannot account for.
 	if got := drift[0].CostDelta(); got != 100 {
 		t.Errorf("CostDelta() = %d, want 100", got)
+	}
+	if got := drift[0].CreditDelta(); got != 100_000 {
+		t.Errorf("CreditDelta() = %d, want 100000", got)
 	}
 }
 

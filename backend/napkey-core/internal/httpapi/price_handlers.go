@@ -282,15 +282,18 @@ func (s *Server) handleAdminUsageAudit(w http.ResponseWriter, r *http.Request) {
 	driftOut := make([]map[string]any, 0, len(drift))
 	for _, d := range drift {
 		driftOut = append(driftOut, map[string]any{
-			"apiKeyId":        d.APIKeyID,
-			"userId":          d.UserID,
-			"counterRequests": d.CounterRequests,
-			"ledgerRequests":  d.LedgerRequests,
-			"counterTokens":   d.CounterTokens,
-			"ledgerTokens":    d.LedgerTokens,
-			"counterCost":     costView(d.CounterCost),
-			"ledgerCost":      costView(d.LedgerCost),
-			"costDeltaMicros": d.CostDelta(),
+			"apiKeyId":          d.APIKeyID,
+			"userId":            d.UserID,
+			"counterRequests":   d.CounterRequests,
+			"ledgerRequests":    d.LedgerRequests,
+			"counterTokens":     d.CounterTokens,
+			"ledgerTokens":      d.LedgerTokens,
+			"counterCredits":    creditsView(d.CounterCredits),
+			"ledgerCredits":     creditsView(d.LedgerCredits),
+			"creditDeltaMicros": d.CreditDelta(),
+			"counterCost":       costView(d.CounterCost),
+			"ledgerCost":        costView(d.LedgerCost),
+			"costDeltaMicros":   d.CostDelta(),
 		})
 	}
 	unpricedOut := make([]map[string]any, 0, len(unpriced))

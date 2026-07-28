@@ -8,6 +8,7 @@
 .gocache/
 .gocache-review/
 .gocache-*/
+.tmp-go-cache/
 .codex-gocache-*/
 **/.codex-gocache-*/
 .npm-cache/

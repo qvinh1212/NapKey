@@ -4,23 +4,28 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ButtonLink } from '@/components/ui/button';
 import { api, ApiError, rangeQuery } from '@/lib/api/client';
-import type { UsageDetailResponse, UsageSummaryResponse } from '@/lib/api/types';
+import type { UsageDetailResponse, UsageSummaryResponse, WalletResponse } from '@/lib/api/types';
 import { billingRange, compact, count, creditAmount, money } from '@/lib/format';
 import { UsageChart } from './usage-chart';
+import { CreditUsageMeter } from './credit-usage-meter';
 import { Badge, ErrorNotice, Panel, PanelHeader, StatCard, Td, Th, TableScroll } from './ui';
 
 /**
  * Trang tong quan console.
  *
- * Hai request song song: tong hop (`/v1/me/usage`) va chi tiet 30 ngay
- * (`/v1/me/usage/detail`). Goi song song vi chung khong phu thuoc nhau - goi tuan tu
- * se lam thoi gian cho bang tong hai chang mang.
+ * Usage summary, 30-day detail, and wallet are loaded in parallel. The wallet is
+ * optional so a transient billing read failure does not hide the usage ledger.
  */
 
 type State =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; summary: UsageSummaryResponse; detail: UsageDetailResponse };
+  | {
+      status: 'ready';
+      summary: UsageSummaryResponse;
+      detail: UsageDetailResponse;
+      wallet: WalletResponse['wallet'] | null;
+    };
 
 export function Overview() {
   const t = useTranslations('console.overview');
@@ -37,13 +42,13 @@ export function Overview() {
       setState({ status: 'loading' });
       try {
         const query = rangeQuery(billingRange(30));
-        // Song song: hai endpoint khong phu thuoc nhau, goi tuan tu se lam thoi gian
-        // cho bang tong hai chang mang.
-        const [summary, detail] = await Promise.all([
+        // Wallet failure only hides the meter; usage remains useful on its own.
+        const [summary, detail, walletResponse] = await Promise.all([
           api.get<UsageSummaryResponse>('/v1/me/usage', controller.signal),
           api.get<UsageDetailResponse>(`/v1/me/usage/detail${query}`, controller.signal),
+          api.get<WalletResponse>('/v1/me/wallet', controller.signal).catch(() => null),
         ]);
-        setState({ status: 'ready', summary, detail });
+        setState({ status: 'ready', summary, detail, wallet: walletResponse?.wallet ?? null });
       } catch (error) {
         // Huy do unmount hoac do doc lai thi khong phai loi de bao cho nguoi dung.
         if (controller.signal.aborted) return;
@@ -74,11 +79,19 @@ export function Overview() {
     );
   }
 
-  const { summary, detail } = state;
+  const { summary, detail, wallet } = state;
   const { last30Days } = summary;
 
   return (
     <div className="flex flex-col gap-6">
+      {wallet ? (
+        <CreditUsageMeter
+          usedCredits={summary.usage.credits.credits}
+          usedAmount={summary.usage.totalCost}
+          wallet={wallet}
+        />
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label={t('stats.credits')}

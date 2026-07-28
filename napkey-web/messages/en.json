@@ -346,6 +346,17 @@
       "loading": "Loading usage...",
       "loadFailed": "Could not load usage data.",
       "retry": "Try again",
+      "creditMeter": {
+        "title": "Credits used, all time",
+        "unit": "{count, plural, one {credit} other {credits}}",
+        "remaining": "{credits, plural, one {# credit available} other {# credits available}}",
+        "total": "{credits, plural, one {# credit tracked in total} other {# credits tracked in total}}",
+        "settledCost": "Settled usage cost: {amount}",
+        "held": "{credits, plural, one {# credit currently reserved} other {# credits currently reserved}}",
+        "topUp": "Top up credits",
+        "ariaLabel": "Lifetime credit usage",
+        "ariaValue": "{used} of {total} credits used, {percent} percent"
+      },
       "stats": {
         "credits": "Credits used",
         "cost30d": "Cost, 30 days",

@@ -157,18 +157,19 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 		// the ledger on every request. The ledger stays the source of truth, and
 		// the reconciliation query below proves the two agree.
 		//
-		// credits_used is maintained for kiro-go compatibility only; cost_micros is
-		// the number napkey-core trusts.
+		// credits_used remains for kiro-go compatibility. credits_micros and
+		// cost_micros are the exact integer counters used by NapKey views.
 		if _, err := tx.ExecContext(ctx, `
-			INSERT INTO api_key_usage (api_key_id, tokens_used, credits_used, cost_micros, requests_count, updated_at)
-			VALUES ($1, $2, $3, $4, 1, now())
+			INSERT INTO api_key_usage (api_key_id, tokens_used, credits_used, credits_micros, cost_micros, requests_count, updated_at)
+			VALUES ($1, $2, $3, $4, $5, 1, now())
 			ON CONFLICT (api_key_id) DO UPDATE SET
 				tokens_used    = api_key_usage.tokens_used + $2,
 				credits_used   = api_key_usage.credits_used + $3,
-				cost_micros    = api_key_usage.cost_micros + $4,
+				credits_micros = api_key_usage.credits_micros + $4,
+				cost_micros    = api_key_usage.cost_micros + $5,
 				requests_count = api_key_usage.requests_count + 1,
 				updated_at     = now()`,
-			p.KeyID, p.Tokens.Total(), float64(p.CreditsMicros)/float64(pricing.MicrocreditsPerCredit), costMicros); err != nil {
+			p.KeyID, p.Tokens.Total(), float64(p.CreditsMicros)/float64(pricing.MicrocreditsPerCredit), p.CreditsMicros, costMicros); err != nil {
 			return fmt.Errorf("store: updating usage counters: %w", err)
 		}
 

@@ -15,15 +15,20 @@ type CounterDrift struct {
 	// Counter* is what api_key_usage claims.
 	CounterRequests int64
 	CounterTokens   int64
+	CounterCredits  int64
 	CounterCost     int64
 	// Ledger* is what usage_records actually sums to.
 	LedgerRequests int64
 	LedgerTokens   int64
+	LedgerCredits  int64
 	LedgerCost     int64
 }
 
 // CostDelta is the signed difference between the counter and the ledger, in micros.
 func (d CounterDrift) CostDelta() int64 { return d.CounterCost - d.LedgerCost }
+
+// CreditDelta is the signed difference in microcredits.
+func (d CounterDrift) CreditDelta() int64 { return d.CounterCredits - d.LedgerCredits }
 
 // FindCounterDrift lists keys whose cached counters disagree with the ledger.
 //
@@ -45,19 +50,21 @@ func (s *Store) FindCounterDrift(ctx context.Context, limit int) ([]CounterDrift
 			SELECT api_key_id,
 			       count(*)::bigint AS requests,
 			       coalesce(sum(input_tokens + output_tokens + cache_read_tokens + cache_write_tokens), 0)::bigint AS tokens,
+			       coalesce(sum(credits_micros), 0)::bigint AS credits,
 			       coalesce(sum(cost_micros), 0)::bigint AS cost
 			FROM usage_records
 			WHERE api_key_id IS NOT NULL
 			GROUP BY api_key_id
 		)
 		SELECT k.id, k.user_id,
-		       u.requests_count, u.tokens_used, u.cost_micros,
-		       coalesce(l.requests, 0), coalesce(l.tokens, 0), coalesce(l.cost, 0)
+		       u.requests_count, u.tokens_used, u.credits_micros, u.cost_micros,
+		       coalesce(l.requests, 0), coalesce(l.tokens, 0), coalesce(l.credits, 0), coalesce(l.cost, 0)
 		FROM api_key_usage u
 		JOIN api_keys k ON k.id = u.api_key_id
 		LEFT JOIN ledger l ON l.api_key_id = u.api_key_id
 		WHERE u.requests_count <> coalesce(l.requests, 0)
 		   OR u.tokens_used    <> coalesce(l.tokens, 0)
+		   OR u.credits_micros <> coalesce(l.credits, 0)
 		   OR u.cost_micros    <> coalesce(l.cost, 0)
 		ORDER BY abs(u.cost_micros - coalesce(l.cost, 0)) DESC
 		LIMIT $1`, limit)
@@ -70,8 +77,8 @@ func (s *Store) FindCounterDrift(ctx context.Context, limit int) ([]CounterDrift
 	for rows.Next() {
 		var d CounterDrift
 		if err := rows.Scan(&d.APIKeyID, &d.UserID,
-			&d.CounterRequests, &d.CounterTokens, &d.CounterCost,
-			&d.LedgerRequests, &d.LedgerTokens, &d.LedgerCost); err != nil {
+			&d.CounterRequests, &d.CounterTokens, &d.CounterCredits, &d.CounterCost,
+			&d.LedgerRequests, &d.LedgerTokens, &d.LedgerCredits, &d.LedgerCost); err != nil {
 			return nil, fmt.Errorf("store: scanning counter drift: %w", err)
 		}
 		out = append(out, d)
@@ -88,19 +95,20 @@ func (s *Store) FindCounterDrift(ctx context.Context, limit int) ([]CounterDrift
 // append-only ledger, which is the only direction that is safe: the ledger is the
 // source of truth and the counter is disposable.
 //
-// credits_used is left alone. It is kiro-go's float64 field, kept for compatibility
-// with the data plane's own limit check, and this function has no float value to
-// write that would not reintroduce the drift the integer column exists to avoid.
+// credits_used is left alone for kiro-go compatibility. credits_micros is rebuilt
+// from the ledger and is the exact integer counter used by customer-facing views.
 func (s *Store) RebuildKeyCounters(ctx context.Context, keyID string) error {
 	_, err := s.db.ExecContext(ctx, `
 		UPDATE api_key_usage u
 		SET requests_count = coalesce(l.requests, 0),
 		    tokens_used    = coalesce(l.tokens, 0),
+		    credits_micros = coalesce(l.credits, 0),
 		    cost_micros    = coalesce(l.cost, 0),
 		    updated_at     = now()
 		FROM (
 			SELECT count(*)::bigint AS requests,
 			       coalesce(sum(input_tokens + output_tokens + cache_read_tokens + cache_write_tokens), 0)::bigint AS tokens,
+			       coalesce(sum(credits_micros), 0)::bigint AS credits,
 			       coalesce(sum(cost_micros), 0)::bigint AS cost
 			FROM usage_records
 			WHERE api_key_id = $1

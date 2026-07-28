@@ -346,6 +346,17 @@
       "loading": "Đang tải số liệu...",
       "loadFailed": "Không tải được số liệu dùng.",
       "retry": "Thử lại",
+      "creditMeter": {
+        "title": "Credit đã dùng từ trước đến nay",
+        "unit": "credit",
+        "remaining": "Còn {credits} credit khả dụng",
+        "total": "Tổng cộng {credits} credit được theo dõi",
+        "settledCost": "Chi phí đã quyết toán: {amount}",
+        "held": "{credits} credit đang được giữ",
+        "topUp": "Nạp thêm credit",
+        "ariaLabel": "Mức sử dụng credit trọn đời",
+        "ariaValue": "Đã dùng {used} trên tổng {total} credit, tương đương {percent} phần trăm"
+      },
       "stats": {
         "credits": "Credit đã dùng",
         "cost30d": "Chi phí 30 ngày",

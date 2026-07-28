@@ -269,13 +269,13 @@ func (s *Server) handleUsageSummary(w http.ResponseWriter, r *http.Request) {
 		writeStoreError(w, err, "totalling recent usage")
 		return
 	}
-
 	writeJSON(w, http.StatusOK, map[string]any{
 		"usage": map[string]any{
 			"totalTokens":   summary.TotalTokens,
 			"totalRequests": summary.TotalRequests,
 			"activeKeys":    summary.ActiveKeys,
 			"totalCost":     costView(summary.TotalCostMicros),
+			"credits":       creditsView(summary.TotalCreditsMicros),
 			// Retained so an existing console build keeps rendering. Stage 4 removes
 			// it once nothing reads it.
 			"totalCredits": summary.TotalCredits,
