@@ -31,6 +31,9 @@ type Server struct {
 	kiro   *kiro.Client
 	mailer mail.Sender
 	payos  *payos.Client
+	oauthHTTP *http.Client
+	googleTokenURL string
+	googleUserInfoURL string
 	// trustProxy is the number of reverse-proxy hops trusted in X-Forwarded-For.
 	trustProxy        int
 	startedAt         time.Time
@@ -47,6 +50,9 @@ func New(cfg *config.Config, st *store.Store, kiroClient *kiro.Client, mailer ma
 		kiro:   kiroClient,
 		mailer: mailer,
 		payos:  payos.NewClient(cfg.PayOSClientID, cfg.PayOSAPIKey, cfg.PayOSChecksumKey),
+		oauthHTTP: &http.Client{Timeout: 15 * time.Second},
+		googleTokenURL: "https://oauth2.googleapis.com/token",
+		googleUserInfoURL: "https://openidconnect.googleapis.com/v1/userinfo",
 		trustProxy: cfg.TrustedProxyHops,
 		startedAt:  time.Now(),
 	}
@@ -65,6 +71,8 @@ func (s *Server) Handler() http.Handler {
 	// each one is rate limited inside the handler.
 	mux.HandleFunc("POST /v1/auth/register", s.handleRegister)
 	mux.HandleFunc("POST /v1/auth/login", s.handleLogin)
+	mux.HandleFunc("GET /v1/auth/google/start", s.handleGoogleStart)
+	mux.HandleFunc("GET /v1/auth/google/callback", s.handleGoogleCallback)
 	mux.HandleFunc("POST /v1/auth/logout", s.handleLogout)
 	mux.HandleFunc("POST /v1/auth/verify-email", s.handleVerifyEmail)
 	mux.HandleFunc("POST /v1/auth/resend-verification", s.handleResendVerification)

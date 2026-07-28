@@ -8,6 +8,7 @@ import { Field } from './field';
 import { useSession } from './session-provider';
 import { Panel } from './ui';
 import { shouldRedirectFromSignIn } from '@/lib/session-ui';
+import { googleAuthPath, googleErrorKey } from '@/lib/google-auth';
 
 /**
  * Form dang nhap va dang ky.
@@ -22,11 +23,14 @@ import { shouldRedirectFromSignIn } from '@/lib/session-ui';
 
 type Mode = 'signin' | 'signup';
 
-export function AuthForm({ mode }: { mode: Mode }) {
+export function AuthForm({ mode, oauthError }: { mode: Mode; oauthError?: string }) {
   const t = useTranslations('console.auth');
   const locale = useLocale();
   const router = useRouter();
   const session = useSession();
+  // napkey-core dieu huong ve day voi ?oauth_error= khi luong Google that bai. Ma do
+  // di qua URL nen phai qua googleErrorKey truoc khi thanh chu tren trang.
+  const oauthErrorKey = googleErrorKey(oauthError);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -105,7 +109,35 @@ export function AuthForm({ mode }: { mode: Mode }) {
       <h1 className="text-xl tracking-[-0.02em]">{t(`${mode}.title`)}</h1>
       <p className="mt-2 text-ui text-dim">{t(`${mode}.subtitle`)}</p>
 
-      <form onSubmit={submit} className="mt-6 flex flex-col gap-4" noValidate>
+      {oauthErrorKey ? (
+        <p
+          role="alert"
+          className="mt-6 rounded-md border border-danger/30 bg-danger-soft px-4 py-3 text-ui text-danger"
+        >
+          {t(`googleError.${oauthErrorKey}`)}
+        </p>
+      ) : null}
+
+      <a
+        href={googleAuthPath(locale)}
+        className={`${oauthErrorKey ? 'mt-4' : 'mt-6'} flex items-center justify-center gap-3 rounded-full border border-line bg-white px-6 py-3 text-ui font-medium text-black transition-colors hover:bg-white/90`}
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+          <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
+          <path fill="#34A853" d="M12 22c2.7 0 4.98-.9 6.64-2.36l-3.24-2.54c-.9.6-2.05.96-3.4.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z" />
+          <path fill="#FBBC05" d="M6.39 13.93A6.02 6.02 0 0 1 6.08 12c0-.67.12-1.32.31-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.38 3.14 1.04 4.55l3.35-2.62Z" />
+          <path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.83 1.5l2.88-2.88A9.65 9.65 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z" />
+        </svg>
+        {t('google')}
+      </a>
+
+      <div className="my-5 flex items-center gap-3" aria-hidden="true">
+        <span className="h-px flex-1 bg-line" />
+        <span className="text-xs uppercase tracking-[0.18em] text-dim">{t('or')}</span>
+        <span className="h-px flex-1 bg-line" />
+      </div>
+
+      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
         <Field
           id="email"
           type="email"

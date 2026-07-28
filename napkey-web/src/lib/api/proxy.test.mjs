@@ -10,6 +10,12 @@ test('allows the public reliability status endpoint', () => {
   assert.equal(isProxyPathAllowed('/v1/status'), true);
 });
 
+test('allows only the two Google OAuth browser redirects', () => {
+  assert.equal(isProxyPathAllowed('/v1/auth/google/start'), true);
+  assert.equal(isProxyPathAllowed('/v1/auth/google/callback'), true);
+  assert.equal(isProxyPathAllowed('/v1/auth/google/token'), false);
+});
+
 test('keeps internal control-plane endpoints private', () => {
   assert.equal(isProxyPathAllowed('/internal/usage'), false);
   assert.equal(isProxyPathAllowed('/webhooks/casso'), false);

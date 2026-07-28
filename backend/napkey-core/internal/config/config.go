@@ -62,6 +62,8 @@ type Config struct {
 	SMTPPort     int
 	SMTPUser     string
 	SMTPPassword string
+	GoogleClientID string
+	GoogleClientSecret string
 
 	// EmailTokenTTL bounds how long a verification link stays usable.
 	EmailTokenTTL time.Duration
@@ -117,6 +119,8 @@ func Load() (*Config, error) {
 		SMTPPort:           envInt("SMTP_PORT", 587),
 		SMTPUser:           os.Getenv("SMTP_USER"),
 		SMTPPassword:       os.Getenv("SMTP_PASSWORD"),
+		GoogleClientID:     strings.TrimSpace(os.Getenv("GOOGLE_CLIENT_ID")),
+		GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		EmailTokenTTL:      envDuration("EMAIL_TOKEN_TTL", 24*time.Hour),
 		DefaultTokenLimit:  int64(envInt("DEFAULT_TOKEN_LIMIT", 0)),
 		DefaultCreditLimit: envFloat("DEFAULT_CREDIT_LIMIT", 0),
@@ -212,6 +216,10 @@ func Load() (*Config, error) {
 		for _, item := range []struct{ name, value string }{{"PAYOS_CLIENT_ID", c.PayOSClientID}, {"PAYOS_API_KEY", c.PayOSAPIKey}, {"PAYOS_CHECKSUM_KEY", c.PayOSChecksumKey}} {
 			if item.value == "" { problems = append(problems, item.name+" is required when PayOS top-ups are configured") }
 		}
+	}
+	googleConfigured := c.GoogleClientID != "" || c.GoogleClientSecret != ""
+	if googleConfigured && (c.GoogleClientID == "" || c.GoogleClientSecret == "") {
+		problems = append(problems, "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must both be set")
 	}
 	walletConfigured:=c.CassoWebhookSecret!=""||c.CassoAPIKey!=""||c.BankAccountNumber!=""||c.BankAccountName!=""||c.BankName!=""||c.BankBin!=""
 	if walletConfigured {

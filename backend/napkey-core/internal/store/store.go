@@ -23,6 +23,7 @@ var (
 	ErrEmailTaken    = errors.New("email is already registered")
 	ErrKeyLimit      = errors.New("api key limit reached")
 	ErrUserSuspended = errors.New("user is suspended")
+	ErrOAuthConflict = errors.New("oauth identity is linked to another account")
 	ErrInsufficientFunds = errors.New("insufficient wallet balance")
 )
 

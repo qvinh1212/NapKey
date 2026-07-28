@@ -41,6 +41,28 @@ This requires the real Casso account and cannot be simulated by a local fixture:
 6. Replay the event and confirm the balance does not change.
 7. Confirm unmatched and rejected events appear on `/vi/console/admin`.
 
+## Google sign-in
+
+Sign-in with Google is optional. With `GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET` unset the console keeps working on email and password, and
+the Google button lands back on the sign-in page with an explanation. Setting only
+one of the pair is refused at startup.
+
+1. In Google Cloud Console create an OAuth 2.0 Web application client.
+2. Set the authorized redirect URI to `https://napkey.io.vn/api/v1/auth/google/callback`
+   exactly. napkey-core derives it from `PUBLIC_BASE_URL`, so a mismatch there
+   breaks the callback.
+3. Store both values only in Coolify environment variables.
+4. After deploying, sign in with an account that has no NapKey user and confirm one
+   `oauth_identities` row, a verified user, and the trial grant.
+5. Sign in again and confirm no second identity row and no second trial grant.
+6. Sign in with a Google account whose email already has a password account: the
+   flow must stop on `oauth_error=account_conflict` rather than link silently.
+
+The browser only ever reaches `/api/v1/auth/google/start` and
+`/api/v1/auth/google/callback`; the token exchange runs server-side, so the client
+secret never leaves the private network.
+
 ## Cloudflare
 
 Create a narrowly scoped WAF skip rule for the Casso source IPs and only the
