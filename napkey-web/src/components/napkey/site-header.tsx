@@ -12,6 +12,7 @@ const sections = [
   { key: 'integrate', href: '/#integrate' },
   { key: 'billing', href: '/#billing' },
   { key: 'trust', href: '/#trust' },
+  { key: 'compatibility', href: '/compatibility' },
 ] as const;
 
 export function SiteHeader() {

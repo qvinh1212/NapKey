@@ -3,7 +3,7 @@ import { locales, routing } from '@/i18n/routing';
 import { site } from '@/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const paths = ['', '/trust', '/status', '/privacy', '/terms'] as const;
+  const paths = ['', '/compatibility', '/trust', '/status', '/privacy', '/terms'] as const;
 
   return locales.flatMap((locale) => paths.map((path) => ({
     url: `${site.url}/${locale}${path}`,

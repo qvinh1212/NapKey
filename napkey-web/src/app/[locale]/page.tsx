@@ -6,6 +6,7 @@ import { Integration } from '@/components/sections/integration';
 import { PricingTable } from '@/components/sections/pricing-table';
 import { Billing } from '@/components/sections/billing';
 import { DeveloperTrust } from '@/components/sections/developer-trust';
+import { Compatibility } from '@/components/sections/compatibility';
 import { FinalCta } from '@/components/sections/final-cta';
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
@@ -20,6 +21,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <PricingTable />
       <Billing />
       <DeveloperTrust />
+      <Compatibility />
       <FinalCta />
     </>
   );

@@ -9,6 +9,7 @@
     "integrate": "Tích hợp",
     "billing": "Cách tính tiền",
     "trust": "Độ tin cậy",
+    "compatibility": "Tương thích",
     "signIn": "Đăng nhập",
     "getStarted": "Bắt đầu",
     "skipToContent": "Bỏ qua, đến nội dung chính",
@@ -75,6 +76,67 @@
       "ledger": { "title": "Chi phí kiểm toán được", "body": "Model, token vào, token ra, cache, độ trễ và chi phí được giữ theo từng request." },
       "keys": { "title": "Kiểm soát credential", "body": "API quản lý chỉ trả định danh đã che. Thao tác tắt và thu hồi hiện trạng thái đồng bộ thay vì giả định lan truyền luôn thành công." },
       "prompts": { "title": "Giới hạn lưu nội dung", "body": "Prompt không bị dump vào debug log request; lưu trữ Responses API được công khai riêng với chính sách dọn sau 30 ngày." }
+    }
+  },
+  "compatibilitySection": {
+    "eyebrow": "Cam kết tương thích",
+    "title": "Giữ nguyên client. Luôn có đường lui.",
+    "subtitle": "NapKey cạnh tranh bằng cách giảm chi phí chuyển đổi, không tạo SDK độc quyền. Dùng request shape Anthropic và OpenAI quen thuộc, kiểm tra catalog đang hoạt động và rời đi bằng cách khôi phục endpoint.",
+    "contractLabel": "Thiết kế để di chuyển",
+    "contract": "Tích hợp của bạn phải sống lâu hơn nhà cung cấp gateway.",
+    "body": "Compatibility Center ghi rõ phần nào được nhận trực tiếp, phần nào NapKey chuyển đổi và hành vi nào vẫn có thể khác upstream.",
+    "cta": "Mở Compatibility Center",
+    "protocols": {
+      "anthropic": { "title": "Anthropic Messages", "body": "Messages, streaming, tool use và đếm token qua request shape quen thuộc." },
+      "openai": { "title": "OpenAI Chat", "body": "Request Chat Completions được chuyển đổi trên cùng data plane NapKey." },
+      "responses": { "title": "Responses API", "body": "Hỗ trợ lời gọi kiểu Responses với ranh giới lưu trữ được công bố rõ." }
+    }
+  },
+  "compatibilityPage": {
+    "metaTitle": "Trung tâm tương thích API",
+    "eyebrow": "Compatibility Center",
+    "title": "Dùng gateway mà không bị trói vào gateway",
+    "intro": "Bản đồ có thể cập nhật phiên bản về catalog model công khai, bề mặt giao thức và đường chuyển đổi của NapKey. Trang này tách rõ request shape được hỗ trợ với hành vi chuyển đổi để bạn đánh giá tính di động trước khi đưa traffic production vào.",
+    "createKey": "Tạo API key",
+    "catalog": {
+      "eyebrow": "Catalog model",
+      "title": "Data plane đang công bố những gì",
+      "live": "Catalog trực tiếp từ gateway",
+      "fallback": "Catalog tham chiếu — không lấy được probe trực tiếp",
+      "scope": "Danh sách được đọc từ models endpoint công khai khi truy cập được. Nó mô tả model ID được chấp nhận, không đảm bảo mọi tài khoản upstream đang có sức chứa tại thời điểm này."
+    },
+    "matrix": {
+      "eyebrow": "Ma trận giao thức",
+      "title": "Biết rõ phần trực tiếp, chuyển đổi và giới hạn",
+      "scope": "Hỗ trợ nghĩa là NapKey nhận bề mặt request đó. Quá trình chuyển đổi có thể tạo khác biệt hành vi; không mặc định hỗ trợ beta field riêng của upstream nếu chưa được liệt kê.",
+      "caption": "Khả năng tương thích giao thức và tính năng NapKey",
+      "feature": "Tính năng",
+      "behavior": "Cam kết",
+      "rows": {
+        "messages": { "name": "Messages API", "anthropic": "Hỗ trợ", "openai": "—", "note": "Nhận tại /v1/messages và các alias đã công bố." },
+        "chat": { "name": "Chat Completions", "anthropic": "—", "openai": "Chuyển đổi", "note": "Request dạng OpenAI Chat được chuyển đổi sang data plane của gateway." },
+        "responses": { "name": "Responses API", "anthropic": "—", "openai": "Chuyển đổi", "note": "Hỗ trợ tại /v1/responses; thời hạn lưu response được công bố trong chính sách dữ liệu." },
+        "streaming": { "name": "SSE streaming", "anthropic": "Hỗ trợ", "openai": "Hỗ trợ", "note": "Streaming được proxy; chi tiết event tuân theo bề mặt giao thức đã chọn." },
+        "tools": { "name": "Tool use", "anthropic": "Hỗ trợ", "openai": "Chuyển đổi", "note": "Khai báo và kết quả tool đi qua ranh giới chuyển đổi khi dùng request shape OpenAI." },
+        "vision": { "name": "Vision input", "anthropic": "Hỗ trợ", "openai": "Chuyển đổi", "note": "Media được nhận vẫn phụ thuộc model đã chọn và khả năng upstream." },
+        "thinking": { "name": "Biến thể thinking", "anthropic": "Hỗ trợ", "openai": "Model alias", "note": "Dùng ID -thinking được catalog công bố; hành vi reasoning vẫn phụ thuộc model." },
+        "countTokens": { "name": "Đếm token", "anthropic": "Hỗ trợ", "openai": "—", "note": "Có tại /v1/messages/count_tokens cho input dạng Anthropic." }
+      }
+    },
+    "migration": {
+      "eyebrow": "Playbook chuyển đổi",
+      "title": "Thay đổi nhỏ nhất và đảo ngược được",
+      "scope": "Giữ SDK nhà cung cấp và code ứng dụng khi có thể. Đặt endpoint cùng credential trong biến môi trường để rollback chỉ là đổi cấu hình.",
+      "playbooks": {
+        "claudeCode": { "title": "Claude Code", "body": "Trỏ Claude Code vào NapKey và dùng credential NapKey. Xóa các override này để quay về nhà cung cấp ban đầu.", "code": "ANTHROPIC_BASE_URL={apiBaseUrl}\nANTHROPIC_AUTH_TOKEN=napkey_your_key" },
+        "anthropic": { "title": "Anthropic SDK", "body": "Giữ SDK chính thức và schema request. Chỉ đổi base URL và credential.", "code": "base_url=\"{apiBaseUrl}\"\napi_key=\"napkey_your_key\"" },
+        "openai": { "title": "OpenAI SDK", "body": "Giữ lời gọi dạng Chat Completions hoặc Responses trong khi NapKey chuyển đổi chúng trên data plane.", "code": "base_url=\"{apiBaseUrl}/v1\"\napi_key=\"napkey_your_key\"" }
+      }
+    },
+    "contract": {
+      "eyebrow": "Ranh giới trung thực",
+      "title": "Tương thích không có nghĩa hành vi upstream giống hệt",
+      "body": "NapKey không cam kết tương đồng từng byte với mọi phiên bản SDK, beta header hay extension riêng của nhà cung cấp. Catalog công khai có thể đổi theo model upstream, và model xuất hiện trong danh sách không đảm bảo upstream đang có sức chứa. Hãy test chính xác các tính năng ứng dụng phụ thuộc trước khi chuyển traffic production."
     }
   },
   "trustPage": {
@@ -236,6 +298,7 @@
       "billing": "Cách tính tiền",
       "status": "Trạng thái hệ thống",
       "trust": "Trung tâm tin cậy",
+      "compatibility": "Trung tâm tương thích",
       "terms": "Điều khoản sử dụng",
       "privacy": "Chính sách dữ liệu",
       "contact": "Liên hệ"

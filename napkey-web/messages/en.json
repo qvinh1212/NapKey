@@ -9,6 +9,7 @@
     "integrate": "Integrate",
     "billing": "Billing",
     "trust": "Trust",
+    "compatibility": "Compatibility",
     "signIn": "Sign in",
     "getStarted": "Get started",
     "skipToContent": "Skip to main content",
@@ -75,6 +76,67 @@
       "ledger": { "title": "Auditable charges", "body": "Model, input, output, cache tokens, latency and cost remain visible per request." },
       "keys": { "title": "Controlled credentials", "body": "Management APIs return masked identifiers. Disable and revoke actions expose their synchronization state instead of pretending propagation cannot fail." },
       "prompts": { "title": "Bounded content retention", "body": "Prompt payloads are excluded from request debug logs; Responses API storage is separately disclosed with its 30-day cleanup policy." }
+    }
+  },
+  "compatibilitySection": {
+    "eyebrow": "Compatibility contract",
+    "title": "Keep your client. Keep your exit.",
+    "subtitle": "NapKey competes by reducing migration cost, not by inventing a proprietary SDK. Use established Anthropic and OpenAI request shapes, inspect the active catalog, and move away by restoring your endpoint.",
+    "contractLabel": "Portable by design",
+    "contract": "Your integration should outlive your gateway vendor.",
+    "body": "The Compatibility Center records what is accepted natively, what NapKey translates, and where behavior can still differ from an upstream provider.",
+    "cta": "Open Compatibility Center",
+    "protocols": {
+      "anthropic": { "title": "Anthropic Messages", "body": "Messages, streaming, tool use and token counting through familiar request shapes." },
+      "openai": { "title": "OpenAI Chat", "body": "Chat Completions requests translated onto the same NapKey data plane." },
+      "responses": { "title": "Responses API", "body": "Responses-style calls supported with explicitly documented storage boundaries." }
+    }
+  },
+  "compatibilityPage": {
+    "metaTitle": "API compatibility center",
+    "eyebrow": "Compatibility Center",
+    "title": "A gateway you can adopt without marrying",
+    "intro": "A versionable map of NapKey's public model catalog, protocol surface and migration paths. It separates supported request shapes from translated behavior so you can judge portability before routing production traffic.",
+    "createKey": "Create an API key",
+    "catalog": {
+      "eyebrow": "Model catalog",
+      "title": "What the data plane advertises now",
+      "live": "Live catalog from the gateway",
+      "fallback": "Reference catalog — live probe unavailable",
+      "scope": "This list comes from the public models endpoint when reachable. It describes accepted model identifiers, not a guarantee that every upstream account has capacity at this moment."
+    },
+    "matrix": {
+      "eyebrow": "Protocol matrix",
+      "title": "Know what is native, translated, or bounded",
+      "scope": "Supported means NapKey accepts the request surface. Translation may introduce behavioral differences; upstream-specific beta fields are not implied unless listed here.",
+      "caption": "NapKey protocol and feature compatibility",
+      "feature": "Feature",
+      "behavior": "Contract",
+      "rows": {
+        "messages": { "name": "Messages API", "anthropic": "Supported", "openai": "—", "note": "Accepted at /v1/messages and documented aliases." },
+        "chat": { "name": "Chat Completions", "anthropic": "—", "openai": "Translated", "note": "OpenAI-shaped chat requests are translated onto the gateway data plane." },
+        "responses": { "name": "Responses API", "anthropic": "—", "openai": "Translated", "note": "Supported at /v1/responses; stored-response retention is disclosed in the data policy." },
+        "streaming": { "name": "SSE streaming", "anthropic": "Supported", "openai": "Supported", "note": "Streaming is proxied; exact event details follow the selected protocol surface." },
+        "tools": { "name": "Tool use", "anthropic": "Supported", "openai": "Translated", "note": "Tool definitions and results cross the translation boundary when using OpenAI shapes." },
+        "vision": { "name": "Vision input", "anthropic": "Supported", "openai": "Translated", "note": "Accepted media still depends on the selected model and upstream capability." },
+        "thinking": { "name": "Thinking variants", "anthropic": "Supported", "openai": "Model alias", "note": "Use an advertised -thinking identifier; reasoning behavior remains model-dependent." },
+        "countTokens": { "name": "Count tokens", "anthropic": "Supported", "openai": "—", "note": "Available at /v1/messages/count_tokens for Anthropic-shaped input." }
+      }
+    },
+    "migration": {
+      "eyebrow": "Migration playbooks",
+      "title": "The smallest reversible change",
+      "scope": "Keep provider SDKs and application code where possible. Put endpoint and credentials in environment configuration so rollback remains a configuration change.",
+      "playbooks": {
+        "claudeCode": { "title": "Claude Code", "body": "Point Claude Code at NapKey and use your NapKey credential. Remove these overrides to return to the original provider.", "code": "ANTHROPIC_BASE_URL={apiBaseUrl}\nANTHROPIC_AUTH_TOKEN=napkey_your_key" },
+        "anthropic": { "title": "Anthropic SDK", "body": "Keep the official SDK and request schema. Change the base URL and credential only.", "code": "base_url=\"{apiBaseUrl}\"\napi_key=\"napkey_your_key\"" },
+        "openai": { "title": "OpenAI SDK", "body": "Keep Chat Completions or Responses-shaped calls while NapKey translates them onto its data plane.", "code": "base_url=\"{apiBaseUrl}/v1\"\napi_key=\"napkey_your_key\"" }
+      }
+    },
+    "contract": {
+      "eyebrow": "Honest boundary",
+      "title": "Compatibility is not identical upstream behavior",
+      "body": "NapKey does not promise byte-for-byte parity with every SDK release, beta header or provider-specific extension. The public catalog can change as upstream models change, and successful model listing does not guarantee live upstream capacity. Test the exact features your application relies on before switching production traffic."
     }
   },
   "trustPage": {
@@ -236,6 +298,7 @@
       "billing": "Billing",
       "status": "System status",
       "trust": "Trust center",
+      "compatibility": "Compatibility center",
       "terms": "Terms of service",
       "privacy": "Data policy",
       "contact": "Contact"
