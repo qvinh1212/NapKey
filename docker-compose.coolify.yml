@@ -23,6 +23,7 @@ services:
     environment:
       CONFIG_PATH: /app/data/config.json
       ADMIN_PASSWORD: ${KIRO_ADMIN_PASSWORD_V2}
+      ADMIN_HOST: ${KIRO_ADMIN_HOST:-}
       NAPKEY_CORE_URL: http://napkey-core:8081
       NAPKEY_INTERNAL_TOKEN: ${KIRO_ADMIN_PASSWORD_V2}
     volumes:

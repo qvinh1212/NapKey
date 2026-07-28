@@ -148,7 +148,7 @@
     "statusLink": "Check gateway liveness",
     "privacyLink": "Read the data policy",
     "sections": {
-      "identity": { "title": "Independent service", "body": "NapKey is an independent API gateway and prepaid billing service. It is not Anthropic, AWS or Kiro, and does not imply endorsement by those companies." },
+      "identity": { "title": "Independent service", "body": "NapKey is an independent API gateway and prepaid billing service. Requests are processed through third-party infrastructure, including AWS-operated services; no provider endorsement is implied." },
       "keyHandling": { "title": "API key handling", "body": "A new key is shown once in the console and the control plane stores its hash. The data plane currently retains the bearer credential in restricted server configuration because it must authenticate calls; management responses expose only a masked identifier. Revocation is pushed to the data plane and may enter a visible retry state if propagation fails, so treat an exposed key as usable until deletion is synchronized." },
       "requestData": { "title": "Request records", "body": "The customer ledger stores request ID, model, token categories, cost, status and latency. Full prompts are not written to production request debug logs. Requests still pass through NapKey and the configured upstream provider. Responses API files become eligible for deletion after 30 days; an hourly cleanup job and startup sweep remove expired files." },
       "billing": { "title": "Billing evidence", "body": "A billable response carries x-request-id. The same ID is used for hold settlement and the usage ledger, so one charge can be reconciled to one call. Historical usage is not repriced after a rate change." },
@@ -197,7 +197,7 @@
       "acceptableUse": { "title": "Acceptable use", "body": "Do not use NapKey to violate law, probe or disrupt systems, bypass provider restrictions, distribute malware, or expose credentials belonging to another person." },
       "availability": { "title": "Availability", "body": "The service is provided without a formal uptime SLA at this stage. Maintenance, upstream changes, quota exhaustion and account availability may interrupt requests." },
       "pricing": { "title": "Pricing", "body": "Rates may change with exchange rates and upstream pricing. New rates apply from their effective time; usage already recorded keeps its original settled cost." },
-      "independence": { "title": "Brand independence", "body": "NapKey is not an Anthropic, AWS or Kiro product. Claude and related names belong to their respective owners." }
+      "independence": { "title": "Brand independence", "body": "NapKey operates independently from third-party model and infrastructure providers, including AWS-operated services. Claude and related names belong to their respective owners." }
     }
   },
   "integrate": {
@@ -218,7 +218,7 @@
   "pricing": {
     "eyebrow": "Pricing",
     "title": "One credit rate across every model",
-    "subtitle": "No manual input, output, or cache-token conversion. NapKey records the credits reported by Kiro and deducts the wallet at a fixed 60 VND per credit.",
+    "subtitle": "No manual input, output, or cache-token conversion. NapKey records upstream-reported credits and deducts the wallet at a fixed 60 VND per credit.",
     "popular": "Popular",
     "packages": {
       "starter": "Start and experiment",
@@ -227,7 +227,7 @@
     },
     "packageNote": "The same 60 VND/credit rate, with no package lock-in or long-term commitment.",
     "rateLabel": "Published rate",
-    "measurement": "Credits come from actual usage reported by Kiro. The dashboard records each request, model, reference token counts, credits, and settled VND for reconciliation.",
+    "measurement": "Credits come from actual usage reported by the upstream service. The dashboard records each request, model, reference token counts, credits, and settled VND for reconciliation.",
     "footnote": "NapKey wallet credits do not expire under the current policy. Settled usage always retains the rate effective when it was recorded."
   },
   "billing": {
@@ -360,7 +360,7 @@
       "stats": {
         "credits": "Credits used",
         "cost30d": "Cost, 30 days",
-        "cost30dHint": "Kiro-reported credits in the last 30 days, corresponding to settled cost.",
+        "cost30dHint": "Upstream-reported credits in the last 30 days, corresponding to settled cost.",
         "requests30d": "Requests, 30 days",
         "requestsHintClean": "No failed requests in this period.",
         "requestsHintErrors": "{count} failed requests, charged nothing.",
@@ -370,11 +370,11 @@
         "activeKeysHint": "All-time cost: {total}."
       },
       "estimatedBadge": "Contains estimates",
-      "estimatedNotice": "{count} of {total} requests have estimated output tokens because upstream returned no count. Credits and cost still come from Kiro-reported usage, not estimated tokens.",
+      "estimatedNotice": "{count} of {total} requests have estimated output tokens because upstream returned no count. Credits and cost still come from upstream-reported usage, not estimated tokens.",
       "unpricedBadge": "Missing price",
       "unpricedNotice": "{count} requests were served with no rate on file, so they cost nothing. Operations has been alerted.",
       "chartTitle": "Daily credits",
-      "chartDescription": "Actual credits reported by Kiro, grouped by Vietnam calendar day.",
+      "chartDescription": "Actual credits reported by the upstream service, grouped by Vietnam calendar day.",
       "byModelTitle": "By model",
       "byModelDescription": "The same 30-day window, with credits and settled cost for each model.",
       "byModelEmpty": "No requests in the last 30 days.",
@@ -388,7 +388,7 @@
     "usage": {
       "metaTitle": "Usage",
       "title": "Request ledger",
-      "description": "One row per request, with Kiro-reported credits, reference tokens, and settled cost for reconciliation.",
+      "description": "One row per request, with upstream-reported credits, reference tokens, and settled cost for reconciliation.",
       "loading": "Loading records...",
       "loadFailed": "Could not load usage records.",
       "retry": "Try again",
@@ -408,7 +408,7 @@
         "qualityHint": "{unpriced} requests have no price on file."
       },
       "chartTitle": "Credits over time",
-      "chartDescription": "Kiro-reported credits by day for the selected range, cut on Vietnam time.",
+      "chartDescription": "Upstream-reported credits by day for the selected range, cut on Vietnam time.",
       "emptyTitle": "Nothing here yet",
       "emptyDescription": "No requests in this range. Records appear right after your first API call.",
       "colTime": "Time",

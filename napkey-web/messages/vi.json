@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "NapKey — Claude Code thanh toán bằng VNĐ",
-    "description": "Nạp từ 20.000 ₫, lấy API key và chạy Claude Code hoặc SDK Anthropic/OpenAI qua NapKey. Không gói tháng, tính theo credit Kiro thực dùng.",
+    "description": "Nạp từ 20.000 ₫, lấy API key và chạy Claude Code hoặc SDK Anthropic/OpenAI qua NapKey. Không gói tháng, tính theo credit thực dùng.",
     "ogAlt": "NapKey — cổng API Claude trả trước theo ví"
   },
   "nav": {
@@ -148,7 +148,7 @@
     "statusLink": "Kiểm tra liveness gateway",
     "privacyLink": "Đọc chính sách dữ liệu",
     "sections": {
-      "identity": { "title": "Dịch vụ độc lập", "body": "NapKey là gateway API và dịch vụ tính phí trả trước độc lập. NapKey không phải Anthropic, AWS hay Kiro và không ngụ ý được các công ty đó bảo chứng." },
+      "identity": { "title": "Dịch vụ độc lập", "body": "NapKey là gateway API và dịch vụ tính phí trả trước độc lập. Request được xử lý qua hạ tầng bên thứ ba, bao gồm các dịch vụ do AWS vận hành; NapKey không ngụ ý được nhà cung cấp bảo chứng." },
       "keyHandling": { "title": "Xử lý API key", "body": "Key mới chỉ hiện đầy đủ một lần trong console và control plane lưu bản băm. Data plane hiện giữ bearer credential trong cấu hình server bị giới hạn quyền vì cần xác thực request; API quản lý chỉ trả định danh đã che. Thu hồi được đẩy sang data plane và có thể vào trạng thái retry hiển thị nếu lan truyền lỗi, vì vậy hãy coi key bị lộ vẫn dùng được cho tới khi xoá đồng bộ xong." },
       "requestData": { "title": "Dữ liệu request", "body": "Sổ usage lưu request ID, model, các nhóm token, chi phí, trạng thái và độ trễ. Prompt đầy đủ không được ghi vào debug log request production. Request vẫn đi qua NapKey và upstream đã cấu hình. File Responses API đủ điều kiện xoá sau 30 ngày; job chạy mỗi giờ và lúc khởi động sẽ dọn file hết hạn." },
       "billing": { "title": "Bằng chứng tính phí", "body": "Phản hồi có tính phí mang x-request-id. Cùng ID đó được dùng khi quyết toán hold và ghi sổ usage, nên một khoản phí đối chiếu được về đúng một lần gọi. Usage cũ không bị tính lại khi giá thay đổi." },
@@ -197,7 +197,7 @@
       "acceptableUse": { "title": "Sử dụng chấp nhận được", "body": "Không dùng NapKey để vi phạm pháp luật, dò quét hoặc phá hệ thống, vượt hạn chế của nhà cung cấp, phát tán mã độc hay sử dụng credential của người khác." },
       "availability": { "title": "Khả dụng", "body": "Dịch vụ hiện chưa có SLA uptime chính thức. Bảo trì, thay đổi upstream, hết quota và tình trạng tài khoản có thể làm gián đoạn request." },
       "pricing": { "title": "Giá", "body": "Giá có thể đổi theo tỷ giá và giá upstream. Giá mới áp dụng từ thời điểm hiệu lực; usage đã ghi vẫn giữ nguyên chi phí đã quyết toán." },
-      "independence": { "title": "Độc lập thương hiệu", "body": "NapKey không phải sản phẩm của Anthropic, AWS hay Kiro. Claude và các tên liên quan thuộc chủ sở hữu tương ứng." }
+      "independence": { "title": "Độc lập thương hiệu", "body": "NapKey hoạt động độc lập với các nhà cung cấp model và hạ tầng bên thứ ba, bao gồm dịch vụ do AWS vận hành. Claude cùng các tên liên quan thuộc chủ sở hữu tương ứng." }
     }
   },
   "integrate": {
@@ -218,7 +218,7 @@
   "pricing": {
     "eyebrow": "Bảng giá",
     "title": "Một mức giá credit, dùng cho mọi model",
-    "subtitle": "Không cần tự quy đổi input, output hay cache token. NapKey ghi nhận đúng số credit Kiro báo về và trừ ví theo mức cố định 60 VNĐ mỗi credit.",
+    "subtitle": "Không cần tự quy đổi input, output hay cache token. NapKey ghi nhận credit do upstream báo về và trừ ví theo mức cố định 60 VNĐ mỗi credit.",
     "popular": "Phổ biến",
     "packages": {
       "starter": "Bắt đầu và thử nghiệm",
@@ -227,7 +227,7 @@
     },
     "packageNote": "Cùng đơn giá 60 VNĐ/credit, không khóa gói và không ép cam kết dài hạn.",
     "rateLabel": "Đơn giá công khai",
-    "measurement": "Credit được đo từ usage thực tế do Kiro trả về. Dashboard lưu từng request, model, token tham chiếu, credit và số tiền đã trừ để bạn đối soát.",
+    "measurement": "Credit được đo từ usage thực tế do upstream trả về. Dashboard lưu từng request, model, token tham chiếu, credit và số tiền đã trừ để bạn đối soát.",
     "footnote": "Credit trong ví NapKey không hết hạn theo chính sách hiện tại. Usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
   },
   "billing": {
@@ -360,7 +360,7 @@
       "stats": {
         "credits": "Credit đã dùng",
         "cost30d": "Chi phí 30 ngày",
-        "cost30dHint": "Tổng credit Kiro ghi nhận trong 30 ngày gần nhất; tương ứng với chi phí đã quyết toán.",
+        "cost30dHint": "Tổng credit upstream ghi nhận trong 30 ngày gần nhất; tương ứng với chi phí đã quyết toán.",
         "requests30d": "Request 30 ngày",
         "requestsHintClean": "Không có request lỗi trong kỳ.",
         "requestsHintErrors": "{count} request lỗi, không tính tiền.",
@@ -370,11 +370,11 @@
         "activeKeysHint": "Tổng chi phí từ đầu: {total}."
       },
       "estimatedBadge": "Có ước lượng",
-      "estimatedNotice": "{count} trong {total} request có số token đầu ra là ước lượng vì upstream không trả số đo. Credit và chi phí vẫn lấy từ usage Kiro báo về, không suy ra từ token ước lượng.",
+      "estimatedNotice": "{count} trong {total} request có số token đầu ra là ước lượng vì upstream không trả số đo. Credit và chi phí vẫn lấy từ usage upstream báo về, không suy ra từ token ước lượng.",
       "unpricedBadge": "Thiếu bảng giá",
       "unpricedNotice": "{count} request được phục vụ nhưng chưa có giá trên sổ, nên tính 0 đồng. Bên vận hành đã nhận cảnh báo.",
       "chartTitle": "Credit theo ngày",
-      "chartDescription": "Credit thực tế Kiro báo về, nhóm theo ngày giờ Việt Nam.",
+      "chartDescription": "Credit thực tế upstream báo về, nhóm theo ngày giờ Việt Nam.",
       "byModelTitle": "Phân theo model",
       "byModelDescription": "Cùng khoảng 30 ngày, hiển thị credit và chi phí theo từng model.",
       "byModelEmpty": "Chưa có request nào trong 30 ngày qua.",
@@ -388,7 +388,7 @@
     "usage": {
       "metaTitle": "Lịch sử dùng",
       "title": "Sổ chi tiết",
-      "description": "Mỗi dòng là một request, kèm credit Kiro ghi nhận, token tham chiếu và chi phí để đối soát.",
+      "description": "Mỗi dòng là một request, kèm credit upstream ghi nhận, token tham chiếu và chi phí để đối soát.",
       "loading": "Đang tải lịch sử...",
       "loadFailed": "Không tải được lịch sử dùng.",
       "retry": "Thử lại",
@@ -408,7 +408,7 @@
         "qualityHint": "{unpriced} request chưa có giá."
       },
       "chartTitle": "Credit theo thời gian",
-      "chartDescription": "Credit Kiro ghi nhận theo ngày trong khoảng đang chọn, cắt theo giờ Việt Nam.",
+      "chartDescription": "Credit upstream ghi nhận theo ngày trong khoảng đang chọn, cắt theo giờ Việt Nam.",
       "emptyTitle": "Chưa có dữ liệu",
       "emptyDescription": "Chưa có request nào trong khoảng này. Số liệu xuất hiện ngay sau lần gọi API đầu tiên.",
       "colTime": "Thời điểm",

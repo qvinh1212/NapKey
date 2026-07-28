@@ -11,6 +11,8 @@ import (
 	"kiro-go/logger"
 	"kiro-go/pool"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -63,6 +65,8 @@ const requestLogsMaxSize = 500
 // Handler HTTP 处理器
 type Handler struct {
 	pool *pool.AccountPool
+	// adminHost keeps operator assets off the public API hostname when configured.
+	adminHost string
 	// 运行时统计 (使用原子操作)
 	totalRequests   int64
 	successRequests int64
@@ -282,6 +286,7 @@ func NewHandler() *Handler {
 	totalReq, successReq, failedReq, totalTokens, totalCredits := config.GetStats()
 	h := &Handler{
 		pool:                 pool.GetPool(),
+		adminHost:            normalizeAdminHost(os.Getenv("ADMIN_HOST")),
 		totalRequests:        int64(totalReq),
 		successRequests:      int64(successReq),
 		failedRequests:       int64(failedReq),
@@ -536,11 +541,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"status":"ok"}`))
 
 	// 管理端点
-	case path == "/admin" || path == "/admin/":
-		h.serveAdminPage(w, r)
-	case strings.HasPrefix(path, "/admin/api/"):
+	case strings.HasPrefix(path, "/admin/api/") && h.adminAPIHostAllowed(r):
 		h.handleAdminAPI(w, r)
-	case strings.HasPrefix(path, "/admin/"):
+	case (path == "/admin" || path == "/admin/") && h.adminHostAllowed(r):
+		h.serveAdminPage(w, r)
+	case strings.HasPrefix(path, "/admin/") && h.adminHostAllowed(r):
 		h.serveStaticFile(w, r)
 
 	// 健康检查
@@ -560,6 +565,38 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Not Found", 404)
 	}
+}
+
+func normalizeAdminHost(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	if !strings.Contains(value, "://") {
+		value = "https://" + value
+	}
+	parsed, err := url.Parse(value)
+	if err != nil {
+		return ""
+	}
+	return strings.ToLower(parsed.Hostname())
+}
+
+func (h *Handler) adminHostAllowed(r *http.Request) bool {
+	if h.adminHost == "" {
+		return false
+	}
+	return strings.EqualFold(r.URL.Hostname(), h.adminHost) ||
+		strings.EqualFold(normalizeAdminHost(r.Host), h.adminHost)
+}
+
+func (h *Handler) adminAPIHostAllowed(r *http.Request) bool {
+	if h.adminHostAllowed(r) {
+		return true
+	}
+	host := normalizeAdminHost(r.Host)
+	return host == "kiro-go" || host == "host.docker.internal" || host == "localhost" ||
+		host == "127.0.0.1" || host == "::1"
 }
 
 // handleHealth 健康检查（不暴露统计数据）
@@ -611,9 +648,9 @@ func (h *Handler) handleModels(w http.ResponseWriter, r *http.Request) {
 
 	// 添加别名模型
 	models = append(models,
-		buildModelInfo("auto", "kiro-proxy", true),
-		buildModelInfo("gpt-4o", "kiro-proxy", true),
-		buildModelInfo("gpt-4", "kiro-proxy", true),
+		buildModelInfo("auto", "napkey", true),
+		buildModelInfo("gpt-4o", "napkey", true),
+		buildModelInfo("gpt-4", "napkey", true),
 	)
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -1372,7 +1409,7 @@ func (h *Handler) handleClaudeStream(w http.ResponseWriter, payload *KiroPayload
 			h.recordFailureWithDetails("claude", model, account.ID, err)
 			h.sendSSE(w, flusher, "error", map[string]interface{}{
 				"type":  "error",
-				"error": map[string]string{"type": "api_error", "message": err.Error()},
+				"error": map[string]string{"type": "api_error", "message": genericUpstreamError},
 			})
 			return
 		}
@@ -1823,6 +1860,7 @@ func (h *Handler) handleClaudeNonStream(w http.ResponseWriter, payload *KiroPayl
 }
 
 func (h *Handler) sendClaudeError(w http.ResponseWriter, status int, errType, message string) {
+	message = publicProtocolError(status, message)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -2196,6 +2234,7 @@ func (h *Handler) handleOpenAIStream(w http.ResponseWriter, payload *KiroPayload
 				continue
 			}
 			h.recordFailureWithDetails("openai", model, account.ID, err)
+			sendOpenAIStreamFailure(w, flusher)
 			return
 		}
 
@@ -2376,6 +2415,7 @@ func (h *Handler) handleOpenAINonStream(w http.ResponseWriter, payload *KiroPayl
 }
 
 func (h *Handler) sendOpenAIError(w http.ResponseWriter, status int, errType, message string) {
+	message = publicProtocolError(status, message)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -2384,6 +2424,17 @@ func (h *Handler) sendOpenAIError(w http.ResponseWriter, status int, errType, me
 			"message": message,
 		},
 	})
+}
+
+func sendOpenAIStreamFailure(w http.ResponseWriter, flusher http.Flusher) {
+	payload, _ := json.Marshal(map[string]interface{}{
+		"error": map[string]string{
+			"type":    "server_error",
+			"message": genericUpstreamError,
+		},
+	})
+	fmt.Fprintf(w, "data: %s\n\ndata: [DONE]\n\n", payload)
+	flusher.Flush()
 }
 
 // refreshAccountToken serializes the complete refresh-token rotation lifecycle:

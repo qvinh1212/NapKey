@@ -74,7 +74,7 @@ export function OperationsDashboard() {
 
       <div className="grid gap-4 lg:grid-cols-2">
 		<Panel>
-			<PanelHeader title="Sức khỏe data plane" description="Pool Kiro và đường báo usage về control plane" />
+			<PanelHeader title="Sức khỏe data plane" description="Pool upstream và đường báo usage về control plane" />
 			<div className="grid grid-cols-2 gap-y-5 p-5 text-ui sm:grid-cols-3">
 				<Metric label="Tài khoản khả dụng" value={data.dataPlane.available ?? 0} danger />
 				<Metric label="Tổng tài khoản" value={data.dataPlane.accounts ?? 0} />
