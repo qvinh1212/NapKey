@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api/client';
 import type { OperationsAlert, OperationsSummary } from '@/lib/api/types';
+import { normalizeOperationsReliability } from '@/lib/operations-reliability';
 import { useSession } from './session-provider';
 import { Badge, Panel, PanelHeader, StatCard } from './ui';
 
@@ -43,7 +44,8 @@ export function OperationsDashboard() {
   if (!data && !error) return <p className="text-ui text-dim">Đang tải số liệu vận hành...</p>;
   if (!data) return <Panel className="p-6 text-sm text-danger">{error}</Panel>;
 
-  const unhealthy = data.wallets.driftCount + data.payments.stuck + data.keySync.failed + data.holds.expired + (data.dataPlane.healthy ? 0 : 1);
+  const reliability = normalizeOperationsReliability(data);
+  const unhealthy = data.wallets.driftCount + data.payments.stuck + data.keySync.failed + data.holds.expired + reliability.issues.length;
   async function reconcile() {
     setReconciling(true);
     try {
@@ -76,12 +78,12 @@ export function OperationsDashboard() {
 		<Panel>
 			<PanelHeader title="Sức khỏe data plane" description="Pool upstream và đường báo usage về control plane" />
 			<div className="grid grid-cols-2 gap-y-5 p-5 text-ui sm:grid-cols-3">
-				<Metric label="Tài khoản khả dụng" value={data.dataPlane.available ?? 0} danger />
+				<Metric label="Tài khoản khả dụng" value={data.dataPlane.available ?? 0} dangerBelow={0} warningBelow={1} />
+				<Metric label="Công suất khả dụng" value={reliability.availablePercent} suffix="%" dangerBelow={0} warningBelow={25} />
+				<Metric label="Tỷ lệ request lỗi (15 phút)" value={reliability.errorRatePercent} suffix="%" warningAbove={10} />
 				<Metric label="Tổng tài khoản" value={data.dataPlane.accounts ?? 0} />
-				<Metric label="Request lỗi" value={data.dataPlane.failedRequests ?? 0} danger />
 				<Metric label="Usage chờ gửi" value={data.dataPlane.usageReporting?.pending ?? 0} />
 				<Metric label="Usage bị mất" value={data.dataPlane.usageReporting?.dropped ?? 0} danger />
-				<Metric label="Usage đã gửi" value={data.dataPlane.usageReporting?.sent ?? 0} />
 			</div>
 			{data.dataPlane.error ? <p className="border-t border-line px-5 py-3 text-ui text-danger">{data.dataPlane.error}</p> : null}
 		</Panel>
@@ -105,6 +107,15 @@ export function OperationsDashboard() {
             <Metric label="Hold quá hạn" value={data.holds.expired} danger />
           </div>
         </Panel>
+        <Panel>
+			<PanelHeader title="Tín hiệu độ tin cậy" description="Ngưỡng tự động cho capacity, error rate và usage pipeline" />
+			{reliability.issues.length === 0 ? <p className="p-5 text-ui text-dim">Không phát hiện tín hiệu suy giảm.</p> : <div className="divide-y divide-line">{reliability.issues.map((issue) => (
+				<div key={issue.code} className="flex items-center justify-between gap-3 px-5 py-4 text-ui">
+					<span className="text-fg">{reliabilityIssueLabels[issue.code] ?? 'Tín hiệu vận hành chưa xác định'}</span>
+					<Badge tone={issue.severity === 'outage' ? 'danger' : 'warn'}>{issue.severity === 'outage' ? 'Gián đoạn' : 'Suy giảm'}</Badge>
+				</div>
+			))}</div>}
+		</Panel>
       </div>
       {error ? <p role="status" className="text-ui text-warn">{error}</p> : null}
 		<Panel>
@@ -120,6 +131,20 @@ export function OperationsDashboard() {
   );
 }
 
-function Metric({ label, value, danger = false }: { label: string; value: number; danger?: boolean }) {
-  return <div><p className="text-dim">{label}</p><p className={`mt-1 text-xl tabular-nums ${danger && value > 0 ? 'text-danger' : 'text-fg'}`}>{value}</p></div>;
+const reliabilityIssueLabels: Record<string, string> = {
+  postgres_unreachable: 'Không kết nối được cơ sở dữ liệu',
+  data_plane_unreachable: 'Không kết nối được data plane',
+  upstream_capacity_empty: 'Pool upstream không còn công suất',
+  upstream_capacity_low: 'Công suất pool upstream đang thấp',
+  usage_reporting_unhealthy: 'Đường ghi nhận usage không khỏe',
+  usage_reports_dropped: 'Có bản ghi usage bị mất',
+  usage_backlog_high: 'Hàng đợi usage đang cao',
+  error_rate_high: 'Tỷ lệ request lỗi 15 phút đang cao',
+  unknown_reliability_issue: 'Dữ liệu trạng thái vận hành không đầy đủ',
+};
+
+function Metric({ label, value, danger = false, dangerBelow, dangerAbove, warningBelow, warningAbove, suffix = '' }: { label: string; value: number; danger?: boolean; dangerBelow?: number; dangerAbove?: number; warningBelow?: number; warningAbove?: number; suffix?: string }) {
+  const isDanger = (danger && value > 0) || (dangerBelow !== undefined && value <= dangerBelow) || (dangerAbove !== undefined && value >= dangerAbove);
+  const isWarning = !isDanger && ((warningBelow !== undefined && value <= warningBelow) || (warningAbove !== undefined && value >= warningAbove));
+  return <div><p className="text-dim">{label}</p><p className={`mt-1 text-xl tabular-nums ${isDanger ? 'text-danger' : isWarning ? 'text-warn' : 'text-fg'}`}>{value}{suffix}</p></div>;
 }

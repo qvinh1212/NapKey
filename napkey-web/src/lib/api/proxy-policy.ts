@@ -8,6 +8,7 @@ const ALLOWED: readonly (RegExp | string)[] = [
   '/v1/auth/forgot-password',
   '/v1/auth/reset-password',
   '/v1/auth/session',
+  '/v1/status',
   '/v1/me/password',
   '/v1/me/usage',
   '/v1/me/usage/detail',

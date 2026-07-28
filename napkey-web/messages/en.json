@@ -159,18 +159,19 @@
   "statusPage": {
     "metaTitle": "System status",
     "eyebrow": "Live status",
-    "title": "Gateway liveness, checked now",
-    "intro": "This page reads the public process health endpoint on every visit. It proves the gateway process answered, not that an upstream model or billing dependency is ready.",
-    "reachable": "Process reachable",
-    "unavailable": "Probe unavailable",
-    "gatewayProcess": "Public gateway process",
-    "reachableBody": "The gateway process answered its liveness endpoint.",
-    "unavailableBody": "The health probe did not return a valid success response. Existing requests may also be affected.",
-    "endpoint": "Endpoint",
-    "version": "Version",
-    "uptime": "Process uptime",
-    "scope": "Scope: process liveness only. Account capacity, billing and upstream model availability can vary independently.",
-    "checkedAt": "Observed {time}"
+    "title": "NapKey service readiness, checked now",
+    "intro": "The status page checks the gateway, billing ledger, and usage reporting path together. It reports current service readiness, not a historical SLA guarantee.",
+    "serviceTitle": "NapKey service",
+    "states": { "operational": "Operational", "degraded": "Degraded", "outage": "Service disruption" },
+    "stateBodies": {
+      "operational": "Essential components are responding within operating thresholds.",
+      "degraded": "The service is available, but capacity, error rate, or the usage queue crossed a warning threshold.",
+      "outage": "At least one essential dependency is unavailable. New requests may fail."
+    },
+    "components": { "gateway": "API gateway", "billing": "Billing & wallet", "usage": "Usage accounting" },
+    "scope": "Account counts, quotas, and internal details remain private. Status is calculated from live operational signals.",
+    "checkedAt": "Observed {time}",
+    "unknownTime": "unknown"
   },
   "privacyPage": {
     "metaTitle": "Data policy",

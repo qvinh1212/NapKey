@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"napkey-core/internal/reliability"
 	"napkey-core/internal/store"
 )
 
@@ -24,9 +25,18 @@ func (s *Server) handleAdminOperationsSummary(w http.ResponseWriter, r *http.Req
 	margin := summary.RevenueMicros - summary.UpstreamCostMicros
 	dataPlane, dataPlaneErr := s.kiro.OperationsStatus(r.Context())
 	dataPlaneView := map[string]any{"healthy": false, "error": "data plane unavailable"}
+	assessment := reliability.Evaluate(true, nil, dataPlaneErr)
 	if dataPlaneErr == nil {
+		snapshot := &reliability.DataPlaneSnapshot{
+			Accounts: dataPlane.Accounts, Available: dataPlane.Available,
+			RecentRequests: dataPlane.RecentRequests, RecentFailures: dataPlane.RecentFailures,
+			UsageHealthy: dataPlane.UsageReporting.Healthy,
+			UsagePending: dataPlane.UsageReporting.Pending,
+			UsageDropped: dataPlane.UsageReporting.Dropped,
+		}
+		assessment = reliability.Evaluate(true, snapshot, nil)
 		dataPlaneView = map[string]any{
-			"healthy": dataPlane.Available > 0 && dataPlane.UsageReporting.Healthy == 1,
+			"healthy": assessment.Status == reliability.StatusOperational,
 			"version": dataPlane.Version, "accounts": dataPlane.Accounts, "available": dataPlane.Available,
 			"totalRequests": dataPlane.TotalRequests, "successRequests": dataPlane.SuccessRequests,
 			"failedRequests": dataPlane.FailedRequests, "totalTokens": dataPlane.TotalTokens,
@@ -34,17 +44,18 @@ func (s *Server) handleAdminOperationsSummary(w http.ResponseWriter, r *http.Req
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"windowDays": days,
-		"revenue": costView(summary.RevenueMicros),
+		"windowDays":           days,
+		"revenue":              costView(summary.RevenueMicros),
 		"upstreamCostEstimate": costView(summary.UpstreamCostMicros),
-		"margin": costView(margin),
-		"wallets": map[string]any{"driftCount": summary.WalletDriftCount, "absoluteDrift": costView(summary.WalletAbsoluteDrift)},
-		"payments": map[string]int64{"unmatched": summary.UnmatchedPayments, "rejected": summary.RejectedPayments, "stuck": summary.StuckPayments},
-		"holds": map[string]int64{"open": summary.OpenHolds, "expired": summary.ExpiredOpenHolds},
-		"keySync": map[string]int64{"pending": summary.PendingKeySync, "failed": summary.FailedKeySync},
-		"openAlerts": summary.OpenAlerts,
-		"dataPlane": dataPlaneView,
-		"generatedAt": time.Now().UTC(),
+		"margin":               costView(margin),
+		"wallets":              map[string]any{"driftCount": summary.WalletDriftCount, "absoluteDrift": costView(summary.WalletAbsoluteDrift)},
+		"payments":             map[string]int64{"unmatched": summary.UnmatchedPayments, "rejected": summary.RejectedPayments, "stuck": summary.StuckPayments},
+		"holds":                map[string]int64{"open": summary.OpenHolds, "expired": summary.ExpiredOpenHolds},
+		"keySync":              map[string]int64{"pending": summary.PendingKeySync, "failed": summary.FailedKeySync},
+		"openAlerts":           summary.OpenAlerts,
+		"dataPlane":            dataPlaneView,
+		"reliability":          assessment,
+		"generatedAt":          time.Now().UTC(),
 	})
 }
 

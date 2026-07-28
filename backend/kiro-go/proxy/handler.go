@@ -60,6 +60,12 @@ type RequestLog struct {
 	Duration  int64   `json:"duration"`  // Request duration in ms
 }
 
+type requestMinuteBucket struct {
+	minute int64
+	total  int64
+	failed int64
+}
+
 const requestLogsMaxSize = 500
 
 // Handler HTTP 处理器
@@ -87,6 +93,7 @@ type Handler struct {
 	// 请求日志 (环形缓冲区，包含成功和失败)
 	requestLogs   []RequestLog
 	requestLogsMu sync.RWMutex
+	recentBuckets [16]requestMinuteBucket
 	rateLimiter   *rateLimiter
 
 	microsoftSelections   map[string]*microsoftProfileSelection
@@ -1689,6 +1696,15 @@ func (h *Handler) appendRequestLog(entry RequestLog) {
 		h.requestLogs = h.requestLogs[1:]
 	}
 	h.requestLogs = append(h.requestLogs, entry)
+	minute := entry.Time / 60
+	bucket := &h.recentBuckets[minute%int64(len(h.recentBuckets))]
+	if bucket.minute != minute {
+		*bucket = requestMinuteBucket{minute: minute}
+	}
+	bucket.total++
+	if entry.Status == "error" {
+		bucket.failed++
+	}
 	h.requestLogsMu.Unlock()
 }
 
@@ -1722,6 +1738,21 @@ func (h *Handler) getRequestLogs() []RequestLog {
 		result[len(h.requestLogs)-1-i] = e
 	}
 	return result
+}
+
+func (h *Handler) recentRequestStats(window time.Duration, now time.Time) (total, failed int64) {
+	cutoffMinute := now.Add(-window).Unix() / 60
+	nowMinute := now.Unix() / 60
+	h.requestLogsMu.RLock()
+	defer h.requestLogsMu.RUnlock()
+	for _, bucket := range h.recentBuckets {
+		if bucket.minute < cutoffMinute || bucket.minute > nowMinute {
+			continue
+		}
+		total += bucket.total
+		failed += bucket.failed
+	}
+	return total, failed
 }
 
 // handleClaudeNonStream Claude 非流式响应
@@ -4126,6 +4157,7 @@ func (h *Handler) apiImportCredentials(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) apiGetStatus(w http.ResponseWriter, r *http.Request) {
+	recentRequests, recentFailures := h.recentRequestStats(15*time.Minute, time.Now())
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"version":         config.Version,
 		"accounts":        h.pool.Count(),
@@ -4137,6 +4169,8 @@ func (h *Handler) apiGetStatus(w http.ResponseWriter, r *http.Request) {
 		"totalCredits":    h.totalCredits,
 		"uptime":          time.Now().Unix() - h.startTime,
 		"usageReporting":  usageReportingStatus(UsageReporter()),
+		"recentRequests":  recentRequests,
+		"recentFailures":  recentFailures,
 	})
 }
 

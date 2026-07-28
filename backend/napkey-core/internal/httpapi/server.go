@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"napkey-core/internal/auth"
@@ -31,8 +32,11 @@ type Server struct {
 	mailer mail.Sender
 	payos  *payos.Client
 	// trustProxy is on when running behind Traefik, so X-Forwarded-For is usable.
-	trustProxy bool
-	startedAt  time.Time
+	trustProxy        bool
+	startedAt         time.Time
+	statusMu          sync.Mutex
+	publicStatusCache map[string]any
+	publicStatusUntil time.Time
 }
 
 // New builds the server.
@@ -57,6 +61,7 @@ func (s *Server) Handler() http.Handler {
 	// Public.
 	mux.HandleFunc("GET /health", s.handleHealth)
 	mux.HandleFunc("GET /ready", s.handleReady)
+	mux.HandleFunc("GET /v1/status", s.handlePublicStatus)
 
 	// Auth. These are the endpoints an attacker reaches without credentials, so
 	// each one is rate limited inside the handler.

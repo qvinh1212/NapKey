@@ -159,18 +159,19 @@
   "statusPage": {
     "metaTitle": "Trạng thái hệ thống",
     "eyebrow": "Trạng thái trực tiếp",
-    "title": "Liveness của gateway, kiểm tra ngay lúc này",
-    "intro": "Trang này đọc health endpoint của process mỗi lần mở. Nó chứng minh gateway process có phản hồi, không chứng minh model upstream hay phụ thuộc billing đã sẵn sàng.",
-    "reachable": "Process truy cập được",
-    "unavailable": "Không lấy được trạng thái",
-    "gatewayProcess": "Gateway process công khai",
-    "reachableBody": "Gateway process đã trả lời liveness endpoint.",
-    "unavailableBody": "Health probe không trả về phản hồi thành công hợp lệ. Request hiện tại cũng có thể bị ảnh hưởng.",
-    "endpoint": "Endpoint",
-    "version": "Phiên bản",
-    "uptime": "Thời gian process chạy",
-    "scope": "Phạm vi: chỉ liveness của process. Sức chứa tài khoản, billing và model upstream có thể thay đổi độc lập.",
-    "checkedAt": "Quan sát lúc {time}"
+    "title": "Khả năng phục vụ của NapKey, kiểm tra ngay lúc này",
+    "intro": "Trang trạng thái kiểm tra đồng thời gateway, sổ billing và đường ghi nhận usage. Kết quả phản ánh khả năng phục vụ hiện tại, không phải cam kết SLA lịch sử.",
+    "serviceTitle": "Toàn bộ dịch vụ NapKey",
+    "states": { "operational": "Hoạt động bình thường", "degraded": "Đang suy giảm", "outage": "Đang gián đoạn" },
+    "stateBodies": {
+      "operational": "Các thành phần thiết yếu đang phản hồi trong ngưỡng vận hành.",
+      "degraded": "Dịch vụ vẫn hoạt động nhưng capacity, tỷ lệ lỗi hoặc hàng đợi usage đã vượt ngưỡng cảnh báo.",
+      "outage": "Ít nhất một phụ thuộc thiết yếu không sẵn sàng. Request mới có thể thất bại."
+    },
+    "components": { "gateway": "API gateway", "billing": "Billing & ví", "usage": "Ghi nhận usage" },
+    "scope": "Không công khai số tài khoản, quota hoặc dữ liệu nội bộ. Trạng thái được tính từ các tín hiệu vận hành trực tiếp.",
+    "checkedAt": "Quan sát lúc {time}",
+    "unknownTime": "không xác định"
   },
   "privacyPage": {
     "metaTitle": "Chính sách dữ liệu",

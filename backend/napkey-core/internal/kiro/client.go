@@ -86,6 +86,8 @@ type OperationsStatus struct {
 	TotalRequests   int64                `json:"totalRequests"`
 	SuccessRequests int64                `json:"successRequests"`
 	FailedRequests  int64                `json:"failedRequests"`
+	RecentRequests  int64                `json:"recentRequests"`
+	RecentFailures  int64                `json:"recentFailures"`
 	TotalTokens     int64                `json:"totalTokens"`
 	Uptime          int64                `json:"uptime"`
 	UsageReporting  UsageReportingStatus `json:"usageReporting"`

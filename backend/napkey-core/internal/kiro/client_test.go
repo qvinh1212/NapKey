@@ -98,7 +98,7 @@ func TestOperationsStatusReadsPoolAndUsageReportingHealth(t *testing.T) {
 			t.Fatalf("path = %q, want operations status", r.URL.Path)
 		}
 		json.NewEncoder(w).Encode(map[string]any{
-			"version": "1.2.3", "accounts": 4, "available": 3,
+			"version": "1.2.3", "accounts": 4, "available": 3, "recentRequests": 25, "recentFailures": 2,
 			"usageReporting": map[string]any{"enabled": 1, "healthy": 1, "sent": 20, "dropped": 0, "pending": 2},
 		})
 	})
@@ -106,7 +106,7 @@ func TestOperationsStatusReadsPoolAndUsageReportingHealth(t *testing.T) {
 	if err != nil {
 		t.Fatalf("OperationsStatus: %v", err)
 	}
-	if status.Available != 3 || status.UsageReporting.Healthy != 1 || status.UsageReporting.Pending != 2 {
+	if status.Available != 3 || status.RecentRequests != 25 || status.RecentFailures != 2 || status.UsageReporting.Healthy != 1 || status.UsageReporting.Pending != 2 {
 		t.Fatalf("unexpected status: %+v", status)
 	}
 }

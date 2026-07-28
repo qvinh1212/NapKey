@@ -62,6 +62,12 @@ export type OperationsSummary = {
   holds: { open: number; expired: number };
   keySync: { pending: number; failed: number };
   openAlerts: number;
+  reliability: {
+    status: 'operational' | 'degraded' | 'outage';
+    issues: Array<{ code: string; severity: 'degraded' | 'outage' }>;
+    errorRatePercent: number;
+    availablePercent: number;
+  };
   dataPlane: {
     healthy: boolean;
     error?: string;

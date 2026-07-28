@@ -7,6 +7,7 @@ import (
 
 	"napkey-core/internal/kiro"
 	"napkey-core/internal/logger"
+	"napkey-core/internal/reliability"
 	"napkey-core/internal/store"
 )
 
@@ -294,4 +295,53 @@ func (s *Server) handleReady(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusServiceUnavailable
 	}
 	writeJSON(w, status, map[string]any{"ready": ready, "checks": checks})
+}
+
+func (s *Server) handlePublicStatus(w http.ResponseWriter, r *http.Request) {
+	s.statusMu.Lock()
+	defer s.statusMu.Unlock()
+	if time.Now().Before(s.publicStatusUntil) && s.publicStatusCache != nil {
+		writeJSON(w, http.StatusOK, s.publicStatusCache)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	postgresOK := s.store.DB().PingContext(ctx) == nil
+	dataPlane, dataPlaneErr := s.kiro.OperationsStatus(ctx)
+	var snapshot *reliability.DataPlaneSnapshot
+	if dataPlane != nil {
+		snapshot = &reliability.DataPlaneSnapshot{
+			Accounts: dataPlane.Accounts, Available: dataPlane.Available,
+			RecentRequests: dataPlane.RecentRequests, RecentFailures: dataPlane.RecentFailures,
+			UsageHealthy: dataPlane.UsageReporting.Healthy,
+			UsagePending: dataPlane.UsageReporting.Pending,
+			UsageDropped: dataPlane.UsageReporting.Dropped,
+		}
+	}
+	assessment := reliability.Evaluate(postgresOK, snapshot, dataPlaneErr)
+	componentStatus := func(codes ...string) reliability.Status {
+		status := reliability.StatusOperational
+		for _, issue := range assessment.Issues {
+			for _, code := range codes {
+				if issue.Code == code && (issue.Severity == reliability.StatusOutage || status == reliability.StatusOperational) {
+					status = issue.Severity
+				}
+			}
+		}
+		return status
+	}
+	payload := map[string]any{
+		"status": assessment.Status,
+		"components": []map[string]any{
+			{"id": "gateway", "status": componentStatus("data_plane_unreachable", "upstream_capacity_empty", "upstream_capacity_low", "error_rate_high")},
+			{"id": "billing", "status": componentStatus("postgres_unreachable")},
+			{"id": "usage", "status": componentStatus("usage_reporting_unhealthy", "usage_reports_dropped", "usage_backlog_high")},
+		},
+		"checkedAt": time.Now().UTC().Format(time.RFC3339),
+	}
+	s.publicStatusCache = payload
+	s.publicStatusUntil = time.Now().Add(15 * time.Second)
+	writeJSON(w, http.StatusOK, payload)
 }
