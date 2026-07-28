@@ -1,10 +1,9 @@
-// Package pricing turns token counts into micro-VND.
+// Package pricing contains fixed-point arithmetic for NapKey billing.
 //
 // Money in NapKey is an int64 count of micro-VND, where 1 VND = 1,000,000 micros
-// (DESIGN.md section 5). Nothing here uses float64. A single Sonnet input token
-// costs roughly 0.1 VND, so rounding to whole dong at storage time would discard
-// most of the value of a small request, and float64 accumulates representation
-// error that makes a month of traffic fail to reconcile against its own rows.
+// (DESIGN.md section 5). Credit measurements are converted from float64 once at
+// the data-plane boundary; all stored quantities and charges are integers so a
+// month of traffic reconciles exactly against its ledger rows.
 package pricing
 
 import (
@@ -17,6 +16,16 @@ import (
 
 // MicrosPerVND is the fixed-point scale for money.
 const MicrosPerVND int64 = 1_000_000
+
+// MicrocreditsPerCredit is the fixed-point scale for upstream credit usage.
+const MicrocreditsPerCredit int64 = 1_000_000
+
+const (
+	RetailVNDPerCredit      int64 = 45
+	UpstreamVNDPerCredit    int64 = 20
+	RetailMicrosPerCredit         = RetailVNDPerCredit * MicrosPerVND
+	UpstreamMicrosPerCredit       = UpstreamVNDPerCredit * MicrosPerVND
+)
 
 // tokensPerUnit is the denominator of every rate: prices are quoted per 1,000
 // tokens.
@@ -33,23 +42,49 @@ const FallbackModel = "*"
 // rather than a large customer.
 var ErrOverflow = errors.New("pricing: cost calculation overflows int64")
 
+// CreditMicrosFromFloat converts the upstream measurement at the system boundary.
+// The rest of billing uses integers so repeated aggregation cannot drift.
+func CreditMicrosFromFloat(credits float64) (int64, error) {
+	if math.IsNaN(credits) || math.IsInf(credits, 0) || credits < 0 {
+		return 0, errors.New("pricing: credits must be a finite non-negative number")
+	}
+	if credits > float64(math.MaxInt64)/float64(MicrocreditsPerCredit) {
+		return 0, ErrOverflow
+	}
+	return int64(math.Round(credits * float64(MicrocreditsPerCredit))), nil
+}
+
+// ComputeCreditCost prices microcredits at a micro-VND rate per whole credit.
+func ComputeCreditCost(microcredits, microsPerCredit int64) (int64, error) {
+	if microcredits < 0 || microsPerCredit < 0 {
+		return 0, errors.New("pricing: credit quantities and rates cannot be negative")
+	}
+	if microcredits == 0 || microsPerCredit == 0 {
+		return 0, nil
+	}
+	if microcredits > math.MaxInt64/microsPerCredit {
+		return 0, ErrOverflow
+	}
+	return microcredits * microsPerCredit / MicrocreditsPerCredit, nil
+}
+
 // Rate is the price of one model over one period, in micro-VND per 1,000 tokens.
 type Rate struct {
 	// ID is the model_prices row this came from. Stored on each usage row so a
 	// disputed charge can be traced back to the exact rate that produced it.
-	ID              int64
-	Model           string
-	InputPer1k      int64
-	OutputPer1k     int64
-	CacheReadPer1k  int64
-	CacheWritePer1k int64
+	ID                      int64
+	Model                   string
+	InputPer1k              int64
+	OutputPer1k             int64
+	CacheReadPer1k          int64
+	CacheWritePer1k         int64
 	UpstreamInputPer1k      int64
 	UpstreamOutputPer1k     int64
 	UpstreamCacheReadPer1k  int64
 	UpstreamCacheWritePer1k int64
-	EffectiveFrom   time.Time
-	EffectiveTo     *time.Time
-	SourceNote      string
+	EffectiveFrom           time.Time
+	EffectiveTo             *time.Time
+	SourceNote              string
 }
 
 func (r Rate) UpstreamRate() Rate {

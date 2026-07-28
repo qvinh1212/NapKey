@@ -3,10 +3,10 @@
 import { useId, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { UsageDayBucket } from '@/lib/api/types';
-import { count, dayLabel, money } from '@/lib/format';
+import { count, creditAmount, dayLabel } from '@/lib/format';
 
 /**
- * Bieu do cot chi phi theo ngay.
+ * Bieu do cot credit theo ngay.
  *
  * SVG viet tay chu khong dung thu vien chart. Du lieu la mot chuoi mot chieu voi
  * duoi 400 diem; keo them mot thu vien chart vao bundle cho viec nay la doi mot
@@ -31,7 +31,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
     );
   }
 
-  const maxMicros = Math.max(...daily.map((d) => d.cost.micros), 1);
+  const maxMicros = Math.max(...daily.map((d) => d.credits.micros), 1);
   const activeDay = active === null ? null : daily[active];
 
   return (
@@ -42,7 +42,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
           <span className="tabular-nums text-muted">
             <span className="text-dim">{dayLabel(activeDay.day, locale)}</span>
             {'  '}
-            <span className="text-accent-light">{money(activeDay.cost)}</span>
+            <span className="text-accent-light">{creditAmount(activeDay.credits, locale)}</span>
             {'  '}
             <span className="text-dim">
               {t('chartRequests', { count: count(activeDay.requests, locale) })}
@@ -63,7 +63,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
         {daily.map((day, index) => {
           // Toi thieu 2% de mot ngay co traffic rat nho van thay duoc; mot cot cao
           // 0px khong phan biet duoc voi ngay khong co du lieu.
-          const heightPct = Math.max((day.cost.micros / maxMicros) * 100, 2);
+          const heightPct = Math.max((day.credits.micros / maxMicros) * 100, 2);
           const isActive = active === index;
           return (
             <div
@@ -99,7 +99,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
             <th scope="col">{t('colDay')}</th>
             <th scope="col">{t('colRequests')}</th>
             <th scope="col">{t('colTokens')}</th>
-            <th scope="col">{t('colCost')}</th>
+            <th scope="col">{t('colCredits')}</th>
           </tr>
         </thead>
         <tbody>
@@ -108,7 +108,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
               <th scope="row">{dayLabel(day.day, locale)}</th>
               <td>{count(day.requests, locale)}</td>
               <td>{count(day.tokens.total, locale)}</td>
-              <td>{money(day.cost)}</td>
+              <td>{creditAmount(day.credits, locale)}</td>
             </tr>
           ))}
         </tbody>

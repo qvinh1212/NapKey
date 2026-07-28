@@ -337,6 +337,12 @@ func TestUsageReportRejectsNegativeValues(t *testing.T) {
 			t.Errorf("%s: status = %d, want 400; body: %s", field, w.Code, w.Body.String())
 		}
 	}
+	w := h.do(http.MethodPost, "/internal/usage",
+		map[string]any{"requestId": "req-negative-credits", "keyId": pgtest.UUID(1), "credits": -0.01},
+		func(r *http.Request) { r.Header.Set("X-Internal-Token", "plane-secret") })
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("credits: status = %d, want 400; body: %s", w.Code, w.Body.String())
+	}
 }
 
 // TestUsageReportRequiresRequestID pins the idempotency contract. Without a request
@@ -417,7 +423,7 @@ func TestUsageReportIgnoresUnknownKey(t *testing.T) {
 // kiro-go claims, and kiro-go is the component handling untrusted traffic.
 func TestUsageReportRejectsClientSuppliedCost(t *testing.T) {
 	h := newHarness(t)
-	for _, field := range []string{"costMicros", "cost", "credits", "priceMicrosPer1k"} {
+	for _, field := range []string{"costMicros", "cost", "priceMicrosPer1k"} {
 		w := h.do(http.MethodPost, "/internal/usage",
 			map[string]any{"requestId": "req-cost-" + field, "keyId": pgtest.UUID(1), field: 1},
 			func(r *http.Request) { r.Header.Set("X-Internal-Token", "plane-secret") })

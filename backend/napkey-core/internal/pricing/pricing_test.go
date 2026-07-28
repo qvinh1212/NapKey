@@ -8,16 +8,42 @@ import (
 
 // sonnetRate mirrors the seeded Sonnet row in migration 0003.
 var sonnetRate = Rate{
-	ID:              1,
-	Model:           "claude-sonnet-4-20250514",
-	InputPer1k:      101_400_000,
-	OutputPer1k:     507_000_000,
-	CacheReadPer1k:  10_140_000,
-	CacheWritePer1k: 126_750_000,
-	UpstreamInputPer1k: 78_000_000,
-	UpstreamOutputPer1k: 390_000_000,
-	UpstreamCacheReadPer1k: 7_800_000,
+	ID:                      1,
+	Model:                   "claude-sonnet-4-20250514",
+	InputPer1k:              101_400_000,
+	OutputPer1k:             507_000_000,
+	CacheReadPer1k:          10_140_000,
+	CacheWritePer1k:         126_750_000,
+	UpstreamInputPer1k:      78_000_000,
+	UpstreamOutputPer1k:     390_000_000,
+	UpstreamCacheReadPer1k:  7_800_000,
 	UpstreamCacheWritePer1k: 97_500_000,
+}
+
+func TestCreditBillingUsesFixedPointArithmetic(t *testing.T) {
+	credits, err := CreditMicrosFromFloat(1.87)
+	if err != nil {
+		t.Fatalf("converting credits: %v", err)
+	}
+	if credits != 1_870_000 {
+		t.Fatalf("credits = %d microcredits, want 1870000", credits)
+	}
+
+	cost, err := ComputeCreditCost(credits, 45_000_000)
+	if err != nil {
+		t.Fatalf("pricing credits: %v", err)
+	}
+	if cost != 84_150_000 {
+		t.Fatalf("cost = %d micro-VND, want 84150000", cost)
+	}
+}
+
+func TestCreditBillingRejectsInvalidMeasurements(t *testing.T) {
+	for _, value := range []float64{-1, math.NaN(), math.Inf(1)} {
+		if _, err := CreditMicrosFromFloat(value); err == nil {
+			t.Fatalf("CreditMicrosFromFloat(%v) should fail", value)
+		}
+	}
 }
 
 func TestUpstreamRateUsesIndependentCostBasis(t *testing.T) {

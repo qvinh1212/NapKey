@@ -77,7 +77,7 @@ func TestUsageReporterSendsReport(t *testing.T) {
 	r := newUsageReporter(srv.URL, "secret-token")
 	r.Report(usageReport{
 		RequestID: "req-1", KeyID: "key-1", Model: "claude-sonnet-4-20250514",
-		InputTokens: 100, OutputTokens: 50, CacheReadTokens: 900,
+		InputTokens: 100, OutputTokens: 50, CacheReadTokens: 900, Credits: 1.87,
 	})
 	select {
 	case <-done:
@@ -96,6 +96,9 @@ func TestUsageReporterSendsReport(t *testing.T) {
 	// input would bill them at roughly ten times their rate.
 	if got.CacheReadTokens != 900 {
 		t.Errorf("CacheReadTokens = %d, want 900", got.CacheReadTokens)
+	}
+	if got.Credits != 1.87 {
+		t.Errorf("Credits = %v, want 1.87", got.Credits)
 	}
 	if r.sent.Load() != 1 {
 		t.Errorf("sent = %d, want 1", r.sent.Load())

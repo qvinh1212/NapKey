@@ -1544,7 +1544,7 @@ func (h *Handler) recordSuccessForApiKey(apiKeyID string, inputTokens, outputTok
 		logger.Warnf("[ApiKey] failed to record usage for key %s: %v", apiKeyID, err)
 	}
 	if len(detail) > 0 {
-		if h.reportUsage(apiKeyID, outputTokens, detail[0]) && detail[0].Billing != nil {
+		if h.reportUsage(apiKeyID, outputTokens, credits, detail[0]) && detail[0].Billing != nil {
 			detail[0].Billing.consumed.Store(true)
 		}
 	}
@@ -1559,7 +1559,7 @@ func (h *Handler) recordSuccessForApiKey(apiKeyID string, inputTokens, outputTok
 // Only keys that napkey-core provisioned are reported. A key created directly in
 // kiro-go has no row in the control plane to attribute usage to, and inventing one
 // would mean billing usage to a key nobody owns.
-func (h *Handler) reportUsage(apiKeyID string, outputTokens int, d usageDetail) bool {
+func (h *Handler) reportUsage(apiKeyID string, outputTokens int, credits float64, d usageDetail) bool {
 	reporter := UsageReporter()
 	if reporter == nil {
 		return false
@@ -1586,6 +1586,7 @@ func (h *Handler) reportUsage(apiKeyID string, outputTokens int, d usageDetail) 
 		OutputTokens:      int64(maxInt(outputTokens, 0)),
 		CacheReadTokens:   int64(maxInt(d.CacheReadTokens, 0)),
 		CacheWriteTokens:  int64(maxInt(d.CacheWriteTokens, 0)),
+		Credits:           credits,
 		UpstreamAccountID: d.AccountID,
 		LatencyMS:         latency,
 		Status:            "success",

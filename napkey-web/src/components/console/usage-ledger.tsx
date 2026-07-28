@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api/client';
 import type { KeyListResponse, UsageDetailResponse, UsageRecordsResponse } from '@/lib/api/types';
-import { billingRange, compact, count, dateTime, latency, money } from '@/lib/format';
+import { billingRange, compact, count, creditAmount, dateTime, latency, money } from '@/lib/format';
 import { usagePageQueries } from '@/lib/usage-query';
 import { UsageChart } from './usage-chart';
 import {
@@ -108,8 +108,8 @@ export function UsageLedger() {
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              label={t('stats.cost')}
-              value={money(state.detail.totals.cost)}
+              label={t('stats.credits')}
+              value={creditAmount(state.detail.totals.credits, locale)}
               hint={t('stats.rangeHint', { days })}
               tone="accent"
             />
@@ -228,6 +228,7 @@ export function UsageLedger() {
                   <Th align="right">{t('colOutput')}</Th>
                   <Th align="right">{t('colCacheRead')}</Th>
                   <Th align="right">{t('colLatency')}</Th>
+                  <Th align="right">{t('colCredits')}</Th>
                   <Th align="right">{t('colCost')}</Th>
                 </tr>
               </thead>
@@ -275,6 +276,9 @@ export function UsageLedger() {
                     </Td>
                     <Td align="right" className="text-dim">
                       {latency(record.latencyMs, locale)}
+                    </Td>
+                    <Td align="right" className="font-mono text-fg">
+                      {creditAmount(record.credits, locale)}
                     </Td>
                     <Td align="right" className="text-accent-light">
                       {money(record.cost)}

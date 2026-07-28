@@ -35,9 +35,10 @@ type RecordUsageParams struct {
 	// KeyID is the napkey-core api_keys id. The owner is resolved from it rather
 	// than taken from the report, so a compromised data plane cannot attribute
 	// usage to someone else's account.
-	KeyID  string
-	Model  string
-	Tokens pricing.Tokens
+	KeyID         string
+	Model         string
+	Tokens        pricing.Tokens
+	CreditsMicros int64
 	// UpstreamAccountID is which pool account served the request.
 	UpstreamAccountID string
 	LatencyMS         *int
@@ -103,28 +104,13 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 		}
 		out.UserID = userID
 
-		rate, err := findRateTx(ctx, tx, p.Model, p.OccurredAt)
+		costMicros, err := pricing.ComputeCreditCost(p.CreditsMicros, pricing.RetailMicrosPerCredit)
 		if err != nil {
-			return err
+			return fmt.Errorf("store: pricing credits for request %q: %w", p.RequestID, err)
 		}
-		var cost pricing.Cost
-		var upstreamCost pricing.Cost
-		if rate == nil {
-			cost = pricing.Unpriced()
-		} else {
-			cost, err = pricing.Compute(p.Tokens, *rate)
-			if err != nil {
-				return fmt.Errorf("store: pricing usage for request %q: %w", p.RequestID, err)
-			}
-			upstreamCost, err = pricing.Compute(p.Tokens, rate.UpstreamRate())
-			if err != nil {
-				return fmt.Errorf("store: pricing upstream usage for request %q: %w", p.RequestID, err)
-			}
-		}
-
-		var ratePtr any
-		if !cost.Unpriced && cost.RateID != 0 {
-			ratePtr = cost.RateID
+		upstreamCostMicros, err := pricing.ComputeCreditCost(p.CreditsMicros, pricing.UpstreamMicrosPerCredit)
+		if err != nil {
+			return fmt.Errorf("store: pricing upstream credits for request %q: %w", p.RequestID, err)
 		}
 
 		var recordID int64
@@ -133,13 +119,15 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 				user_id, api_key_id, request_id, model,
 				input_tokens, output_tokens, cache_read_tokens, cache_write_tokens,
 				cost_micros, upstream_cost_micros, upstream_cost_estimated, priced_with, unpriced,
+				credits_micros, credit_price_micros_per_credit, upstream_credit_price_micros_per_credit,
 				upstream_account_id, latency_ms, status, tokens_estimated, created_at)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14, $15, $16, $17)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, false, NULL, false, $11, $12, $13, $14, $15, $16, $17, $18)
 			ON CONFLICT (request_id) DO NOTHING
 			RETURNING id`,
 			userID, p.KeyID, p.RequestID, pricing.NormalizeModel(p.Model),
 			p.Tokens.Input, p.Tokens.Output, p.Tokens.CacheRead, p.Tokens.CacheWrite,
-			cost.Micros, upstreamCost.Micros, ratePtr, cost.Unpriced,
+			costMicros, upstreamCostMicros,
+			p.CreditsMicros, pricing.RetailMicrosPerCredit, pricing.UpstreamMicrosPerCredit,
 			p.UpstreamAccountID, p.LatencyMS, p.Status, p.TokensEstimated,
 			p.OccurredAt.UTC(),
 		).Scan(&recordID)
@@ -161,9 +149,8 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 		}
 
 		out.RecordID = recordID
-		out.CostMicros = cost.Micros
-		out.Unpriced = cost.Unpriced
-		out.RateID = cost.RateID
+		out.CostMicros = costMicros
+		out.Unpriced = false
 
 		// Fold into the counters. These are a derived cache: kiro-go's limit check
 		// and the console's headline numbers read one row instead of aggregating
@@ -174,13 +161,14 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 		// the number napkey-core trusts.
 		if _, err := tx.ExecContext(ctx, `
 			INSERT INTO api_key_usage (api_key_id, tokens_used, credits_used, cost_micros, requests_count, updated_at)
-			VALUES ($1, $2, 0, $3, 1, now())
+			VALUES ($1, $2, $3, $4, 1, now())
 			ON CONFLICT (api_key_id) DO UPDATE SET
 				tokens_used    = api_key_usage.tokens_used + $2,
-				cost_micros    = api_key_usage.cost_micros + $3,
+				credits_used   = api_key_usage.credits_used + $3,
+				cost_micros    = api_key_usage.cost_micros + $4,
 				requests_count = api_key_usage.requests_count + 1,
 				updated_at     = now()`,
-			p.KeyID, p.Tokens.Total(), cost.Micros); err != nil {
+			p.KeyID, p.Tokens.Total(), float64(p.CreditsMicros)/float64(pricing.MicrocreditsPerCredit), costMicros); err != nil {
 			return fmt.Errorf("store: updating usage counters: %w", err)
 		}
 
@@ -189,7 +177,9 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 			p.KeyID, p.OccurredAt.UTC()); err != nil {
 			return fmt.Errorf("store: updating last_used_at: %w", err)
 		}
-		if err:=settleWalletTx(ctx,tx,p.RequestID,cost.Micros,true);err!=nil{return fmt.Errorf("store: settling wallet for request %q: %w",p.RequestID,err)}
+		if err := settleWalletTx(ctx, tx, p.RequestID, costMicros, true); err != nil {
+			return fmt.Errorf("store: settling wallet for request %q: %w", p.RequestID, err)
+		}
 		return nil
 	})
 	if err != nil {
@@ -207,6 +197,9 @@ func validateRecordUsage(p *RecordUsageParams) error {
 	}
 	if p.KeyID == "" {
 		return errors.New("store: usage needs a key id")
+	}
+	if p.CreditsMicros < 0 {
+		return errors.New("store: usage credits cannot be negative")
 	}
 	switch p.Status {
 	case "":

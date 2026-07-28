@@ -216,32 +216,18 @@
   },
   "pricing": {
     "eyebrow": "Pricing",
-    "title": "Priced per million tokens",
-    "subtitle": "Billed in VND. Input and output are priced separately because they cost very differently. Cache reads cost a fraction of fresh input — stable prompts make your bill drop accordingly.",
-    "filterAll": "All",
-    "filterAriaLabel": "Filter by model family",
-    "table": {
-      "model": "Model",
-      "input": "Input",
-      "output": "Output",
-      "cacheRead": "Cache read",
-      "cacheWrite": "Cache write",
-      "perMillion": "d / 1M tokens",
-      "caption": "NapKey list price per model, in Vietnamese dong per million tokens."
+    "title": "One credit rate across every model",
+    "subtitle": "No manual input, output, or cache-token conversion. NapKey records the credits reported by Kiro and deducts the wallet at a fixed 45 VND per credit.",
+    "popular": "Popular",
+    "packages": {
+      "starter": "Start and experiment",
+      "builder": "Regular building",
+      "scale": "Higher volume"
     },
-    "family": {
-      "opus": "Opus",
-      "sonnet": "Sonnet",
-      "haiku": "Haiku"
-    },
-    "tag": {
-      "strongest": "Most capable",
-      "balanced": "Balanced",
-      "fastest": "Fastest",
-      "thinking": "Thinking variant"
-    },
-    "footnote": "Prices track the exchange rate and upstream list price. Every price change is recorded with an effective date — usage already recorded is never re-priced.",
-    "thinkingNote": "Every model has a -thinking variant at the same price."
+    "packageNote": "The same 45 VND/credit rate, with no package lock-in or long-term commitment.",
+    "rateLabel": "Published rate",
+    "measurement": "Credits come from actual usage reported by Kiro. The dashboard records each request, model, reference token counts, credits, and settled VND for reconciliation.",
+    "footnote": "NapKey wallet credits do not expire under the current policy. Settled usage always retains the rate effective when it was recorded."
   },
   "billing": {
     "eyebrow": "Billing",
@@ -360,8 +346,9 @@
       "loadFailed": "Could not load usage data.",
       "retry": "Try again",
       "stats": {
+        "credits": "Credits used",
         "cost30d": "Cost, 30 days",
-        "cost30dHint": "Total for every request recorded in the last 30 days.",
+        "cost30dHint": "Kiro-reported credits in the last 30 days, corresponding to settled cost.",
         "requests30d": "Requests, 30 days",
         "requestsHintClean": "No failed requests in this period.",
         "requestsHintErrors": "{count} failed requests, charged nothing.",
@@ -371,13 +358,13 @@
         "activeKeysHint": "All-time cost: {total}."
       },
       "estimatedBadge": "Contains estimates",
-      "estimatedNotice": "{count} of {total} requests have estimated output tokens because upstream returned no count. Cost is based on that estimate.",
+      "estimatedNotice": "{count} of {total} requests have estimated output tokens because upstream returned no count. Credits and cost still come from Kiro-reported usage, not estimated tokens.",
       "unpricedBadge": "Missing price",
       "unpricedNotice": "{count} requests were served with no rate on file, so they cost nothing. Operations has been alerted.",
-      "chartTitle": "Daily cost",
-      "chartDescription": "Days are cut on Vietnam time, matching how invoices are calculated.",
+      "chartTitle": "Daily credits",
+      "chartDescription": "Actual credits reported by Kiro, grouped by Vietnam calendar day.",
       "byModelTitle": "By model",
-      "byModelDescription": "Same 30-day window, ordered by cost.",
+      "byModelDescription": "The same 30-day window, with credits and settled cost for each model.",
       "byModelEmpty": "No requests in the last 30 days.",
       "billingMode": {
         "prepaid_wallet": "Prepaid wallet",
@@ -389,7 +376,7 @@
     "usage": {
       "metaTitle": "Usage",
       "title": "Request ledger",
-      "description": "One row per request, with tokens and cost so the total can be checked.",
+      "description": "One row per request, with Kiro-reported credits, reference tokens, and settled cost for reconciliation.",
       "loading": "Loading records...",
       "loadFailed": "Could not load usage records.",
       "retry": "Try again",
@@ -398,6 +385,7 @@
       "filterByKey": "Filter by key",
       "allKeys": "All keys",
       "stats": {
+        "credits": "Credits used",
         "cost": "Cost in range",
         "rangeHint": "Across the selected {days}-day window.",
         "requests": "Requests",
@@ -407,8 +395,8 @@
         "quality": "Estimated requests",
         "qualityHint": "{unpriced} requests have no price on file."
       },
-      "chartTitle": "Cost over time",
-      "chartDescription": "Daily totals for the selected range, cut on Vietnam time.",
+      "chartTitle": "Credits over time",
+      "chartDescription": "Kiro-reported credits by day for the selected range, cut on Vietnam time.",
       "emptyTitle": "Nothing here yet",
       "emptyDescription": "No requests in this range. Records appear right after your first API call.",
       "colTime": "Time",
@@ -421,6 +409,7 @@
       "colOutput": "Out",
       "colCacheRead": "Cache read",
       "colLatency": "Latency",
+      "colCredits": "Credits",
       "colCost": "Cost",
       "status": {
         "success": "Success",
@@ -436,9 +425,9 @@
       "prev": "Previous",
       "next": "Next",
       "chartEmpty": "No data to chart yet.",
-      "chartLegend": "Cost per day",
+      "chartLegend": "Credits per day",
       "chartRequests": "{count} requests",
-      "chartTableCaption": "Cost and request count per day"
+      "chartTableCaption": "Credits and request count per day"
     },
     "keys": {
       "metaTitle": "API keys",
@@ -588,6 +577,7 @@
       "loadFailed": "Could not load your wallet.",
       "createFailed": "Could not create a top-up order.",
       "balance": "Wallet balance",
+      "creditRate": "1,000 credits = 45,000 VND. Credits do not expire.",
       "balanceHint": "Total credited balance before active holds.",
       "available": "Available",
       "availableHint": "Ready to spend on API requests.",
@@ -596,6 +586,7 @@
       "topupTitle": "Top up by bank transfer",
       "topupDescription": "Choose an amount, then scan VietQR or copy the transfer details.",
       "customAmount": "Amount (VND)",
+      "youReceive": "You receive {credits}",
       "nonRefundable": "Important: wallet credit can only be used for NapKey API calls and cannot be withdrawn or refunded to a bank account.",
       "create": "Create transfer order",
       "creating": "Creating...",
@@ -605,6 +596,7 @@
       "accountNumber": "Account number",
       "accountName": "Account name",
       "amount": "Exact amount",
+      "credits": "Credits added",
       "memo": "Transfer memo",
       "copy": "Copy",
       "copied": "Copied",

@@ -24,10 +24,10 @@ const maxUsageFutureSkew = 5 * time.Minute
 // reportUsageRequest is what kiro-go posts after a proxied request.
 //
 // This is the Stage 3 contract from DESIGN.md section 4, replacing the Stage 2
-// shape that carried only a token total and a float credit value. Two changes
+// shape that carried only aggregate counters. Two changes
 // matter: requestId makes the report idempotent so a retry cannot double-bill, and
-// the token counts are split by kind because cache reads and writes price
-// differently by more than an order of magnitude.
+// token counts remain split for observability, while the measured Kiro credit
+// quantity is the authoritative billing input.
 //
 // Pricing is deliberately absent. The data plane reports what it measured; the
 // control plane decides what it costs. Letting kiro-go send a cost would make the
@@ -41,10 +41,11 @@ type reportUsageRequest struct {
 	RemoteID string `json:"remoteId,omitempty"`
 	Model    string `json:"model"`
 
-	InputTokens      int64 `json:"inputTokens"`
-	OutputTokens     int64 `json:"outputTokens"`
-	CacheReadTokens  int64 `json:"cacheReadTokens,omitempty"`
-	CacheWriteTokens int64 `json:"cacheWriteTokens,omitempty"`
+	InputTokens      int64   `json:"inputTokens"`
+	OutputTokens     int64   `json:"outputTokens"`
+	CacheReadTokens  int64   `json:"cacheReadTokens,omitempty"`
+	CacheWriteTokens int64   `json:"cacheWriteTokens,omitempty"`
+	Credits          float64 `json:"credits"`
 
 	UpstreamAccountID string `json:"upstreamAccountId,omitempty"`
 	LatencyMS         *int   `json:"latencyMs,omitempty"`
@@ -90,6 +91,11 @@ func (s *Server) handleReportUsage(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, codeInvalidRequest, "token counts must not be negative")
 		return
 	}
+	creditsMicros, err := pricing.CreditMicrosFromFloat(req.Credits)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, codeInvalidRequest, "credits must be a finite non-negative number")
+		return
+	}
 
 	occurredAt := time.Now()
 	if req.OccurredAt != "" {
@@ -117,6 +123,7 @@ func (s *Server) handleReportUsage(w http.ResponseWriter, r *http.Request) {
 			CacheRead:  req.CacheReadTokens,
 			CacheWrite: req.CacheWriteTokens,
 		},
+		CreditsMicros:     creditsMicros,
 		UpstreamAccountID: req.UpstreamAccountID,
 		LatencyMS:         req.LatencyMS,
 		Status:            req.Status,
@@ -236,6 +243,13 @@ func costView(micros int64) map[string]any {
 	}
 }
 
+func creditsView(microcredits int64) map[string]any {
+	return map[string]any{
+		"micros":  microcredits,
+		"credits": float64(microcredits) / float64(pricing.MicrocreditsPerCredit),
+	}
+}
+
 // handleUsageSummary returns the console's headline numbers.
 func (s *Server) handleUsageSummary(w http.ResponseWriter, r *http.Request) {
 	su := sessionFromContext(r.Context())
@@ -270,6 +284,7 @@ func (s *Server) handleUsageSummary(w http.ResponseWriter, r *http.Request) {
 			"requests":          recent.Requests,
 			"tokens":            tokensView(recent.Tokens),
 			"cost":              costView(recent.CostMicros),
+			"credits":           creditsView(recent.CreditsMicros),
 			"errorRequests":     recent.ErrorRequests,
 			"estimatedRequests": recent.EstimatedRequests,
 			"unpricedRequests":  recent.UnpricedRequests,
@@ -315,6 +330,7 @@ func (s *Server) handleUsageDetail(w http.ResponseWriter, r *http.Request) {
 			"requests": b.Requests,
 			"tokens":   tokensView(b.Tokens),
 			"cost":     costView(b.CostMicros),
+			"credits":  creditsView(b.CreditsMicros),
 		})
 	}
 	models := make([]map[string]any, 0, len(byModel))
@@ -324,6 +340,7 @@ func (s *Server) handleUsageDetail(w http.ResponseWriter, r *http.Request) {
 			"requests": m.Requests,
 			"tokens":   tokensView(m.Tokens),
 			"cost":     costView(m.CostMicros),
+			"credits":  creditsView(m.CreditsMicros),
 		})
 	}
 
@@ -336,6 +353,7 @@ func (s *Server) handleUsageDetail(w http.ResponseWriter, r *http.Request) {
 			"requests":          totals.Requests,
 			"tokens":            tokensView(totals.Tokens),
 			"cost":              costView(totals.CostMicros),
+			"credits":           creditsView(totals.CreditsMicros),
 			"errorRequests":     totals.ErrorRequests,
 			"estimatedRequests": totals.EstimatedRequests,
 			"unpricedRequests":  totals.UnpricedRequests,
@@ -375,6 +393,7 @@ func (s *Server) handleListUsageRecords(w http.ResponseWriter, r *http.Request) 
 			"model":     rec.Model,
 			"tokens":    tokensView(rec.Tokens),
 			"cost":      costView(rec.CostMicros),
+			"credits":   creditsView(rec.CreditsMicros),
 			"unpriced":  rec.Unpriced,
 			"estimated": rec.Estimated,
 			"status":    rec.Status,

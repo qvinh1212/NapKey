@@ -1,18 +1,21 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api/client';
 import type { TopupOrderResponse, WalletResponse } from '@/lib/api/types';
 import { Badge, Panel, PanelHeader, StatCard } from './ui';
+import { creditAmount } from '@/lib/format';
+import { creditsFromVnd, microcreditsFromVnd } from '@/lib/pricing';
 
-const PRESETS = [20_000, 50_000, 100_000, 200_000, 500_000];
+const PRESETS = [45_000, 90_000, 225_000, 450_000];
 
 export function WalletTopup() {
   const t = useTranslations('console.wallet');
+  const locale = useLocale();
   const [wallet, setWallet] = useState<WalletResponse['wallet'] | null>(null);
   const [order, setOrder] = useState<TopupOrderResponse['order'] | null>(null);
-  const [amount, setAmount] = useState(100_000);
+  const [amount, setAmount] = useState(45_000);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,9 +87,9 @@ export function WalletTopup() {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label={t('balance')} value={wallet?.balance.formatted ?? '—'} hint={t('balanceHint')} tone="accent" />
+        <StatCard label={t('balance')} value={creditAmount(wallet?.credits.available, locale)} hint={t('creditRate')} tone="accent" />
         <StatCard label={t('available')} value={wallet?.available.formatted ?? '—'} hint={t('availableHint')} />
-        <StatCard label={t('held')} value={wallet?.held.formatted ?? '—'} hint={t('heldHint')} />
+        <StatCard label={t('held')} value={wallet?.held.formatted ?? '—'} hint={wallet ? creditAmount(wallet.credits.held, locale) : t('heldHint')} />
       </div>
 
       {!order ? (
@@ -97,6 +100,7 @@ export function WalletTopup() {
               {PRESETS.map((value) => <button key={value} type="button" onClick={() => setAmount(value)} className={`rounded-full border px-4 py-2 text-ui tabular-nums ${amount === value ? 'border-accent bg-accent-soft text-accent-light' : 'border-line text-muted hover:text-fg'}`}>{value.toLocaleString('vi-VN')} đ</button>)}
             </div>
             <label className="block max-w-sm text-ui text-muted">{t('customAmount')}<input type="number" min={20000} max={1000000000} step={1000} value={amount} onChange={(event) => setAmount(Number(event.target.value))} className="mt-2 w-full rounded-md border border-line bg-black px-4 py-3 text-fg outline-none focus:border-accent" /></label>
+            <p className="font-mono text-ui text-accent-light">{t('youReceive', { credits: creditAmount({ micros: microcreditsFromVnd(amount), credits: creditsFromVnd(amount) }, locale) })}</p>
             <p className="max-w-2xl rounded-md border border-warn/30 bg-warn/10 px-4 py-3 text-ui leading-relaxed text-warn">{t('nonRefundable')}</p>
             {error ? <p role="alert" className="text-ui text-danger">{error}</p> : null}
             <button disabled={pending || amount < 20000} className="rounded-full bg-fg px-6 py-2.5 text-ui font-medium text-bg disabled:opacity-50">{pending ? t('creating') : t('create')}</button>
@@ -107,7 +111,7 @@ export function WalletTopup() {
           <PanelHeader title={t('transferTitle')} description={t('transferDescription')} action={<Badge tone={order.status === 'paid' ? 'accent' : order.status === 'underpaid' ? 'warn' : 'info'}>{t(`status.${order.status}`)}</Badge>} />
           <div className="grid gap-6 p-5 md:grid-cols-[minmax(0,1fr)_260px]">
             <dl className="divide-y divide-line rounded-lg border border-line">
-              {([{ label: t('bank'), value: order.bank.name }, { label: t('accountNumber'), value: order.bank.accountNumber }, { label: t('accountName'), value: order.bank.accountName }, { label: t('amount'), value: order.expectedAmount.formatted }, { label: t('memo'), value: order.memoCode }]).map(({ label, value }) => <div key={label} className="flex items-center justify-between gap-4 px-4 py-3"><dt className="text-ui text-dim">{label}</dt><dd className="flex items-center gap-3 text-right font-mono text-ui text-fg"><span>{value}</span><button type="button" onClick={() => void copy(label, value)} className="text-accent-light">{copied === label ? t('copied') : t('copy')}</button></dd></div>)}
+              {([{ label: t('bank'), value: order.bank.name }, { label: t('accountNumber'), value: order.bank.accountNumber }, { label: t('accountName'), value: order.bank.accountName }, { label: t('amount'), value: order.expectedAmount.formatted }, { label: t('credits'), value: creditAmount(order.expectedCredits, locale) }, { label: t('memo'), value: order.memoCode }]).map(({ label, value }) => <div key={label} className="flex items-center justify-between gap-4 px-4 py-3"><dt className="text-ui text-dim">{label}</dt><dd className="flex items-center gap-3 text-right font-mono text-ui text-fg"><span>{value}</span><button type="button" onClick={() => void copy(label, value)} className="text-accent-light">{copied === label ? t('copied') : t('copy')}</button></dd></div>)}
             </dl>
             <div className="text-center">
               {/* The VietQR URL is dynamic per order, so it cannot use Next's static image optimizer. */}

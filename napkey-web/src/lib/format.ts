@@ -1,4 +1,4 @@
-import type { Money, TokenBreakdown } from '@/lib/api/types';
+import type { Credits, Money, TokenBreakdown } from '@/lib/api/types';
 
 /**
  * Ham dinh dang dung chung cho console.
@@ -21,6 +21,12 @@ export function money(value: Money | undefined | null): string {
  */
 export function count(value: number, locale: string): string {
   return new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US').format(value);
+}
+
+export function creditAmount(value: Credits | undefined | null, locale: string): string {
+  return `${new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
+    maximumFractionDigits: 4,
+  }).format(value?.credits ?? 0)} credit`;
 }
 
 /** Rut gon so lon cho the thong ke: 1.2M, 45.3K. */

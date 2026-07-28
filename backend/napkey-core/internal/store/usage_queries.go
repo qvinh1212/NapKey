@@ -48,9 +48,10 @@ func (r UsageRange) Normalize() UsageRange {
 
 // UsageTotals is the aggregate over a range.
 type UsageTotals struct {
-	Requests   int64
-	Tokens     pricing.Tokens
-	CostMicros int64
+	Requests      int64
+	Tokens        pricing.Tokens
+	CostMicros    int64
+	CreditsMicros int64
 	// UnpricedRequests is traffic served with no price on file. Surfaced rather
 	// than hidden: it is revenue that was not charged and it needs a human.
 	UnpricedRequests int64
@@ -72,6 +73,7 @@ func (s *Store) GetUserUsageTotals(ctx context.Context, userID string, r UsageRa
 		       coalesce(sum(cache_read_tokens), 0)::bigint,
 		       coalesce(sum(cache_write_tokens), 0)::bigint,
 		       coalesce(sum(cost_micros), 0)::bigint,
+		       coalesce(sum(credits_micros), 0)::bigint,
 		       count(*) FILTER (WHERE unpriced)::bigint,
 		       count(*) FILTER (WHERE tokens_estimated)::bigint,
 		       count(*) FILTER (WHERE status <> 'success')::bigint
@@ -81,7 +83,7 @@ func (s *Store) GetUserUsageTotals(ctx context.Context, userID string, r UsageRa
 		userID, r.From.UTC(), r.To.UTC(), filter.KeyID).Scan(
 		&out.Requests,
 		&out.Tokens.Input, &out.Tokens.Output, &out.Tokens.CacheRead, &out.Tokens.CacheWrite,
-		&out.CostMicros, &out.UnpricedRequests, &out.EstimatedRequests, &out.ErrorRequests)
+		&out.CostMicros, &out.CreditsMicros, &out.UnpricedRequests, &out.EstimatedRequests, &out.ErrorRequests)
 	if err != nil {
 		return nil, fmt.Errorf("store: totalling usage for user %s: %w", userID, err)
 	}
@@ -91,10 +93,11 @@ func (s *Store) GetUserUsageTotals(ctx context.Context, userID string, r UsageRa
 // UsageBucket is one day of usage.
 type UsageBucket struct {
 	// Day is midnight in the billing time zone.
-	Day        time.Time
-	Requests   int64
-	Tokens     pricing.Tokens
-	CostMicros int64
+	Day           time.Time
+	Requests      int64
+	Tokens        pricing.Tokens
+	CostMicros    int64
+	CreditsMicros int64
 }
 
 // GetUserUsageDaily returns a per-day series for charting.
@@ -112,6 +115,7 @@ func (s *Store) GetUserUsageDaily(ctx context.Context, userID string, r UsageRan
 		       coalesce(sum(cache_read_tokens), 0)::bigint,
 		       coalesce(sum(cache_write_tokens), 0)::bigint,
 		       coalesce(sum(cost_micros), 0)::bigint
+		       ,coalesce(sum(credits_micros), 0)::bigint
 		FROM usage_records
 		WHERE user_id = $1 AND created_at >= $2 AND created_at < $3
 		  AND ($5 = '' OR api_key_id::text = $5)
@@ -128,7 +132,7 @@ func (s *Store) GetUserUsageDaily(ctx context.Context, userID string, r UsageRan
 		var b UsageBucket
 		if err := rows.Scan(&b.Day, &b.Requests,
 			&b.Tokens.Input, &b.Tokens.Output, &b.Tokens.CacheRead, &b.Tokens.CacheWrite,
-			&b.CostMicros); err != nil {
+			&b.CostMicros, &b.CreditsMicros); err != nil {
 			return nil, fmt.Errorf("store: scanning a usage bucket: %w", err)
 		}
 		out = append(out, b)
@@ -141,10 +145,11 @@ func (s *Store) GetUserUsageDaily(ctx context.Context, userID string, r UsageRan
 
 // ModelUsage is one model's share of a user's usage.
 type ModelUsage struct {
-	Model      string
-	Requests   int64
-	Tokens     pricing.Tokens
-	CostMicros int64
+	Model         string
+	Requests      int64
+	Tokens        pricing.Tokens
+	CostMicros    int64
+	CreditsMicros int64
 }
 
 // GetUserUsageByModel breaks usage down by model, most expensive first.
@@ -158,6 +163,7 @@ func (s *Store) GetUserUsageByModel(ctx context.Context, userID string, r UsageR
 		       coalesce(sum(cache_read_tokens), 0)::bigint,
 		       coalesce(sum(cache_write_tokens), 0)::bigint,
 		       coalesce(sum(cost_micros), 0)::bigint
+		       ,coalesce(sum(credits_micros), 0)::bigint
 		FROM usage_records
 		WHERE user_id = $1 AND created_at >= $2 AND created_at < $3
 		  AND ($4 = '' OR api_key_id::text = $4)
@@ -174,7 +180,7 @@ func (s *Store) GetUserUsageByModel(ctx context.Context, userID string, r UsageR
 		var m ModelUsage
 		if err := rows.Scan(&m.Model, &m.Requests,
 			&m.Tokens.Input, &m.Tokens.Output, &m.Tokens.CacheRead, &m.Tokens.CacheWrite,
-			&m.CostMicros); err != nil {
+			&m.CostMicros, &m.CreditsMicros); err != nil {
 			return nil, fmt.Errorf("store: scanning a model breakdown row: %w", err)
 		}
 		out = append(out, m)
@@ -187,20 +193,21 @@ func (s *Store) GetUserUsageByModel(ctx context.Context, userID string, r UsageR
 
 // UsageRecord is one row of the ledger, as the console shows it.
 type UsageRecord struct {
-	ID          int64
-	RequestID   string
-	APIKeyID    *string
-	KeyName     string
-	KeyPrefix   string
-	KeyLastFour string
-	Model       string
-	Tokens      pricing.Tokens
-	CostMicros  int64
-	Unpriced    bool
-	Estimated   bool
-	LatencyMS   *int
-	Status      string
-	CreatedAt   time.Time
+	ID            int64
+	RequestID     string
+	APIKeyID      *string
+	KeyName       string
+	KeyPrefix     string
+	KeyLastFour   string
+	Model         string
+	Tokens        pricing.Tokens
+	CostMicros    int64
+	CreditsMicros int64
+	Unpriced      bool
+	Estimated     bool
+	LatencyMS     *int
+	Status        string
+	CreatedAt     time.Time
 }
 
 // ListUserUsage returns the ledger for a user, newest first.
@@ -230,7 +237,7 @@ func (s *Store) ListUserUsage(ctx context.Context, userID string, r UsageRange, 
 		SELECT r.id, r.request_id, r.api_key_id,
 		       coalesce(k.name, ''), coalesce(k.key_prefix, ''), coalesce(k.last_four, ''),
 		       r.model, r.input_tokens, r.output_tokens, r.cache_read_tokens, r.cache_write_tokens,
-		       r.cost_micros, r.unpriced, r.tokens_estimated, r.latency_ms, r.status, r.created_at
+		       r.cost_micros, r.credits_micros, r.unpriced, r.tokens_estimated, r.latency_ms, r.status, r.created_at
 		FROM usage_records r
 		LEFT JOIN api_keys k ON k.id = r.api_key_id
 		WHERE r.user_id = $1 AND r.created_at >= $2 AND r.created_at < $3
@@ -250,7 +257,7 @@ func (s *Store) ListUserUsage(ctx context.Context, userID string, r UsageRange, 
 			&rec.KeyName, &rec.KeyPrefix, &rec.KeyLastFour,
 			&rec.Model, &rec.Tokens.Input, &rec.Tokens.Output,
 			&rec.Tokens.CacheRead, &rec.Tokens.CacheWrite,
-			&rec.CostMicros, &rec.Unpriced, &rec.Estimated,
+			&rec.CostMicros, &rec.CreditsMicros, &rec.Unpriced, &rec.Estimated,
 			&rec.LatencyMS, &rec.Status, &rec.CreatedAt); err != nil {
 			return nil, 0, fmt.Errorf("store: scanning a usage record: %w", err)
 		}

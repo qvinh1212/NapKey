@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "NapKey — Claude Code thanh toán bằng VNĐ",
-    "description": "Nạp từ 20.000 ₫, lấy API key và chạy Claude Code hoặc SDK Anthropic/OpenAI qua NapKey. Không gói tháng, tính đúng token thực dùng.",
+    "description": "Nạp từ 20.000 ₫, lấy API key và chạy Claude Code hoặc SDK Anthropic/OpenAI qua NapKey. Không gói tháng, tính theo credit Kiro thực dùng.",
     "ogAlt": "NapKey — cổng API Claude trả trước theo ví"
   },
   "nav": {
@@ -216,32 +216,18 @@
   },
   "pricing": {
     "eyebrow": "Bảng giá",
-    "title": "Giá tính theo 1 triệu token",
-    "subtitle": "Đơn vị VNĐ. Input và output tính riêng vì chi phí khác nhau rõ rệt. Cache đọc rẻ hơn input thường đáng kể — prompt ổn định thì hoá đơn giảm theo.",
-    "filterAll": "Tất cả",
-    "filterAriaLabel": "Lọc theo họ model",
-    "table": {
-      "model": "Model",
-      "input": "Input",
-      "output": "Output",
-      "cacheRead": "Cache đọc",
-      "cacheWrite": "Cache ghi",
-      "perMillion": "₫ / 1M token",
-      "caption": "Giá bán của NapKey theo từng model, đơn vị đồng trên một triệu token."
+    "title": "Một mức giá credit, dùng cho mọi model",
+    "subtitle": "Không cần tự quy đổi input, output hay cache token. NapKey ghi nhận đúng số credit Kiro báo về và trừ ví theo mức cố định 45 VNĐ mỗi credit.",
+    "popular": "Phổ biến",
+    "packages": {
+      "starter": "Bắt đầu và thử nghiệm",
+      "builder": "Dùng thường xuyên",
+      "scale": "Khối lượng lớn"
     },
-    "family": {
-      "opus": "Opus",
-      "sonnet": "Sonnet",
-      "haiku": "Haiku"
-    },
-    "tag": {
-      "strongest": "Mạnh nhất",
-      "balanced": "Cân bằng",
-      "fastest": "Nhanh nhất",
-      "thinking": "Có bản thinking"
-    },
-    "footnote": "Giá có thể thay đổi theo tỷ giá và giá gốc thượng nguồn. Mỗi lần đổi giá đều ghi nhận thời điểm hiệu lực — usage đã ghi trong quá khứ không bị tính lại.",
-    "thinkingNote": "Mọi model đều có biến thể -thinking dùng chung mức giá."
+    "packageNote": "Cùng đơn giá 45 VNĐ/credit, không khóa gói và không ép cam kết dài hạn.",
+    "rateLabel": "Đơn giá công khai",
+    "measurement": "Credit được đo từ usage thực tế do Kiro trả về. Dashboard lưu từng request, model, token tham chiếu, credit và số tiền đã trừ để bạn đối soát.",
+    "footnote": "Credit trong ví NapKey không hết hạn theo chính sách hiện tại. Usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
   },
   "billing": {
     "eyebrow": "Cách tính tiền",
@@ -360,8 +346,9 @@
       "loadFailed": "Không tải được số liệu dùng.",
       "retry": "Thử lại",
       "stats": {
+        "credits": "Credit đã dùng",
         "cost30d": "Chi phí 30 ngày",
-        "cost30dHint": "Tổng tiền của các request đã ghi trong 30 ngày gần nhất.",
+        "cost30dHint": "Tổng credit Kiro ghi nhận trong 30 ngày gần nhất; tương ứng với chi phí đã quyết toán.",
         "requests30d": "Request 30 ngày",
         "requestsHintClean": "Không có request lỗi trong kỳ.",
         "requestsHintErrors": "{count} request lỗi, không tính tiền.",
@@ -371,13 +358,13 @@
         "activeKeysHint": "Tổng chi phí từ đầu: {total}."
       },
       "estimatedBadge": "Có ước lượng",
-      "estimatedNotice": "{count} trong {total} request có số token đầu ra là ước lượng, vì upstream không trả số đo. Chi phí tính theo con số ước lượng đó.",
+      "estimatedNotice": "{count} trong {total} request có số token đầu ra là ước lượng vì upstream không trả số đo. Credit và chi phí vẫn lấy từ usage Kiro báo về, không suy ra từ token ước lượng.",
       "unpricedBadge": "Thiếu bảng giá",
       "unpricedNotice": "{count} request được phục vụ nhưng chưa có giá trên sổ, nên tính 0 đồng. Bên vận hành đã nhận cảnh báo.",
-      "chartTitle": "Chi phí theo ngày",
-      "chartDescription": "Mốc ngày cắt theo giờ Việt Nam, trùng với cách tính hoá đơn.",
+      "chartTitle": "Credit theo ngày",
+      "chartDescription": "Credit thực tế Kiro báo về, nhóm theo ngày giờ Việt Nam.",
       "byModelTitle": "Phân theo model",
-      "byModelDescription": "Cùng khoảng 30 ngày, xếp theo chi phí giảm dần.",
+      "byModelDescription": "Cùng khoảng 30 ngày, hiển thị credit và chi phí theo từng model.",
       "byModelEmpty": "Chưa có request nào trong 30 ngày qua.",
       "billingMode": {
         "prepaid_wallet": "Ví trả trước",
@@ -389,7 +376,7 @@
     "usage": {
       "metaTitle": "Lịch sử dùng",
       "title": "Sổ chi tiết",
-      "description": "Mỗi dòng là một request, kèm token và chi phí để đối soát được.",
+      "description": "Mỗi dòng là một request, kèm credit Kiro ghi nhận, token tham chiếu và chi phí để đối soát.",
       "loading": "Đang tải lịch sử...",
       "loadFailed": "Không tải được lịch sử dùng.",
       "retry": "Thử lại",
@@ -398,6 +385,7 @@
       "filterByKey": "Lọc theo key",
       "allKeys": "Tất cả key",
       "stats": {
+        "credits": "Credit đã dùng",
         "cost": "Chi phí trong kỳ",
         "rangeHint": "Tổng trong {days} ngày đang chọn.",
         "requests": "Request",
@@ -407,8 +395,8 @@
         "quality": "Request ước lượng",
         "qualityHint": "{unpriced} request chưa có giá."
       },
-      "chartTitle": "Chi phí theo thời gian",
-      "chartDescription": "Tổng theo ngày trong khoảng đang chọn, cắt theo giờ Việt Nam.",
+      "chartTitle": "Credit theo thời gian",
+      "chartDescription": "Credit Kiro ghi nhận theo ngày trong khoảng đang chọn, cắt theo giờ Việt Nam.",
       "emptyTitle": "Chưa có dữ liệu",
       "emptyDescription": "Chưa có request nào trong khoảng này. Số liệu xuất hiện ngay sau lần gọi API đầu tiên.",
       "colTime": "Thời điểm",
@@ -421,6 +409,7 @@
       "colOutput": "Ra",
       "colCacheRead": "Cache đọc",
       "colLatency": "Độ trễ",
+      "colCredits": "Credit",
       "colCost": "Chi phí",
       "status": {
         "success": "Thành công",
@@ -436,9 +425,9 @@
       "prev": "Trước",
       "next": "Sau",
       "chartEmpty": "Chưa có dữ liệu để vẽ biểu đồ.",
-      "chartLegend": "Chi phí mỗi ngày",
+      "chartLegend": "Credit mỗi ngày",
       "chartRequests": "{count} request",
-      "chartTableCaption": "Chi phí và số request theo từng ngày"
+      "chartTableCaption": "Credit và số request theo từng ngày"
     },
     "keys": {
       "metaTitle": "API key",
@@ -588,6 +577,7 @@
       "loadFailed": "Không tải được ví của bạn.",
       "createFailed": "Không tạo được lệnh nạp tiền.",
       "balance": "Số dư ví",
+      "creditRate": "1.000 credit = 45.000 VNĐ. Credit không hết hạn.",
       "balanceHint": "Tổng tiền đã ghi có trước các khoản đang giữ.",
       "available": "Có thể sử dụng",
       "availableHint": "Sẵn sàng thanh toán cho request API.",
@@ -596,6 +586,7 @@
       "topupTitle": "Nạp tiền qua chuyển khoản",
       "topupDescription": "Chọn số tiền, sau đó quét VietQR hoặc sao chép thông tin chuyển khoản.",
       "customAmount": "Số tiền (VND)",
+      "youReceive": "Bạn nhận được {credits}",
       "nonRefundable": "Quan trọng: số dư chỉ dùng cho API NapKey, không thể rút hoặc hoàn lại về tài khoản ngân hàng.",
       "create": "Tạo lệnh chuyển khoản",
       "creating": "Đang tạo...",
@@ -605,6 +596,7 @@
       "accountNumber": "Số tài khoản",
       "accountName": "Tên tài khoản",
       "amount": "Số tiền chính xác",
+      "credits": "Credit được cộng",
       "memo": "Nội dung chuyển khoản",
       "copy": "Chép",
       "copied": "Đã chép",

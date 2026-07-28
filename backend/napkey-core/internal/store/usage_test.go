@@ -67,10 +67,11 @@ func TestRecordUsagePricesFromTheLedgerRate(t *testing.T) {
 	srv, st := usageHarness(t)
 
 	result, err := st.RecordUsage(context.Background(), RecordUsageParams{
-		RequestID: "req-abc",
-		KeyID:     pgtest.UUID(1),
-		Model:     "claude-sonnet-4-20250514",
-		Tokens:    pricing.Tokens{Input: 10_000, Output: 2_000, CacheRead: 50_000},
+		RequestID:     "req-abc",
+		KeyID:         pgtest.UUID(1),
+		Model:         "claude-sonnet-4-20250514",
+		Tokens:        pricing.Tokens{Input: 10_000, Output: 2_000, CacheRead: 50_000},
+		CreditsMicros: 1_870_000,
 	})
 	if err != nil {
 		t.Fatalf("RecordUsage: %v", err)
@@ -85,9 +86,7 @@ func TestRecordUsagePricesFromTheLedgerRate(t *testing.T) {
 	if result.UserID != pgtest.UUID(7) {
 		t.Errorf("UserID = %q, want the key owner", result.UserID)
 	}
-	// 10k input at 101,400,000/1k + 2k output at 507,000,000/1k + 50k cache read at
-	// 10,140,000/1k.
-	want := int64(10*101_400_000 + 2*507_000_000 + 50*10_140_000)
+	want := int64(84_150_000)
 	if result.CostMicros != want {
 		t.Errorf("CostMicros = %d, want %d", result.CostMicros, want)
 	}
@@ -154,9 +153,8 @@ func TestRecordUsageIsIdempotent(t *testing.T) {
 	}
 }
 
-// TestRecordUsageRecordsUnpricedModel covers a model with no rate on file. The
-// request was already served, so refusing to record it would lose the traffic
-// entirely; it is recorded at zero cost and flagged for a human.
+// Credit billing is model-independent: an upstream model can be charged as long
+// as Kiro reports measured credits for it.
 func TestRecordUsageRecordsUnpricedModel(t *testing.T) {
 	srv := pgtest.New(t)
 	srv.On("SELECT user_id FROM api_keys", func(pgtest.Query) pgtest.Response {
@@ -181,19 +179,20 @@ func TestRecordUsageRecordsUnpricedModel(t *testing.T) {
 	st := openTestStore(t, srv)
 
 	result, err := st.RecordUsage(context.Background(), RecordUsageParams{
-		RequestID: "req-nomodel",
-		KeyID:     pgtest.UUID(1),
-		Model:     "some-model-nobody-priced",
-		Tokens:    pricing.Tokens{Input: 1_000, Output: 500},
+		RequestID:     "req-nomodel",
+		KeyID:         pgtest.UUID(1),
+		Model:         "some-model-nobody-priced",
+		Tokens:        pricing.Tokens{Input: 1_000, Output: 500},
+		CreditsMicros: 500_000,
 	})
 	if err != nil {
 		t.Fatalf("usage for an unpriced model must still be recorded: %v", err)
 	}
-	if !result.Unpriced {
-		t.Error("the row should be flagged unpriced")
+	if result.Unpriced {
+		t.Error("credit-priced usage must not depend on a model token rate")
 	}
-	if result.CostMicros != 0 {
-		t.Errorf("CostMicros = %d, want 0 when no rate applies", result.CostMicros)
+	if result.CostMicros != 22_500_000 {
+		t.Errorf("CostMicros = %d, want 22500000", result.CostMicros)
 	}
 	if result.RateID != 0 {
 		t.Errorf("RateID = %d, want 0 when no rate applies", result.RateID)
@@ -256,21 +255,21 @@ func TestRecordUsageClampsFutureTimestamps(t *testing.T) {
 	if err != nil {
 		t.Fatalf("RecordUsage: %v", err)
 	}
-	q, ok := srv.FindQuery("FROM model_prices")
+	q, ok := srv.FindQuery("INSERT INTO usage_records")
 	if !ok {
 		t.Fatal("the price lookup never ran")
 	}
-	// The bound timestamp is the lookup's third parameter. It must be near now, not
-	// a month out.
-	if len(q.Params) < 3 {
-		t.Fatalf("expected at least 3 bound params, got %v", q.Params)
+	// OccurredAt is the final insert parameter and must be near now, not a month out.
+	if len(q.Params) < 18 {
+		t.Fatalf("expected 18 bound params, got %v", q.Params)
 	}
-	bound, err := time.Parse("2006-01-02 15:04:05.999999999-07:00", q.Params[2])
+	boundParam := q.Params[len(q.Params)-1]
+	bound, err := time.Parse("2006-01-02 15:04:05.999999999-07:00", boundParam)
 	if err != nil {
 		// Format varies with the driver's encoding; fall back to a prefix check on
 		// the current year-month.
-		if !strings.HasPrefix(q.Params[2], time.Now().UTC().Format("2006-01")) {
-			t.Errorf("bound timestamp %q was not clamped to now", q.Params[2])
+		if !strings.HasPrefix(boundParam, time.Now().UTC().Format("2006-01")) {
+			t.Errorf("bound timestamp %q was not clamped to now", boundParam)
 		}
 		return
 	}
@@ -483,12 +482,14 @@ func TestUsageTotalsCanBeScopedToOneKey(t *testing.T) {
 				{Name: "requests", OID: 20}, {Name: "input", OID: 20},
 				{Name: "output", OID: 20}, {Name: "cache_read", OID: 20},
 				{Name: "cache_write", OID: 20}, {Name: "cost", OID: 20},
+				{Name: "credits", OID: 20},
 				{Name: "unpriced", OID: 20}, {Name: "estimated", OID: 20},
 				{Name: "errors", OID: 20},
 			},
 			Rows: [][]*string{{
 				pgtest.Text("1"), pgtest.Text("10"), pgtest.Text("5"),
 				pgtest.Text("0"), pgtest.Text("0"), pgtest.Text("100"),
+				pgtest.Text("1000000"),
 				pgtest.Text("0"), pgtest.Text("0"), pgtest.Text("0"),
 			}},
 			Tag: "SELECT 1",

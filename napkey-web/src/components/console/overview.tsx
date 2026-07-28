@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ButtonLink } from '@/components/ui/button';
 import { api, ApiError, rangeQuery } from '@/lib/api/client';
 import type { UsageDetailResponse, UsageSummaryResponse } from '@/lib/api/types';
-import { billingRange, compact, count, money } from '@/lib/format';
+import { billingRange, compact, count, creditAmount, money } from '@/lib/format';
 import { UsageChart } from './usage-chart';
 import { Badge, ErrorNotice, Panel, PanelHeader, StatCard, Td, Th, TableScroll } from './ui';
 
@@ -81,8 +81,8 @@ export function Overview() {
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label={t('stats.cost30d')}
-          value={money(last30Days.cost)}
+          label={t('stats.credits')}
+          value={creditAmount(last30Days.credits, locale)}
           hint={t('stats.cost30dHint')}
           tone="accent"
         />
@@ -160,6 +160,7 @@ export function Overview() {
                 <Th align="right">{tu('colInput')}</Th>
                 <Th align="right">{tu('colOutput')}</Th>
                 <Th align="right">{tu('colCacheRead')}</Th>
+                <Th align="right">{tu('colCredits')}</Th>
                 <Th align="right">{tu('colCost')}</Th>
               </tr>
             </thead>
@@ -171,6 +172,9 @@ export function Overview() {
                   <Td align="right">{compact(row.tokens.input, locale)}</Td>
                   <Td align="right">{compact(row.tokens.output, locale)}</Td>
                   <Td align="right">{compact(row.tokens.cacheRead, locale)}</Td>
+                  <Td align="right" className="font-mono text-fg">
+                    {creditAmount(row.credits, locale)}
+                  </Td>
                   <Td align="right" className="text-accent-light">
                     {money(row.cost)}
                   </Td>

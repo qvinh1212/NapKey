@@ -67,10 +67,11 @@ type usageReport struct {
 	KeyID     string `json:"keyId"`
 	Model     string `json:"model"`
 
-	InputTokens      int64 `json:"inputTokens"`
-	OutputTokens     int64 `json:"outputTokens"`
-	CacheReadTokens  int64 `json:"cacheReadTokens,omitempty"`
-	CacheWriteTokens int64 `json:"cacheWriteTokens,omitempty"`
+	InputTokens      int64   `json:"inputTokens"`
+	OutputTokens     int64   `json:"outputTokens"`
+	CacheReadTokens  int64   `json:"cacheReadTokens,omitempty"`
+	CacheWriteTokens int64   `json:"cacheWriteTokens,omitempty"`
+	Credits          float64 `json:"credits"`
 
 	UpstreamAccountID string `json:"upstreamAccountId,omitempty"`
 	LatencyMS         *int   `json:"latencyMs,omitempty"`

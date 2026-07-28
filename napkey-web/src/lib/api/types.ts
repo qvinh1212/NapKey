@@ -21,6 +21,12 @@ export type Money = {
   formatted: string;
 };
 
+export type Credits = {
+  /** Integer microcredits; 1 credit = 1,000,000 microcredits. */
+  micros: number;
+  credits: number;
+};
+
 /** Token tach theo cach tinh tien. Bon loai co gia lech nhau hon mot bac. */
 export type TokenBreakdown = {
   input: number;
@@ -136,6 +142,7 @@ export type UsageSummaryResponse = {
     requests: number;
     tokens: TokenBreakdown;
     cost: Money;
+    credits: Credits;
     errorRequests: number;
     /** So request co output token la UOC LUONG, khong phai do duoc. */
     estimatedRequests: number;
@@ -154,6 +161,7 @@ export type UsageDayBucket = {
   requests: number;
   tokens: TokenBreakdown;
   cost: Money;
+  credits: Credits;
 };
 
 export type UsageModelBucket = {
@@ -161,6 +169,7 @@ export type UsageModelBucket = {
   requests: number;
   tokens: TokenBreakdown;
   cost: Money;
+  credits: Credits;
 };
 
 export type UsageDetailResponse = {
@@ -169,6 +178,7 @@ export type UsageDetailResponse = {
     requests: number;
     tokens: TokenBreakdown;
     cost: Money;
+    credits: Credits;
     errorRequests: number;
     estimatedRequests: number;
     unpricedRequests: number;
@@ -183,6 +193,7 @@ export type UsageRecord = {
   model: string;
   tokens: TokenBreakdown;
   cost: Money;
+  credits: Credits;
   /** Phuc vu roi nhung khong co gia - tinh 0 dong. */
   unpriced: boolean;
   /** Output token la uoc luong, khong phai do tu upstream. */
@@ -208,6 +219,12 @@ export type WalletResponse = {
     balance: Money;
     held: Money;
     available: Money;
+    credits: {
+      balance: Credits;
+      held: Credits;
+      available: Credits;
+      vndPerCredit: 45;
+    };
     currency: 'VND';
   };
 };
@@ -220,6 +237,7 @@ export type TopupOrderResponse = {
     memoCode: string;
     status: TopupStatus;
     expectedAmount: Money;
+    expectedCredits: Credits;
     receivedAmount: Money;
     expiresAt: string;
     paidAt: string | null;
