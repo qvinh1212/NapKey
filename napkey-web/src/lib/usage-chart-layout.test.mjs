@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { usageChartLayout } from './usage-chart-layout.ts';
+import { usageBarPercent } from './usage-chart-layout.ts';
 
-test('keeps sparse charts as narrow columns instead of stretching them full width', () => {
-  assert.deepEqual(usageChartLayout(1), { sparse: true, columnWidth: 40 });
-  assert.deepEqual(usageChartLayout(7), { sparse: true, columnWidth: 40 });
+test('scales horizontal usage bars against the largest day', () => {
+  assert.equal(usageBarPercent(100, 100), 100);
+  assert.equal(usageBarPercent(50, 100), 50);
 });
 
-test('lets longer time series share the available chart width', () => {
-  assert.deepEqual(usageChartLayout(8), { sparse: false, columnWidth: null });
-  assert.deepEqual(usageChartLayout(30), { sparse: false, columnWidth: null });
+test('keeps small non-zero usage visible and clamps malformed values', () => {
+  assert.equal(usageBarPercent(1, 1000), 2);
+  assert.equal(usageBarPercent(0, 1000), 0);
+  assert.equal(usageBarPercent(2000, 1000), 100);
 });
