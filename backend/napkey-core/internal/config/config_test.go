@@ -71,16 +71,20 @@ func TestPayOSConfigurationRequiresAllThreeSecrets(t *testing.T) {
 	}
 }
 
-func TestGoogleOAuthConfigurationRequiresClientPair(t *testing.T) {
+func TestPartialGoogleOAuthConfigurationDisablesGoogleSignIn(t *testing.T) {
 	setValidEnv(t)
 	t.Setenv("GOOGLE_CLIENT_ID", "client-id")
 	t.Setenv("GOOGLE_CLIENT_SECRET", "")
-	if _, err := Load(); err == nil {
-		t.Fatal("GOOGLE_CLIENT_ID without GOOGLE_CLIENT_SECRET should be rejected")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("partial Google config should not stop the service: %v", err)
+	}
+	if cfg.GoogleClientID != "" || cfg.GoogleClientSecret != "" {
+		t.Fatal("partial Google config should disable Google sign-in")
 	}
 
 	t.Setenv("GOOGLE_CLIENT_SECRET", "client-secret")
-	cfg, err := Load()
+	cfg, err = Load()
 	if err != nil {
 		t.Fatalf("complete Google OAuth config: %v", err)
 	}

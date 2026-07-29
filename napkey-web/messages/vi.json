@@ -201,6 +201,29 @@
       "independence": { "title": "Độc lập thương hiệu", "body": "NapKey hoạt động độc lập với các nhà cung cấp model và hạ tầng bên thứ ba, bao gồm dịch vụ do AWS vận hành. Claude cùng các tên liên quan thuộc chủ sở hữu tương ứng." }
     }
   },
+  "ecosystem": {
+    "eyebrow": "Một key, một tuyến",
+    "title": "Công cụ lập trình đi vào. Đúng model Claude đi ra.",
+    "subtitle": "NapKey giữ nguyên client bạn đang dùng, định tuyến request tương thích Anthropic qua một key trả trước và ghi lại từng khoản phí bằng VNĐ.",
+    "clientsLabel": "IDE · CLI · coding agent",
+    "modelsLabel": "Tuyến model đang hoạt động",
+    "hubBody": "Một endpoint cho xác thực, định tuyến, failover và tính phí theo từng request.",
+    "catalogNote": "Khả dụng model phụ thuộc catalog trực tiếp của gateway và sức chứa tài khoản upstream.",
+    "clients": {
+      "claudeCode": "Claude Code",
+      "cursor": "Cursor",
+      "vscode": "VS Code",
+      "cline": "Cline",
+      "openCode": "OpenCode",
+      "sdk": "Anthropic / OpenAI SDK"
+    },
+    "families": {
+      "opus": "suy luận sâu",
+      "sonnet": "coding cân bằng",
+      "haiku": "tác vụ nhanh",
+      "router": "tự động định tuyến"
+    }
+  },
   "integrate": {
     "eyebrow": "Tích hợp",
     "title": "Đổi endpoint trong hai dòng",

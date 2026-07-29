@@ -201,6 +201,29 @@
       "independence": { "title": "Brand independence", "body": "NapKey operates independently from third-party model and infrastructure providers, including AWS-operated services. Claude and related names belong to their respective owners." }
     }
   },
+  "ecosystem": {
+    "eyebrow": "One key, one route",
+    "title": "Your coding tools in. The right Claude model out.",
+    "subtitle": "NapKey keeps the client you already use, routes Anthropic-compatible requests through one prepaid key, and records every charge in Vietnamese dong.",
+    "clientsLabel": "IDE · CLI · coding agent",
+    "modelsLabel": "Active model routes",
+    "hubBody": "One endpoint for authentication, routing, failover and per-request billing.",
+    "catalogNote": "Model availability follows the live gateway catalog and upstream account capacity.",
+    "clients": {
+      "claudeCode": "Claude Code",
+      "cursor": "Cursor",
+      "vscode": "VS Code",
+      "cline": "Cline",
+      "openCode": "OpenCode",
+      "sdk": "Anthropic / OpenAI SDK"
+    },
+    "families": {
+      "opus": "deep reasoning",
+      "sonnet": "balanced coding",
+      "haiku": "fast tasks",
+      "router": "automatic routing"
+    }
+  },
   "integrate": {
     "eyebrow": "Integration",
     "title": "Change the endpoint in two lines",

@@ -217,9 +217,11 @@ func Load() (*Config, error) {
 			if item.value == "" { problems = append(problems, item.name+" is required when PayOS top-ups are configured") }
 		}
 	}
-	googleConfigured := c.GoogleClientID != "" || c.GoogleClientSecret != ""
-	if googleConfigured && (c.GoogleClientID == "" || c.GoogleClientSecret == "") {
-		problems = append(problems, "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must both be set")
+	// A half-entered OAuth configuration should not take down the control
+	// plane. Treat it as disabled until both values are present.
+	if (c.GoogleClientID == "") != (c.GoogleClientSecret == "") {
+		c.GoogleClientID = ""
+		c.GoogleClientSecret = ""
 	}
 	walletConfigured:=c.CassoWebhookSecret!=""||c.CassoAPIKey!=""||c.BankAccountNumber!=""||c.BankAccountName!=""||c.BankName!=""||c.BankBin!=""
 	if walletConfigured {
