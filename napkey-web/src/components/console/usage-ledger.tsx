@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api/client';
 import type { KeyListResponse, UsageDetailResponse, UsageRecordsResponse } from '@/lib/api/types';
-import { billingRange, compact, count, creditAmount, dateTime, latency, money } from '@/lib/format';
+import { billingRange, compact, count, creditAmount, dateTime, latency } from '@/lib/format';
 import { usagePageQueries } from '@/lib/usage-query';
 import { UsageChart } from './usage-chart';
+import { usageRecordView } from '@/lib/usage-record-view';
 import {
   Badge,
   EmptyState,
@@ -223,68 +224,42 @@ export function UsageLedger() {
                 <tr>
                   <Th>{t('colTime')}</Th>
                   <Th>{t('colModel')}</Th>
-                  <Th>{t('colKey')}</Th>
+                  <Th>{t('colType')}</Th>
+                  <Th>{t('colStatus')}</Th>
                   <Th align="right">{t('colInput')}</Th>
                   <Th align="right">{t('colOutput')}</Th>
-                  <Th align="right">{t('colCacheRead')}</Th>
-                  <Th align="right">{t('colLatency')}</Th>
+                  <Th align="right">{t('colCache')}</Th>
                   <Th align="right">{t('colCredits')}</Th>
-                  <Th align="right">{t('colCost')}</Th>
+                  <Th align="right">{t('colLatency')}</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {state.records.records.map((record) => (
-                  <tr key={record.id} className="transition-colors hover:bg-surface-hover">
-                    <Td className="whitespace-nowrap text-dim">
+                {state.records.records.map((record) => {
+                  const view = usageRecordView(record);
+                  return (
+                    <tr key={record.id} className="transition-colors hover:bg-surface-hover">
+                    <Td className="whitespace-nowrap font-mono text-label text-dim">
                       {dateTime(record.createdAt, locale)}
                     </Td>
                     <Td className="font-mono text-muted">
-                      <span className="flex flex-wrap items-center gap-2">
-                        {record.model}
-                        {record.status !== 'success' ? (
-                          <Badge tone={record.status === 'error' ? 'danger' : 'neutral'}>
-                            {t(`status.${record.status}`)}
-                          </Badge>
-                        ) : null}
-                        {/* Cho khach biet con so nay la uoc luong, khong phai do duoc. */}
-                        {record.estimated ? (
-                          <Badge tone="info" title={t('estimatedTooltip')}>
-                            {t('estimatedShort')}
-                          </Badge>
-                        ) : null}
-                        {record.unpriced ? (
-                          <Badge tone="warn" title={t('unpricedTooltip')}>
-                            {t('unpricedShort')}
-                          </Badge>
-                        ) : null}
-                      </span>
+                      <span className="whitespace-nowrap">{record.model}</span>
                     </Td>
-                    <Td className="text-dim">
-                      {/* Vang khi key da bi xoa: so usage song lau hon key. */}
-                      {record.keyMasked ? (
-                        <span className="font-mono" title={record.keyName}>
-                          {record.keyMasked}
-                        </span>
-                      ) : (
-                        <span className="text-dim">{t('keyDeleted')}</span>
-                      )}
-                    </Td>
+                    <Td><Badge tone="info">{view.type}</Badge></Td>
+                    <Td><Badge tone={view.statusTone}>{t(`status.${view.status}`)}</Badge></Td>
                     <Td align="right">{count(record.tokens.input, locale)}</Td>
                     <Td align="right">{count(record.tokens.output, locale)}</Td>
                     <Td align="right" className="text-dim">
-                      {count(record.tokens.cacheRead, locale)}
-                    </Td>
-                    <Td align="right" className="text-dim">
-                      {latency(record.latencyMs, locale)}
+                      {count(view.cacheTokens, locale)}
                     </Td>
                     <Td align="right" className="font-mono text-fg">
                       {creditAmount(record.credits, locale)}
                     </Td>
-                    <Td align="right" className="text-accent-light">
-                      {money(record.cost)}
+                    <Td align="right" className="text-dim">
+                      {latency(record.latencyMs, locale)}
                     </Td>
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </TableScroll>
 
