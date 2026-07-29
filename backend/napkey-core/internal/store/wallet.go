@@ -199,7 +199,6 @@ func settleWalletTx(ctx context.Context,tx *sql.Tx,requestID string,actualMicros
 	var holdID,userID string;var reserved int64
 	err:=tx.QueryRowContext(ctx,`SELECT id,user_id,amount_micros FROM wallet_holds WHERE request_id=$1 AND status='open' FOR UPDATE`,requestID).Scan(&holdID,&userID,&reserved)
 	if errors.Is(err,sql.ErrNoRows){if allowMissing{return nil};return ErrNotFound};if err!=nil{return err}
-	if actualMicros>reserved{return errors.New("store: actual cost exceeds reserved hold")}
 	var balance,held int64
 	err=tx.QueryRowContext(ctx,`UPDATE wallets SET balance_micros=balance_micros-$2,held_micros=held_micros-$3,promotional_micros=promotional_micros-least(promotional_micros,$2),promotional_expires_at=CASE WHEN promotional_micros-least(promotional_micros,$2)=0 THEN NULL ELSE promotional_expires_at END,updated_at=now() WHERE user_id=$1 AND balance_micros >= $2 AND held_micros >= $3 RETURNING balance_micros,held_micros`,userID,actualMicros,reserved).Scan(&balance,&held);if err!=nil{return err}
 	if _,err=tx.ExecContext(ctx,`UPDATE trial_grants SET remaining_micros=greatest(0,remaining_micros-$2) WHERE user_id=$1`,userID,actualMicros);err!=nil{return err}
