@@ -114,6 +114,35 @@ func TestUpdateSettingsPatchCanExplicitlyDisableAPIKey(t *testing.T) {
 	}
 }
 
+func TestNapKeyManagedModeRequiresAPIKeyAuthentication(t *testing.T) {
+	t.Setenv("NAPKEY_CORE_URL", "http://napkey-core:8081")
+	t.Setenv("NAPKEY_INTERNAL_TOKEN", "shared-secret")
+
+	if err := Init(filepath.Join(t.TempDir(), "config.json")); err != nil {
+		t.Fatalf("init config: %v", err)
+	}
+	if !IsApiKeyRequired() {
+		t.Fatal("NapKey-managed data plane must reject unattributed requests")
+	}
+}
+
+func TestNapKeyManagedModeRepairsPersistedPublicConfiguration(t *testing.T) {
+	t.Setenv("NAPKEY_CORE_URL", "http://napkey-core:8081")
+	t.Setenv("NAPKEY_INTERNAL_TOKEN", "shared-secret")
+	path := filepath.Join(t.TempDir(), "config.json")
+	data := []byte(`{"password":"private-admin-password","host":"0.0.0.0","port":8080,"requireApiKey":false}`)
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatalf("write config: %v", err)
+	}
+
+	if err := Init(path); err != nil {
+		t.Fatalf("init config: %v", err)
+	}
+	if !IsApiKeyRequired() {
+		t.Fatal("NapKey-managed startup must repair a persisted public configuration")
+	}
+}
+
 func TestUpdateAccountStaleSnapshotPreservesCredentialRotation(t *testing.T) {
 	if err := Init(filepath.Join(t.TempDir(), "config.json")); err != nil {
 		t.Fatalf("init config: %v", err)

@@ -277,6 +277,11 @@ func Init(path string) error {
 	return Load()
 }
 
+func napKeyManagedMode() bool {
+	return strings.TrimSpace(os.Getenv("NAPKEY_CORE_URL")) != "" &&
+		strings.TrimSpace(os.Getenv("NAPKEY_INTERNAL_TOKEN")) != ""
+}
+
 func Load() error {
 	cfgLock.Lock()
 	defer cfgLock.Unlock()
@@ -290,7 +295,7 @@ func Load() error {
 				Password:      generateAdminPassword(),
 				Port:          8080,
 				Host:          "0.0.0.0",
-				RequireApiKey: false,
+				RequireApiKey: napKeyManagedMode(),
 				Accounts:      []Account{},
 			}
 			return saveLocked()
@@ -303,6 +308,12 @@ func Load() error {
 		return err
 	}
 	cfg = &c
+	if napKeyManagedMode() && !cfg.RequireApiKey {
+		cfg.RequireApiKey = true
+		if err := saveLocked(); err != nil {
+			return err
+		}
+	}
 
 	// Security: never leave a publicly-known admin password in place. An empty
 	// password would also disable the admin gate entirely, since handleAdminAPI
