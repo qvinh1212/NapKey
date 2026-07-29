@@ -1,6 +1,27 @@
 import { useTranslations } from 'next-intl';
 import { Section } from '@/components/ui/section';
-import { ecosystemClients, ecosystemModels } from '@/lib/ecosystem-map';
+import {
+  ecosystemClients,
+  ecosystemInboundSignals,
+  ecosystemModels,
+  ecosystemOutboundSignals,
+} from '@/lib/ecosystem-map';
+
+function SignalPacket({ path, duration, delay }: { path: string; duration: number; delay: number }) {
+  const timing = `${duration}s`;
+  const start = `-${delay}s`;
+
+  return (
+    <g className="ecosystem-signal">
+      <circle r="7" fill="#10b981" opacity=".25" filter="url(#napkey-signal-glow)">
+        <animateMotion path={path} dur={timing} begin={start} repeatCount="indefinite" />
+      </circle>
+      <circle r="2.4" fill="#a7f3d0">
+        <animateMotion path={path} dur={timing} begin={start} repeatCount="indefinite" />
+      </circle>
+    </g>
+  );
+}
 
 function ClientRow({ client, name }: { client: (typeof ecosystemClients)[number]; name: string }) {
   return (
@@ -51,13 +72,18 @@ export function EcosystemMap() {
               <stop stopColor="#10b981" stopOpacity=".72" />
               <stop offset="1" stopColor="#10b981" stopOpacity=".18" />
             </linearGradient>
+            <filter id="napkey-signal-glow" x="-300%" y="-300%" width="700%" height="700%">
+              <feGaussianBlur stdDeviation="4" />
+            </filter>
           </defs>
-          {[116, 194, 272, 350, 428, 506].map((y) => (
-            <path key={`left-${y}`} d={`M 350 ${y} C 470 ${y}, 480 310, 600 310`} fill="none" stroke="url(#napkey-line-left)" strokeWidth="1.4" />
+          {ecosystemInboundSignals.map((signal) => (
+            <path key={signal.path} d={signal.path} fill="none" stroke="url(#napkey-line-left)" strokeWidth="1.4" />
           ))}
-          {[155, 255, 365, 465].map((y) => (
-            <path key={`right-${y}`} d={`M 600 310 C 730 310, 735 ${y}, 850 ${y}`} fill="none" stroke="url(#napkey-line-right)" strokeWidth="1.4" />
+          {ecosystemOutboundSignals.map((signal) => (
+            <path key={signal.path} d={signal.path} fill="none" stroke="url(#napkey-line-right)" strokeWidth="1.4" />
           ))}
+          {ecosystemInboundSignals.map((signal) => <SignalPacket key={`in-${signal.path}`} {...signal} />)}
+          {ecosystemOutboundSignals.map((signal) => <SignalPacket key={`out-${signal.path}`} {...signal} />)}
         </svg>
 
         <div className="relative grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_15rem_minmax(0,1fr)] lg:gap-14">
@@ -70,6 +96,7 @@ export function EcosystemMap() {
 
           <div className="flex flex-col items-center py-2 text-center">
             <div className="relative grid size-28 place-items-center rounded-[1.75rem] border border-accent/30 bg-[radial-gradient(circle_at_50%_35%,rgba(52,211,153,0.22),rgba(16,185,129,0.06)_58%,rgba(0,0,0,0)_72%)] shadow-[0_0_60px_rgba(16,185,129,0.18)]">
+              <span className="ecosystem-hub-pulse absolute inset-2 rounded-[1.35rem] border border-accent/40" aria-hidden />
               <div className="grid size-16 place-items-center rounded-2xl bg-accent text-2xl font-semibold tracking-[-0.08em] text-black shadow-[0_0_28px_rgba(16,185,129,0.32)]">NK</div>
               <span className="absolute -right-1 -top-1 flex items-center gap-1 rounded-full border border-accent/30 bg-[#07100c] px-2 py-1 font-mono text-micro text-accent-light">
                 <span className="size-1.5 rounded-full bg-accent" aria-hidden /> LIVE
