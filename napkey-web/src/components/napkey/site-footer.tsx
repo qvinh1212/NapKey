@@ -25,10 +25,10 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-zinc-900 bg-black pt-20 pb-10">
+    <footer className="border-t border-zinc-900 bg-black pt-14 pb-8 sm:pt-20 sm:pb-10">
       <div className="container-page">
-        <div className="grid gap-12 md:grid-cols-[1.5fr_repeat(3,1fr)]">
-          <div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-[1.5fr_repeat(3,1fr)] md:gap-12">
+          <div className="col-span-2 md:col-span-1">
             <Logo />
             <p className="mt-4 max-w-xs text-ui leading-relaxed text-muted">{t('tagline')}</p>
           </div>

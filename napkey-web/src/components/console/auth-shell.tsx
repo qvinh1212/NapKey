@@ -9,7 +9,7 @@ import type { ReactNode } from 'react';
  */
 export function AuthShell({ children }: { children: ReactNode }) {
   return (
-    <div className="container-page flex min-h-dvh items-center justify-center py-28">
+    <div className="container-page flex min-h-dvh items-center justify-center py-24 sm:py-28">
       <div className="w-full max-w-md">{children}</div>
     </div>
   );

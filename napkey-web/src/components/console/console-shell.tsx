@@ -99,7 +99,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
   const { user } = session;
 
   return (
-    <div className="container-page pt-28 pb-24">
+    <div className="container-page pt-24 pb-16 sm:pt-28 sm:pb-24">
       <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
         <div className="lg:w-52 lg:shrink-0">
           <div className="mb-6">
@@ -115,7 +115,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
           */}
           <nav
             aria-label={t('navLabel')}
-            className="-mx-6 mb-4 flex gap-1 overflow-x-auto border-b border-line px-6 lg:mx-0 lg:mb-0 lg:flex-col lg:overflow-visible lg:border-b-0 lg:px-0"
+            className="-mx-4 mb-4 flex gap-1 overflow-x-auto border-b border-line px-4 [scrollbar-width:thin] sm:-mx-6 sm:px-6 lg:mx-0 lg:mb-0 lg:flex-col lg:overflow-visible lg:border-b-0 lg:px-0"
           >
             {[...tabs, ...(session.permissions.includes('operations.read') ? [{ key: 'operations' as const, href: '/console/admin' as const }] : [])].map(({ key, href }) => {
               // So sanh chinh xac cho tab goc, tien to cho tab con: `/console` khong

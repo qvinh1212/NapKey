@@ -38,7 +38,7 @@ export function PanelHeader({
         <h2 className="text-sm font-medium tracking-[-0.01em] text-fg">{title}</h2>
         {description ? <p className="mt-1 text-ui text-dim">{description}</p> : null}
       </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
+      {action ? <div className="w-full sm:w-auto sm:shrink-0">{action}</div> : null}
     </div>
   );
 }
@@ -183,7 +183,7 @@ export function ErrorNotice({
 /** Bang co the cuon ngang tren mobile ma khong lam vo bo cuc. */
 export function TableScroll({ children }: { children: ReactNode }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overscroll-x-contain overflow-x-auto [scrollbar-width:thin]">
       <table className="w-full min-w-[42rem] border-collapse text-left">{children}</table>
     </div>
   );

@@ -36,8 +36,8 @@ export function Integration() {
   return (
     <Section id="integrate" eyebrow={t('eyebrow')} title={t('title')} subtitle={t('subtitle')}>
       <div className="overflow-hidden rounded-lg border border-line bg-surface">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3">
-          <div role="tablist" aria-label={t('eyebrow')} className="flex flex-wrap gap-1">
+        <div className="flex flex-col gap-3 border-b border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div role="tablist" aria-label={t('eyebrow')} className="-mx-1 flex flex-nowrap gap-1 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">
             {snippets.map((snippet) => {
               const isActive = snippet.key === active;
               return (
@@ -54,7 +54,7 @@ export function Integration() {
                     setCopied(false);
                   }}
                   className={
-                    'rounded-full border px-3.5 py-1.5 text-ui transition-colors duration-150 ' +
+                    'shrink-0 rounded-full border px-3.5 py-1.5 text-ui whitespace-nowrap transition-colors duration-150 ' +
                     'ease-[var(--ease-smooth)] ' +
                     (isActive
                       ? 'border-accent bg-accent-soft text-accent-light'
@@ -71,7 +71,7 @@ export function Integration() {
             type="button"
             onClick={copy}
             aria-label={t('copyAria', { name: t(`tabs.${active}`) })}
-            className="inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-1.5 font-mono text-label tracking-[0.08em] text-muted uppercase transition-colors duration-150 hover:text-fg"
+            className="inline-flex min-h-11 items-center justify-center gap-2 self-end rounded-full border border-line px-4 py-1.5 font-mono text-label tracking-[0.08em] text-muted uppercase transition-colors duration-150 hover:text-fg sm:min-h-0"
           >
             <span aria-hidden>{copied ? '\u2713' : '\u29c9'}</span>
             {copied ? t('copied') : t('copy')}
@@ -86,7 +86,7 @@ export function Integration() {
             aria-labelledby={`tab-${snippet.key}`}
             hidden={snippet.key !== active}
           >
-            <pre className="overflow-x-auto px-6 py-6 font-mono text-ui leading-relaxed text-zinc-300">
+            <pre className="overflow-x-auto px-4 py-5 font-mono text-xs leading-relaxed text-zinc-300 sm:px-6 sm:py-6 sm:text-ui">
               <code>{snippet.code}</code>
             </pre>
           </div>

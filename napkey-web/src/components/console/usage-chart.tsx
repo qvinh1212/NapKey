@@ -36,8 +36,8 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
   const activeDay = active === null ? null : daily[active];
 
   return (
-    <div className="px-5 py-5">
-      <div className="mb-3 flex h-5 items-center justify-between text-ui">
+    <div className="px-4 py-5 sm:px-5">
+      <div className="mb-4 flex min-h-5 flex-col gap-1 text-ui sm:mb-3 sm:flex-row sm:items-center sm:justify-between">
         <span className="text-dim">{t('chartLegend')}</span>
         {activeDay ? (
           <span className="tabular-nums text-muted">
@@ -64,7 +64,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
             <div
               key={day.day}
               onMouseEnter={() => setActive(index)}
-              className="grid cursor-default grid-cols-[4.5rem_minmax(0,1fr)_8rem] items-center gap-3 sm:grid-cols-[5.5rem_minmax(0,1fr)_10rem]"
+              className="grid cursor-default grid-cols-[4.25rem_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5 sm:grid-cols-[5.5rem_minmax(0,1fr)_10rem]"
             >
               <span className="font-mono text-label text-dim">{dayLabel(day.day, locale)}</span>
               <span className="h-2 overflow-hidden rounded-full bg-white/[0.07]">
@@ -74,7 +74,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
                     (isActive ? 'bg-accent-light shadow-[0_0_14px_rgba(52,211,153,0.3)]' : 'bg-accent/65')}
                 />
               </span>
-              <span className="text-right font-mono text-label tabular-nums text-muted">
+              <span className="col-span-2 text-right font-mono text-label tabular-nums text-muted sm:col-span-1">
                 {creditAmount(day.credits, locale)}
                 <span className="ml-2 hidden text-dim sm:inline">· {count(day.requests, locale)} req</span>
               </span>

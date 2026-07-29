@@ -7,7 +7,7 @@ export function FinalCta() {
   return (
     <section id="cta" aria-labelledby="cta-heading" className="section-y">
       <div className="container-page">
-        <div className="relative overflow-hidden rounded-xl border border-line bg-surface px-8 py-20 text-center sm:px-16">
+        <div className="relative overflow-hidden rounded-xl border border-line bg-surface px-5 py-14 text-center sm:px-16 sm:py-20">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 -top-32 mx-auto size-[32rem] rounded-full bg-accent/10 blur-[100px]"
@@ -22,8 +22,8 @@ export function FinalCta() {
             <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted">
               {t('body')}
             </p>
-            <div className="mt-10 flex justify-center">
-              <ButtonLink href="#pricing">{t('button')}</ButtonLink>
+            <div className="mt-8 flex justify-center sm:mt-10">
+              <ButtonLink href="#pricing" className="w-full sm:w-auto">{t('button')}</ButtonLink>
             </div>
           </div>
         </div>

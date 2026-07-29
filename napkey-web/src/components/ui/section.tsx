@@ -16,7 +16,7 @@ export function Section({ id, eyebrow, title, subtitle, children, className = ''
     <section id={id} aria-labelledby={headingId} className={`section-y ${className}`}>
       <div className="container-page">
         {(eyebrow ?? title ?? subtitle) ? (
-          <header className="mb-16 max-w-3xl">
+          <header className="mb-10 max-w-3xl sm:mb-16">
             {eyebrow ? (
               <p className="mb-4 font-mono text-label tracking-[0.18em] text-accent uppercase">
                 {eyebrow}

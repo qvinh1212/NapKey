@@ -27,6 +27,8 @@ export function SiteHeader() {
 
   // Chan scroll khi menu mobile dang mo.
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const desktop = window.matchMedia('(min-width: 64rem)');
     document.body.style.overflow = open ? 'hidden' : '';
     if (open) {
       mobileNavRef.current?.querySelector<HTMLElement>('a, button')?.focus();
@@ -36,17 +38,22 @@ export function SiteHeader() {
       setOpen(false);
       menuButtonRef.current?.focus();
     }
+    function onDesktop(event: MediaQueryListEvent) {
+      if (event.matches) setOpen(false);
+    }
     document.addEventListener('keydown', onKeyDown);
+    desktop.addEventListener('change', onDesktop);
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
       document.removeEventListener('keydown', onKeyDown);
+      desktop.removeEventListener('change', onDesktop);
     };
   }, [open]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 pt-6">
+    <header className="fixed inset-x-0 top-0 z-50 pt-4 sm:pt-6">
       <div className="container-page">
-        <div className="flex items-center justify-between gap-6">
+        <div className="flex items-center justify-between gap-3 sm:gap-6">
           <Link
             href="/"
             className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
@@ -54,7 +61,7 @@ export function SiteHeader() {
             <Logo />
           </Link>
 
-          <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
             {sections.map(({ key, href }) => (
               <Link
                 key={key}
@@ -88,7 +95,7 @@ export function SiteHeader() {
               aria-controls="mobile-nav"
               aria-label={open ? t('closeMenu') : t('openMenu')}
               onClick={() => setOpen((v) => !v)}
-              className="inline-flex size-9 items-center justify-center rounded-full border border-line bg-surface-hover text-muted md:hidden"
+              className="inline-flex size-11 items-center justify-center rounded-full border border-line bg-black/80 text-muted backdrop-blur lg:hidden"
             >
               <span aria-hidden className="text-base leading-none">
                 {open ? '\u2715' : '\u2261'}
@@ -102,7 +109,7 @@ export function SiteHeader() {
             ref={mobileNavRef}
             id="mobile-nav"
             aria-label="Mobile"
-            className="mt-4 flex flex-col gap-1 rounded-xl border border-line bg-black/95 p-4 backdrop-blur md:hidden"
+            className="mt-3 flex max-h-[calc(100dvh-5.5rem)] flex-col gap-1 overflow-y-auto rounded-xl border border-line bg-black/95 p-4 shadow-2xl backdrop-blur lg:hidden"
           >
             {sections.map(({ key, href }) => (
               <Link
