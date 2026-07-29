@@ -4,6 +4,7 @@ import { useId, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { UsageDayBucket } from '@/lib/api/types';
 import { count, creditAmount, dayLabel } from '@/lib/format';
+import { usageChartLayout } from '@/lib/usage-chart-layout';
 
 /**
  * Bieu do cot credit theo ngay.
@@ -33,6 +34,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
 
   const maxMicros = Math.max(...daily.map((d) => d.credits.micros), 1);
   const activeDay = active === null ? null : daily[active];
+  const layout = usageChartLayout(daily.length);
 
   return (
     <div className="px-5 py-5">
@@ -57,7 +59,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
       */}
       <div
         aria-hidden
-        className="flex h-40 items-end gap-[2px]"
+        className="flex h-40 items-end gap-2 border-b border-line bg-[linear-gradient(to_bottom,transparent_24%,rgba(255,255,255,0.04)_25%,transparent_26%,transparent_49%,rgba(255,255,255,0.04)_50%,transparent_51%,transparent_74%,rgba(255,255,255,0.04)_75%,transparent_76%)]"
         onMouseLeave={() => setActive(null)}
       >
         {daily.map((day, index) => {
@@ -69,13 +71,22 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
             <div
               key={day.day}
               onMouseEnter={() => setActive(index)}
-              className="flex h-full flex-1 cursor-default items-end"
+              style={layout.columnWidth ? { width: `${layout.columnWidth}px` } : undefined}
+              className={'relative flex h-full cursor-default items-end ' + (layout.sparse ? 'shrink-0' : 'min-w-1 flex-1')}
             >
+              {layout.sparse ? (
+                <span
+                  style={{ bottom: `calc(${heightPct}% + 0.4rem)` }}
+                  className="absolute inset-x-0 text-center font-mono text-micro tabular-nums text-muted"
+                >
+                  {creditAmount(day.credits, locale)}
+                </span>
+              ) : null}
               <div
                 style={{ height: `${heightPct}%` }}
                 className={
-                  'w-full rounded-t-sm transition-colors duration-150 ease-[var(--ease-smooth)] ' +
-                  (isActive ? 'bg-accent-light' : 'bg-accent/45')
+                  'w-full rounded-t transition-colors duration-150 ease-[var(--ease-smooth)] ' +
+                  (isActive ? 'bg-accent-light shadow-[0_0_18px_rgba(52,211,153,0.2)]' : 'bg-accent/55')
                 }
               />
             </div>
@@ -85,7 +96,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
 
       <div aria-hidden className="mt-2 flex justify-between font-mono text-label text-dim">
         <span>{dayLabel(daily[0]!.day, locale)}</span>
-        <span>{dayLabel(daily[daily.length - 1]!.day, locale)}</span>
+        {daily.length > 1 ? <span>{dayLabel(daily[daily.length - 1]!.day, locale)}</span> : null}
       </div>
 
       {/*
