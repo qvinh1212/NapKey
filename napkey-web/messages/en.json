@@ -246,8 +246,8 @@
     "popular": "Popular",
     "offer": {
       "eyebrow": "Launch offer",
-      "title": "100% first-top-up bonus, capped at 1,000 credits",
-      "body": "Receive a 100% first-top-up bonus, capped at 1,000 promotional credits valid for 30 days. Purchased credits never expire.",
+      "title": "Top up from 75,000 VND: get 100% extra, capped at 1,000 credits",
+      "body": "Your first eligible top-up of at least 75,000 VND receives a 100% bonus, capped at 1,000 promotional credits valid for 30 days. Smaller top-ups do not consume the offer. Purchased credits never expire.",
       "example": "75,000 VND → 2,000 credits"
     },
     "packages": {
@@ -265,12 +265,12 @@
     "title": "One API key. More AI tools. Pay in VND.",
     "body": "Connect Claude Code, Cursor, Cline, the Anthropic SDK, or the OpenAI SDK. No monthly fee — pay only for what you use.",
     "trial": "Get 50 credits after account verification",
-    "bonus": "100% first-top-up bonus, capped at 1,000 credits",
+    "bonus": "Top up from 75,000 VND and get 100% extra — capped at 1,000 credits",
     "example": "Top up 75,000 VND — receive 2,000 credits",
     "ctaAnonymous": "Create an API key",
     "ctaAuthenticated": "Claim the offer in wallet",
     "ctaLoading": "Checking your account...",
-    "terms": "Bonus capped at 1,000 credits and expires after 30 days. Purchased credits never expire.",
+    "terms": "Applies to the first eligible top-up of at least 75,000 VND. Smaller top-ups do not consume the offer. Bonus credits expire after 30 days; purchased credits never expire.",
     "close": "Close launch offer"
   },
   "billing": {
@@ -686,8 +686,8 @@
       "createFailed": "Could not create a top-up order.",
       "balance": "Wallet balance",
       "creditRate": "1,000 credits = 75,000 VND. Purchased credits do not expire.",
-      "promotional": "Trial credits",
-      "promotionalExpiry": "Expires on {date}. Trial credits are spent first.",
+      "promotional": "Promotional credits",
+      "promotionalExpiry": "Expires on {date}. Promotional credits are spent first.",
       "promotionalEmpty": "No active promotional credit.",
       "balanceHint": "Total credited balance before active holds.",
       "available": "Available",
@@ -695,7 +695,7 @@
       "held": "Reserved",
       "heldHint": "Temporarily held for in-flight requests.",
       "topupTitle": "Top up securely with PayOS",
-      "topupDescription": "Choose an amount, then open PayOS checkout to scan the QR code or transfer funds.",
+      "topupDescription": "Choose an amount, then open PayOS checkout. The first eligible top-up of at least 75,000 VND receives a 100% bonus capped at 1,000 credits; smaller top-ups do not consume the offer.",
       "customAmount": "Amount (VND)",
       "youReceive": "You receive {credits}",
       "nonRefundable": "Important: wallet credit can only be used for NapKey API calls and cannot be withdrawn or refunded to a bank account.",

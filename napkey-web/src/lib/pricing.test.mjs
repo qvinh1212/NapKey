@@ -5,6 +5,7 @@ import {
   creditsFromVnd,
   firstTopupBonusCredits,
   FIRST_TOPUP_BONUS_CAP_CREDITS,
+  FIRST_TOPUP_BONUS_MIN_VND,
   microcreditsFromVnd,
   MIN_TOPUP_VND,
   TOPUP_STEP_VND,
@@ -20,8 +21,11 @@ test('uses the public 75 VND per credit rate', () => {
 
 test('matches the first top-up and caps promotional credit at 1,000', () => {
   assert.equal(FIRST_TOPUP_BONUS_CAP_CREDITS, 1_000);
+  assert.equal(FIRST_TOPUP_BONUS_MIN_VND, 75_000);
   assert.equal(creditsFromVnd(75_000) + firstTopupBonusCredits(75_000), 2_000);
-  assert.equal(firstTopupBonusCredits(10_000), 10_000 / 75);
+  assert.equal(firstTopupBonusCredits(10_000), 0);
+  assert.equal(firstTopupBonusCredits(74_000), 0);
+  assert.equal(firstTopupBonusCredits(75_000), 1_000);
   assert.equal(firstTopupBonusCredits(375_000), 1_000);
 });
 

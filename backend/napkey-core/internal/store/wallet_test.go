@@ -11,13 +11,13 @@ import (
 )
 
 func TestFirstTopupBonusMicros(t *testing.T) {
-	for _, tc := range []struct{name string; purchased, want int64}{
-		{"invalid", -1, 0},
-		{"small topup matches purchase", 10_000 * pricing.MicrosPerVND, 10_000 * pricing.MicrosPerVND},
-		{"cap", FirstTopupBonusCapMicros, FirstTopupBonusCapMicros},
-		{"large topup remains capped", FirstTopupBonusCapMicros*5, FirstTopupBonusCapMicros},
+	for _, tc := range []struct{name string; paid, purchased, want int64}{
+		{"invalid", -1, 0, 0},
+		{"below minimum receives nothing", 74_000 * pricing.MicrosPerVND, 74_000 * pricing.MicrosPerVND, 0},
+		{"minimum matches purchase", 75_000 * pricing.MicrosPerVND, 75_000 * pricing.MicrosPerVND, FirstTopupBonusCapMicros},
+		{"large topup remains capped", 375_000 * pricing.MicrosPerVND, FirstTopupBonusCapMicros*5, FirstTopupBonusCapMicros},
 	} {
-		t.Run(tc.name, func(t *testing.T) { if got:=firstTopupBonusMicros(tc.purchased); got!=tc.want { t.Fatalf("got %d, want %d",got,tc.want) } })
+		t.Run(tc.name, func(t *testing.T) { if got:=firstTopupBonusMicros(tc.paid,tc.purchased); got!=tc.want { t.Fatalf("got %d, want %d",got,tc.want) } })
 	}
 }
 

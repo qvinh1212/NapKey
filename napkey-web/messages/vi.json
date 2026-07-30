@@ -246,8 +246,8 @@
     "popular": "Phổ biến",
     "offer": {
       "eyebrow": "Ưu đãi ra mắt",
-      "title": "Tặng 100% lần nạp đầu, tối đa 1.000 credit",
-      "body": "Tặng 100% credit cho lần nạp đầu, tối đa 1.000 credit thưởng trong 30 ngày. Credit bạn mua không hết hạn.",
+      "title": "Nạp từ 75.000 VNĐ: tặng 100%, tối đa 1.000 credit",
+      "body": "Đơn nạp đủ điều kiện đầu tiên từ 75.000 VNĐ được tặng 100%, tối đa 1.000 credit thưởng trong 30 ngày. Các đơn nhỏ hơn không làm mất ưu đãi. Credit bạn mua không hết hạn.",
       "example": "75.000 VNĐ → 2.000 credit"
     },
     "packages": {
@@ -265,12 +265,12 @@
     "title": "Một API key. Nhiều công cụ AI. Thanh toán bằng VNĐ.",
     "body": "Kết nối Claude Code, Cursor, Cline, Anthropic SDK hoặc OpenAI SDK. Không phí tháng — dùng bao nhiêu trả bấy nhiêu.",
     "trial": "Tặng 50 credit khi xác minh tài khoản",
-    "bonus": "Tặng 100% lần nạp đầu, tối đa 1.000 credit",
+    "bonus": "Nạp từ 75.000 VNĐ, tặng 100% — tối đa 1.000 credit",
     "example": "Nạp 75.000 VNĐ — nhận 2.000 credit",
     "ctaAnonymous": "Tạo API key",
     "ctaAuthenticated": "Nhận ưu đãi trong ví",
     "ctaLoading": "Đang kiểm tra tài khoản...",
-    "terms": "Khuyến mãi tối đa 1.000 credit. Credit thưởng hết hạn sau 30 ngày. Credit đã mua không hết hạn.",
+    "terms": "Áp dụng cho đơn đủ điều kiện đầu tiên từ 75.000 VNĐ. Các đơn nhỏ hơn không làm mất ưu đãi. Credit thưởng hết hạn sau 30 ngày; credit đã mua không hết hạn.",
     "close": "Đóng ưu đãi ra mắt"
   },
   "billing": {
@@ -686,8 +686,8 @@
       "createFailed": "Không tạo được lệnh nạp tiền.",
       "balance": "Số dư ví",
       "creditRate": "1.000 credit = 75.000 VNĐ. Credit đã mua không hết hạn.",
-      "promotional": "Credit dùng thử",
-      "promotionalExpiry": "Hết hạn vào {date}. Credit dùng thử được sử dụng trước.",
+      "promotional": "Credit khuyến mãi",
+      "promotionalExpiry": "Hết hạn vào {date}. Credit khuyến mãi được sử dụng trước.",
       "promotionalEmpty": "Không có credit khuyến mãi đang hoạt động.",
       "balanceHint": "Tổng tiền đã ghi có trước các khoản đang giữ.",
       "available": "Có thể sử dụng",
@@ -695,7 +695,7 @@
       "held": "Đang tạm giữ",
       "heldHint": "Dành cho các request đang xử lý.",
       "topupTitle": "Nạp tiền an toàn qua PayOS",
-      "topupDescription": "Chọn số tiền, sau đó mở trang thanh toán PayOS để quét QR hoặc chuyển khoản.",
+      "topupDescription": "Chọn số tiền, sau đó mở PayOS để thanh toán. Đơn đủ điều kiện đầu tiên từ 75.000 VNĐ được tặng 100%, tối đa 1.000 credit; các đơn nhỏ hơn không làm mất ưu đãi.",
       "customAmount": "Số tiền (VND)",
       "youReceive": "Bạn nhận được {credits}",
       "nonRefundable": "Quan trọng: số dư chỉ dùng cho API NapKey, không thể rút hoặc hoàn lại về tài khoản ngân hàng.",
