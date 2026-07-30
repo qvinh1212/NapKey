@@ -32,7 +32,7 @@
     "terminalSubtitle": "Giữ nguyên workflow, thay gateway",
     "terminalReady": "Sẵn sàng",
     "metrics": {
-      "topUp": { "value": "20K ₫", "label": "Nạp tối thiểu" },
+      "topUp": { "value": "10K ₫", "label": "Nạp tối thiểu" },
       "protocols": { "value": "2", "label": "Giao thức API" },
       "monthlyFee": { "value": "0 ₫", "label": "Phí duy trì" }
     },

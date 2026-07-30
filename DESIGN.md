@@ -201,7 +201,7 @@ Dùng **Webhook V2** (payload một giao dịch, chữ ký HMAC-SHA512), không 
 
 ### Luồng
 
-1. Khách chọn số tiền nạp ở `/console/billing`. Tối thiểu 20.000 VNĐ (dưới mức này phí xử lý và rủi ro đối soát không đáng).
+1. Khách chọn số tiền nạp ở `/console/billing`. Tối thiểu 10.000 VNĐ, tăng theo bước 1.000 VNĐ.
 2. `napkey-core` tạo `topup_orders`: sinh `memo_code`, `expected_amount_micros`, `expires_at = now() + 60 phút`.
 3. Giao diện hiện **mã VietQR** (nhúng sẵn số tiền và nội dung chuyển khoản) kèm số tài khoản, tên chủ tài khoản, số tiền, và `memo_code` — mỗi trường có nút copy riêng. QR quan trọng hơn phần chữ: khách quét thì nội dung chuyển khoản không thể sai, còn gõ tay thì sai thường xuyên.
 4. Khách chuyển khoản. Trang billing poll trạng thái đơn mỗi 3 giây (đơn giản hơn SSE, và cửa sổ chờ chỉ vài phút).

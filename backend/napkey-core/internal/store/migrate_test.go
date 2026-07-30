@@ -161,6 +161,22 @@ func TestFirstTopupBonusSchemaIsIdempotent(t *testing.T) {
 	}
 }
 
+func TestTopupMinimumSchemaMatchesApplicationMinimum(t *testing.T) {
+	migrations, err := loadMigrations()
+	if err != nil {
+		t.Fatalf("loadMigrations: %v", err)
+	}
+	combined := strings.ToLower(strings.Join(sqlOf(migrations), "\n"))
+	for _, required := range []string{
+		"drop constraint topup_expected_check",
+		"check (expected_amount_micros >= 10000000000)",
+	} {
+		if !strings.Contains(combined, required) {
+			t.Errorf("10,000 VND top-up migration is missing %q", required)
+		}
+	}
+}
+
 func TestRetailRepricePreservesExistingCreditQuantities(t *testing.T) {
 	migrations, err := loadMigrations()
 	if err != nil {

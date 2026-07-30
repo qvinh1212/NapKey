@@ -32,7 +32,7 @@
     "terminalSubtitle": "Keep the workflow, change the gateway",
     "terminalReady": "Ready",
     "metrics": {
-      "topUp": { "value": "20K d", "label": "Minimum top-up" },
+      "topUp": { "value": "10K d", "label": "Minimum top-up" },
       "protocols": { "value": "2", "label": "API protocols" },
       "monthlyFee": { "value": "0 d", "label": "Maintenance fee" }
     },
