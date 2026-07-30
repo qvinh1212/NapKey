@@ -244,6 +244,12 @@
     "title": "One credit rate across every model",
     "subtitle": "No manual input, output, or cache-token conversion. NapKey records upstream-reported credits and deducts the wallet at a fixed 75 VND per credit.",
     "popular": "Popular",
+    "offer": {
+      "eyebrow": "Launch offer",
+      "title": "100% first-top-up bonus, capped at 1,000 credits",
+      "body": "Receive a 100% first-top-up bonus, capped at 1,000 promotional credits valid for 30 days. Purchased credits never expire.",
+      "example": "75,000 VND → 2,000 credits"
+    },
     "packages": {
       "starter": "Start and experiment",
       "builder": "Regular building",
@@ -253,6 +259,19 @@
     "rateLabel": "Published rate",
     "measurement": "Credits come from actual usage reported by the upstream service. The dashboard records each request, model, reference token counts, credits, and settled VND for reconciliation.",
     "footnote": "NapKey wallet credits do not expire under the current policy. Settled usage always retains the rate effective when it was recorded."
+  },
+  "launchOffer": {
+    "eyebrow": "NAPKEY IS NOW LIVE",
+    "title": "One API key. More AI tools. Pay in VND.",
+    "body": "Connect Claude Code, Cursor, Cline, the Anthropic SDK, or the OpenAI SDK. No monthly fee — pay only for what you use.",
+    "trial": "Get 50 credits after account verification",
+    "bonus": "100% first-top-up bonus, capped at 1,000 credits",
+    "example": "Top up 75,000 VND — receive 2,000 credits",
+    "ctaAnonymous": "Create an API key",
+    "ctaAuthenticated": "Claim the offer in wallet",
+    "ctaLoading": "Checking your account...",
+    "terms": "Bonus capped at 1,000 credits and expires after 30 days. Purchased credits never expire.",
+    "close": "Close launch offer"
   },
   "billing": {
     "eyebrow": "Billing",

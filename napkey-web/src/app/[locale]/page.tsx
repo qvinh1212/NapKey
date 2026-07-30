@@ -9,6 +9,7 @@ import { Billing } from '@/components/sections/billing';
 import { DeveloperTrust } from '@/components/sections/developer-trust';
 import { Compatibility } from '@/components/sections/compatibility';
 import { FinalCta } from '@/components/sections/final-cta';
+import { LaunchOffer } from '@/components/napkey/launch-offer';
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -25,6 +26,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <DeveloperTrust />
       <Compatibility />
       <FinalCta />
+      <LaunchOffer />
     </>
   );
 }

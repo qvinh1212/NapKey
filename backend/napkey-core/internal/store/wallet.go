@@ -22,6 +22,52 @@ const (
 	TopupStepMicros int64 = TopupStepVND * pricing.MicrosPerVND
 )
 
+const FirstTopupBonusCapMicros int64 = 75_000 * pricing.MicrosPerVND
+
+func firstTopupBonusMicros(purchasedMicros int64) int64 {
+	if purchasedMicros <= 0 { return 0 }
+	if purchasedMicros > FirstTopupBonusCapMicros { return FirstTopupBonusCapMicros }
+	return purchasedMicros
+}
+
+type promotionalGrant struct { kind string; remaining int64; expiresAt time.Time }
+
+func consumePromotionalGrantsTx(ctx context.Context, tx *sql.Tx, userID string, amount int64, expiredOnly bool) error {
+	if amount <= 0 { return refreshPromotionalExpiryTx(ctx, tx, userID) }
+	rows, err := tx.QueryContext(ctx, `SELECT kind,remaining_micros,expires_at FROM (SELECT 'trial' kind,remaining_micros,expires_at FROM trial_grants WHERE user_id=$1 UNION ALL SELECT 'first_topup_bonus',remaining_micros,expires_at FROM first_topup_bonus_grants WHERE user_id=$1) grants WHERE remaining_micros>0 AND (NOT $2 OR expires_at<=now()) ORDER BY expires_at`, userID, expiredOnly)
+	if err != nil { return err }
+	var grants []promotionalGrant
+	for rows.Next() { var grant promotionalGrant; if err:=rows.Scan(&grant.kind,&grant.remaining,&grant.expiresAt);err!=nil{rows.Close();return err};grants=append(grants,grant) }
+	if err:=rows.Close();err!=nil{return err};if err:=rows.Err();err!=nil{return err}
+	left:=amount
+	for _,grant:=range grants { if left==0{break};used:=min(left,grant.remaining);if grant.kind=="trial"{_,err=tx.ExecContext(ctx,`UPDATE trial_grants SET remaining_micros=remaining_micros-$2 WHERE user_id=$1`,userID,used)}else{_,err=tx.ExecContext(ctx,`UPDATE first_topup_bonus_grants SET remaining_micros=remaining_micros-$2 WHERE user_id=$1`,userID,used)};if err!=nil{return err};left-=used }
+	if left!=0{return fmt.Errorf("store: promotional grant balance drifted by %d micros",left)}
+	return refreshPromotionalExpiryTx(ctx,tx,userID)
+}
+
+func refreshPromotionalExpiryTx(ctx context.Context, tx *sql.Tx, userID string) error {
+	_,err:=tx.ExecContext(ctx,`UPDATE wallets SET promotional_expires_at=(SELECT min(expires_at) FROM (SELECT expires_at FROM trial_grants WHERE user_id=$1 AND remaining_micros>0 UNION ALL SELECT expires_at FROM first_topup_bonus_grants WHERE user_id=$1 AND remaining_micros>0) active) WHERE user_id=$1`,userID)
+	return err
+}
+
+func grantFirstTopupBonusTx(ctx context.Context, tx *sql.Tx, userID, orderID string, purchasedMicros int64, paidAt time.Time) error {
+	bonus := firstTopupBonusMicros(purchasedMicros)
+	if bonus == 0 { return nil }
+	var already bool
+	if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM topup_orders WHERE user_id=$1 AND status='paid' AND id<>$2)`, userID, orderID).Scan(&already); err != nil { return err }
+	if already { return nil }
+	expires := paidAt.Add(30 * 24 * time.Hour)
+	var grantID string
+	err := tx.QueryRowContext(ctx, `INSERT INTO first_topup_bonus_grants(user_id,topup_order_id,amount_micros,remaining_micros,expires_at) VALUES($1,$2,$3,$3,$4) ON CONFLICT DO NOTHING RETURNING id`, userID, orderID, bonus, expires).Scan(&grantID)
+	if errors.Is(err, sql.ErrNoRows) { return nil }
+	if err != nil { return err }
+	var newBalance, newHeld int64
+	if err := tx.QueryRowContext(ctx, `UPDATE wallets SET balance_micros=balance_micros+$2,promotional_micros=promotional_micros+$2,updated_at=now() WHERE user_id=$1 RETURNING balance_micros,held_micros`, userID, bonus).Scan(&newBalance, &newHeld); err != nil { return err }
+	if err:=refreshPromotionalExpiryTx(ctx,tx,userID);err!=nil{return err}
+	_, err = tx.ExecContext(ctx, `INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key,metadata) VALUES($1,'promotion',$2,$3,$4,'first_topup_bonus',$5,'first-topup-bonus:'||$5,jsonb_build_object('expiresAt',$6))`, userID, bonus, newBalance, newHeld, grantID, expires)
+	return err
+}
+
 const (
 	TopupPending = "pending"
 	TopupPaid = "paid"
@@ -94,7 +140,13 @@ func expirePromotionalWalletTx(ctx context.Context, tx *sql.Tx, userID string) e
 	err := tx.QueryRowContext(ctx, `
 		WITH current AS (
 			SELECT user_id, promotional_micros,
-			       least(promotional_micros, greatest(balance_micros-held_micros, 0)) AS removable
+			       least(promotional_micros, greatest(balance_micros-held_micros, 0), coalesce((
+			           SELECT sum(remaining_micros) FROM (
+			               SELECT remaining_micros FROM trial_grants WHERE user_id=$1 AND remaining_micros>0 AND expires_at<=now()
+			               UNION ALL
+			               SELECT remaining_micros FROM first_topup_bonus_grants WHERE user_id=$1 AND remaining_micros>0 AND expires_at<=now()
+			           ) expired_grants
+			       ),0)) AS removable
 			FROM wallets
 			WHERE user_id=$1 AND promotional_micros>0 AND promotional_expires_at<=now()
 			FOR UPDATE
@@ -111,10 +163,10 @@ func expirePromotionalWalletTx(ctx context.Context, tx *sql.Tx, userID string) e
 	if errors.Is(err, sql.ErrNoRows) { return nil }
 	if err != nil { return err }
 	if expired == 0 { return nil }
-	if _, err = tx.ExecContext(ctx, `UPDATE trial_grants SET remaining_micros=greatest(0,remaining_micros-$2) WHERE user_id=$1`, userID, expired); err != nil { return err }
+	if err=consumePromotionalGrantsTx(ctx,tx,userID,expired,true);err!=nil{return err}
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key,metadata)
-		VALUES($1,'adjustment',$2,$3,$4,'trial_expiry',$1,'trial-expiry:'||gen_random_uuid()::text,jsonb_build_object('reason','promotional_credit_expired'))`,
+		VALUES($1,'adjustment',$2,$3,$4,'promotional_expiry',$1,'promotional-expiry:'||gen_random_uuid()::text,jsonb_build_object('reason','promotional_credit_expired'))`,
 		userID, -expired, balance, held)
 	return err
 }
@@ -199,9 +251,10 @@ func settleWalletTx(ctx context.Context,tx *sql.Tx,requestID string,actualMicros
 	var holdID,userID string;var reserved int64
 	err:=tx.QueryRowContext(ctx,`SELECT id,user_id,amount_micros FROM wallet_holds WHERE request_id=$1 AND status='open' FOR UPDATE`,requestID).Scan(&holdID,&userID,&reserved)
 	if errors.Is(err,sql.ErrNoRows){if allowMissing{return nil};return ErrNotFound};if err!=nil{return err}
-	var balance,held int64
+	var balance,held,promotionalBefore int64
+	if err=tx.QueryRowContext(ctx,`SELECT promotional_micros FROM wallets WHERE user_id=$1 FOR UPDATE`,userID).Scan(&promotionalBefore);err!=nil{return err}
 	err=tx.QueryRowContext(ctx,`UPDATE wallets SET balance_micros=balance_micros-$2,held_micros=held_micros-$3,promotional_micros=promotional_micros-least(promotional_micros,$2),promotional_expires_at=CASE WHEN promotional_micros-least(promotional_micros,$2)=0 THEN NULL ELSE promotional_expires_at END,updated_at=now() WHERE user_id=$1 AND balance_micros >= $2 AND held_micros >= $3 RETURNING balance_micros,held_micros`,userID,actualMicros,reserved).Scan(&balance,&held);if err!=nil{return err}
-	if _,err=tx.ExecContext(ctx,`UPDATE trial_grants SET remaining_micros=greatest(0,remaining_micros-$2) WHERE user_id=$1`,userID,actualMicros);err!=nil{return err}
+	if err=consumePromotionalGrantsTx(ctx,tx,userID,min(promotionalBefore,actualMicros),false);err!=nil{return err}
 	if _,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'usage',$2,$3,$4,'request',$5,$6)`,userID,-actualMicros,balance,held,requestID,"settle:"+requestID);err!=nil{return err}
 	_,err=tx.ExecContext(ctx,`UPDATE wallet_holds SET status='settled',settled_at=now() WHERE id=$1`,holdID);return err
 }
@@ -299,7 +352,9 @@ func(s *Store)CreditPayOSPayment(ctx context.Context,in PayOSPaymentInput)(bool,
 		var balance,held int64
 		err=tx.QueryRowContext(ctx,`UPDATE wallets SET balance_micros=balance_micros+$2,updated_at=now() WHERE user_id=$1 RETURNING balance_micros,held_micros`,order.UserID,creditedMicros).Scan(&balance,&held);if err!=nil{return err}
 		_,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'topup',$2,$3,$4,'payment_event',$5,$6)`,order.UserID,creditedMicros,balance,held,in.ProviderTxID,"payos:"+in.ProviderTxID);if err!=nil{return err}
-		_,err=tx.ExecContext(ctx,`UPDATE topup_orders SET received_amount_micros=$2,status='paid',paid_at=now() WHERE id=$1`,order.ID,in.AmountMicros);if err!=nil{return err}
+		paidAt:=time.Now().UTC()
+		if err=grantFirstTopupBonusTx(ctx,tx,order.UserID,order.ID,creditedMicros,paidAt);err!=nil{return err}
+		_,err=tx.ExecContext(ctx,`UPDATE topup_orders SET received_amount_micros=$2,status='paid',paid_at=$3 WHERE id=$1`,order.ID,in.AmountMicros,paidAt);if err!=nil{return err}
 		_,err=tx.ExecContext(ctx,`UPDATE payment_events SET status='credited',matched_order_id=$2,processed_at=now() WHERE id=$1`,eventID,order.ID);return err
 	});if err!=nil{return false,fmt.Errorf("store: crediting PayOS payment: %w",err)};return duplicate,nil
 }
@@ -362,7 +417,12 @@ func (s *Store) CreditPaymentEvent(ctx context.Context,eventID int64,providerTxI
 		_,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'topup',$2,$3,$4,'payment_event',$5,$6)`,order.UserID,creditedMicros,balance,held,providerTxID,"casso:"+providerTxID)
 		if err!=nil{return err}
 		received:=order.ReceivedAmountMicros+amountMicros; status:=topupStatus(order.ExpectedAmountMicros,received)
-		_,err=tx.ExecContext(ctx,`UPDATE topup_orders SET received_amount_micros=$2,status=$3,paid_at=now() WHERE id=$1`,order.ID,received,status);if err!=nil{return err}
+		paidAt:=time.Now().UTC()
+		if status==TopupPaid {
+			totalPurchased,convertErr:=walletCreditMicros(received,order.RetailVNDPerCredit);if convertErr!=nil{return convertErr}
+			if err=grantFirstTopupBonusTx(ctx,tx,order.UserID,order.ID,totalPurchased,paidAt);err!=nil{return err}
+		}
+		_,err=tx.ExecContext(ctx,`UPDATE topup_orders SET received_amount_micros=$2,status=$3,paid_at=CASE WHEN $3='paid' THEN $4 ELSE paid_at END WHERE id=$1`,order.ID,received,status,paidAt);if err!=nil{return err}
 		_,err=tx.ExecContext(ctx,`UPDATE payment_events SET status='credited',matched_order_id=$2,processed_at=now() WHERE id=$1 AND status='processing'`,eventID,order.ID);return err
 	})
 }

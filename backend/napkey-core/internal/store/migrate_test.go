@@ -147,8 +147,17 @@ func TestWalletReconciliationIncludesTrialCredits(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read operations.go: %v", err)
 	}
-	if got := strings.Count(string(source), "'topup','trial','usage','refund','adjustment'"); got != 2 {
-		t.Fatalf("wallet reconciliation includes trial credits %d times, want 2", got)
+	if got := strings.Count(string(source), "'topup','trial','promotion','usage','refund','adjustment'"); got != 2 {
+		t.Fatalf("wallet reconciliation includes promotional credits %d times, want 2", got)
+	}
+}
+
+func TestFirstTopupBonusSchemaIsIdempotent(t *testing.T) {
+	migrations, err := loadMigrations()
+	if err != nil { t.Fatalf("loadMigrations: %v", err) }
+	combined := strings.ToLower(strings.Join(sqlOf(migrations), "\n"))
+	for _, required := range []string{"create table first_topup_bonus_grants", "user_id uuid not null", "topup_order_id uuid not null", "remaining_micros bigint not null", "first_topup_bonus_grants_expiry_idx", "unique", "'promotion'"} {
+		if !strings.Contains(combined, required) { t.Errorf("first top-up promotion migration is missing %q", required) }
 	}
 }
 

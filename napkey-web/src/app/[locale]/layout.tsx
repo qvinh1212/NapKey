@@ -98,9 +98,9 @@ export default async function LocaleLayout({
           </a>
           <SessionProvider>
             <SiteHeader />
+            <main id="main">{children}</main>
+            <SiteFooter />
           </SessionProvider>
-          <main id="main">{children}</main>
-          <SiteFooter />
         </NextIntlClientProvider>
       </body>
     </html>

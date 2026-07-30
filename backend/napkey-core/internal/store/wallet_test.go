@@ -7,7 +7,19 @@ import (
 	"testing"
 
 	"napkey-core/internal/pgtest"
+	"napkey-core/internal/pricing"
 )
+
+func TestFirstTopupBonusMicros(t *testing.T) {
+	for _, tc := range []struct{name string; purchased, want int64}{
+		{"invalid", -1, 0},
+		{"small topup matches purchase", 10_000 * pricing.MicrosPerVND, 10_000 * pricing.MicrosPerVND},
+		{"cap", FirstTopupBonusCapMicros, FirstTopupBonusCapMicros},
+		{"large topup remains capped", FirstTopupBonusCapMicros*5, FirstTopupBonusCapMicros},
+	} {
+		t.Run(tc.name, func(t *testing.T) { if got:=firstTopupBonusMicros(tc.purchased); got!=tc.want { t.Fatalf("got %d, want %d",got,tc.want) } })
+	}
+}
 
 func TestValidateTopupAmount(t *testing.T) {
 	if err := ValidateTopupAmount(9_999_000_000); err == nil {

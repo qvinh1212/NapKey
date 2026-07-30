@@ -90,7 +90,7 @@ func (s *Store) GrantTrialForUser(ctx context.Context, userID string, ipHash []b
 		var balance, held int64
 		err = tx.QueryRowContext(ctx, `
 			UPDATE wallets SET balance_micros=balance_micros+$2,
-			promotional_micros=promotional_micros+$2,promotional_expires_at=$3,updated_at=now()
+			promotional_micros=promotional_micros+$2,promotional_expires_at=least(coalesce(promotional_expires_at,$3),$3),updated_at=now()
 			WHERE user_id=$1 RETURNING balance_micros,held_micros`, userID, amountMicros, expiresAt).Scan(&balance, &held)
 		if err != nil {
 			return err

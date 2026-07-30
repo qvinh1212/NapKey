@@ -244,6 +244,12 @@
     "title": "Một mức giá credit, dùng cho mọi model",
     "subtitle": "Không cần tự quy đổi input, output hay cache token. NapKey ghi nhận credit do upstream báo về và trừ ví theo mức cố định 75 VNĐ mỗi credit.",
     "popular": "Phổ biến",
+    "offer": {
+      "eyebrow": "Ưu đãi ra mắt",
+      "title": "Tặng 100% lần nạp đầu, tối đa 1.000 credit",
+      "body": "Tặng 100% credit cho lần nạp đầu, tối đa 1.000 credit thưởng trong 30 ngày. Credit bạn mua không hết hạn.",
+      "example": "75.000 VNĐ → 2.000 credit"
+    },
     "packages": {
       "starter": "Bắt đầu và thử nghiệm",
       "builder": "Dùng thường xuyên",
@@ -253,6 +259,19 @@
     "rateLabel": "Đơn giá công khai",
     "measurement": "Credit được đo từ usage thực tế do upstream trả về. Dashboard lưu từng request, model, token tham chiếu, credit và số tiền đã trừ để bạn đối soát.",
     "footnote": "Credit trong ví NapKey không hết hạn theo chính sách hiện tại. Usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
+  },
+  "launchOffer": {
+    "eyebrow": "NAPKEY CHÍNH THỨC RA MẮT",
+    "title": "Một API key. Nhiều công cụ AI. Thanh toán bằng VNĐ.",
+    "body": "Kết nối Claude Code, Cursor, Cline, Anthropic SDK hoặc OpenAI SDK. Không phí tháng — dùng bao nhiêu trả bấy nhiêu.",
+    "trial": "Tặng 50 credit khi xác minh tài khoản",
+    "bonus": "Tặng 100% lần nạp đầu, tối đa 1.000 credit",
+    "example": "Nạp 75.000 VNĐ — nhận 2.000 credit",
+    "ctaAnonymous": "Tạo API key",
+    "ctaAuthenticated": "Nhận ưu đãi trong ví",
+    "ctaLoading": "Đang kiểm tra tài khoản...",
+    "terms": "Khuyến mãi tối đa 1.000 credit. Credit thưởng hết hạn sau 30 ngày. Credit đã mua không hết hạn.",
+    "close": "Đóng ưu đãi ra mắt"
   },
   "billing": {
     "eyebrow": "Cách tính tiền",

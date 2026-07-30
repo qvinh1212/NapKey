@@ -39,6 +39,20 @@ export function PricingTable() {
         ))}
       </div>
 
+      <div className="relative mt-6 overflow-hidden rounded-xl border border-accent/40 bg-accent-soft p-5 sm:p-7">
+        <div aria-hidden="true" className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-accent/15 blur-3xl" />
+        <div className="relative grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p className="font-mono text-micro uppercase tracking-[0.14em] text-accent-light">{t('offer.eyebrow')}</p>
+            <h3 className="mt-2 font-display text-2xl font-bold text-fg sm:text-3xl">{t('offer.title')}</h3>
+            <p className="mt-2 text-ui leading-relaxed text-muted">{t('offer.body')}</p>
+          </div>
+          <div className="rounded-xl border border-accent/30 bg-bg/60 px-5 py-4 font-mono text-lg text-fg md:text-right">
+            {t('offer.example')}
+          </div>
+        </div>
+      </div>
+
       <div className="mt-6 grid gap-4 rounded-xl border border-line bg-surface p-5 md:grid-cols-[0.7fr_1.3fr] md:items-center">
         <div>
           <p className="font-mono text-micro uppercase tracking-[0.14em] text-dim">{t('rateLabel')}</p>
