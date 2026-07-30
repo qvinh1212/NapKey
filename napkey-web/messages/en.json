@@ -404,6 +404,26 @@
       "loading": "Loading usage...",
       "loadFailed": "Could not load usage data.",
       "retry": "Try again",
+      "activation": {
+        "badge": "Start here",
+        "balance": "You have {credits} credits",
+        "progressLabel": "Account activation progress",
+        "steps": {
+          "account": "Account ready",
+          "key": "Create API key",
+          "request": "Send first request"
+        },
+        "create_key": {
+          "title": "Your trial credits are ready for the first request",
+          "description": "Create an API key in seconds. NapKey then provides a ready-to-copy setup for your tool and lets you run a live test on the same screen.",
+          "cta": "Create API key"
+        },
+        "send_request": {
+          "title": "Your API key is ready — connect a tool",
+          "description": "Choose Claude Code, Cursor, Cline, or an SDK, copy the setup, and send your first request to verify the connection.",
+          "cta": "Open setup guide"
+        }
+      },
       "creditMeter": {
         "title": "Credits used, all time",
         "unit": "{count, plural, one {credit} other {credits}}",

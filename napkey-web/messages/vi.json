@@ -404,6 +404,26 @@
       "loading": "Đang tải số liệu...",
       "loadFailed": "Không tải được số liệu dùng.",
       "retry": "Thử lại",
+      "activation": {
+        "badge": "Bắt đầu tại đây",
+        "balance": "Bạn có {credits} credit",
+        "progressLabel": "Tiến trình kích hoạt tài khoản",
+        "steps": {
+          "account": "Tài khoản sẵn sàng",
+          "key": "Tạo API key",
+          "request": "Gửi request đầu tiên"
+        },
+        "create_key": {
+          "title": "Credit trải nghiệm đang chờ request đầu tiên của bạn",
+          "description": "Tạo API key trong vài giây. Sau đó NapKey sẽ đưa sẵn cấu hình cho công cụ bạn đang dùng và cho phép chạy thử ngay trên màn hình.",
+          "cta": "Tạo API key"
+        },
+        "send_request": {
+          "title": "API key đã sẵn sàng — hãy kết nối công cụ",
+          "description": "Chọn Claude Code, Cursor, Cline hoặc SDK, sao chép cấu hình và gửi request đầu tiên để kiểm tra kết nối.",
+          "cta": "Mở hướng dẫn kết nối"
+        }
+      },
       "creditMeter": {
         "title": "Credit đã dùng từ trước đến nay",
         "unit": "credit",

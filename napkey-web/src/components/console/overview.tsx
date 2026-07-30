@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ButtonLink } from '@/components/ui/button';
 import { api, ApiError, rangeQuery } from '@/lib/api/client';
 import type { UsageDetailResponse, UsageSummaryResponse, WalletResponse } from '@/lib/api/types';
+import { activationState } from '@/lib/activation';
 import { billingRange, compact, count, creditAmount, money } from '@/lib/format';
 import { UsageChart } from './usage-chart';
 import { CreditUsageMeter } from './credit-usage-meter';
@@ -81,9 +82,55 @@ export function Overview() {
 
   const { summary, detail, wallet } = state;
   const { last30Days } = summary;
+  const activation = activationState({
+    activeKeys: summary.usage.activeKeys,
+    totalRequests: summary.usage.totalRequests,
+  });
+  const activationTarget = activation.stage === 'create_key' ? '/console/keys' : '/console/developer';
 
   return (
     <div className="flex flex-col gap-6">
+      {activation.stage !== 'activated' ? (
+        <section className="relative overflow-hidden rounded-xl border border-accent/40 bg-[radial-gradient(circle_at_top_right,var(--color-accent-soft),transparent_55%),var(--color-surface)] px-5 py-6 sm:px-7 sm:py-7">
+          <div className="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge tone="accent">{t('activation.badge')}</Badge>
+                {wallet ? (
+                  <span className="font-mono text-label tracking-[0.08em] text-accent-light uppercase">
+                    {t('activation.balance', { credits: creditAmount(wallet.credits.available, locale) })}
+                  </span>
+                ) : null}
+              </div>
+              <h2 className="mt-4 max-w-2xl text-2xl tracking-[-0.03em] text-fg sm:text-3xl">
+                {t(`activation.${activation.stage}.title`)}
+              </h2>
+              <p className="mt-2 max-w-2xl text-ui leading-relaxed text-muted">
+                {t(`activation.${activation.stage}.description`)}
+              </p>
+              <ol className="mt-5 flex flex-wrap gap-x-5 gap-y-3" aria-label={t('activation.progressLabel')}>
+                {(['account', 'key', 'request'] as const).map((step, index) => {
+                  const complete = index < activation.completedSteps;
+                  const current = index === activation.completedSteps;
+                  return (
+                    <li key={step} className="flex items-center gap-2 text-ui">
+                      <span className={`flex size-6 items-center justify-center rounded-full border font-mono text-[11px] ${complete ? 'border-accent bg-accent text-bg' : current ? 'border-accent text-accent-light' : 'border-line text-dim'}`}>
+                        {complete ? '✓' : index + 1}
+                      </span>
+                      <span className={complete || current ? 'text-fg' : 'text-dim'}>{t(`activation.steps.${step}`)}</span>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+            <ButtonLink href={activationTarget} className="w-full lg:w-auto">
+              {t(`activation.${activation.stage}.cta`)}
+              <span aria-hidden="true">→</span>
+            </ButtonLink>
+          </div>
+        </section>
+      ) : null}
+
       {wallet ? (
         <CreditUsageMeter
           usedCredits={summary.usage.credits.credits}
