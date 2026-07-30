@@ -8,6 +8,7 @@
     "pricing": "Bảng giá",
     "integrate": "Tích hợp",
     "billing": "Cách tính tiền",
+    "docs": "Tài liệu",
     "trust": "Độ tin cậy",
     "compatibility": "Tương thích",
     "signIn": "Đăng nhập",
@@ -328,6 +329,7 @@
       "billing": "Cách tính tiền",
       "status": "Trạng thái hệ thống",
       "trust": "Trung tâm tin cậy",
+      "docs": "Tài liệu",
       "compatibility": "Trung tâm tương thích",
       "terms": "Điều khoản sử dụng",
       "privacy": "Chính sách dữ liệu",
@@ -335,6 +337,82 @@
     },
     "rights": "Mọi quyền được bảo lưu.",
     "disclaimer": "NapKey là dịch vụ độc lập, không phải sản phẩm của Anthropic. Claude là thương hiệu của Anthropic PBC."
+  },
+  "docsPage": {
+    "metaTitle": "Tài liệu tích hợp NapKey",
+    "eyebrow": "NapKey Docs",
+    "title": "Từ API key đến request đầu tiên.",
+    "intro": "Hướng dẫn tích hợp NapKey với Claude Code, Anthropic SDK, OpenAI SDK và các client tương thích. Chọn model, sao chép cấu hình và kiểm tra usage trong một luồng ngắn.",
+    "endpointLabel": "Base URL",
+    "endpointHint": "Giữ nguyên SDK hoặc công cụ hiện tại, thay endpoint và dùng API key do NapKey cấp.",
+    "contents": "Mục lục",
+    "createKey": "Tạo API key",
+    "nav": {
+      "quickstart": "Bắt đầu nhanh",
+      "api": "API reference",
+      "models": "Model",
+      "billing": "Credit & tính phí",
+      "errors": "Xử lý lỗi"
+    },
+    "quickstart": {
+      "title": "Gửi request trong vài phút",
+      "description": "Tài khoản đã xác minh được nhận credit trải nghiệm. Tạo key, giữ key trong biến môi trường rồi chọn cấu hình phù hợp với client của bạn.",
+      "steps": {
+        "account": { "title": "Đăng nhập", "body": "Đăng nhập bằng Google hoặc xác minh email để kích hoạt tài khoản." },
+        "key": { "title": "Tạo API key", "body": "Key đầy đủ chỉ hiện một lần. Lưu vào secret manager hoặc biến môi trường." },
+        "request": { "title": "Gửi request", "body": "Chạy đoạn mã mẫu và mở Usage để kiểm tra model, token và credit." }
+      },
+      "modelLabel": "Model",
+      "toolLabel": "Client",
+      "tools": { "claudeCode": "Claude Code", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL", "powershell": "PowerShell" },
+      "secretTitle": "Không nhúng key vào mã nguồn",
+      "secretBody": "Các ví dụ dùng biến NAPKEY_API_KEY. Không commit key vào Git, log hoặc ảnh chụp màn hình.",
+      "codeLabel": "Cấu hình sẵn để chạy",
+      "codeHint": "Đổi client hoặc model để tạo lại đoạn mã.",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép"
+    },
+    "api": {
+      "title": "API reference",
+      "description": "NapKey hỗ trợ request dạng Anthropic và OpenAI trên cùng gateway. Response giữ cấu trúc tương thích với client đã chọn.",
+      "authTitle": "Xác thực:",
+      "authBody": "Anthropic dùng x-api-key; OpenAI dùng Authorization: Bearer. API key bị thu hồi hoặc chưa đồng bộ sẽ không gọi được.",
+      "endpoints": {
+        "messages": { "path": "POST /v1/messages", "title": "Anthropic Messages", "body": "Gửi message thường hoặc streaming, hỗ trợ system prompt, tools và các trường Anthropic đã công bố." },
+        "chat": { "path": "POST /v1/chat/completions", "title": "OpenAI Chat Completions", "body": "Dùng OpenAI SDK với baseURL của NapKey và model có trong catalog." },
+        "countTokens": { "path": "POST /v1/messages/count_tokens", "title": "Đếm token", "body": "Ước lượng token cho payload Anthropic trước khi gửi request chính." },
+        "models": { "path": "GET /v1/models", "title": "Danh sách model", "body": "Nguồn model công khai hiện đang được gateway công bố. Nên đọc endpoint này thay vì hardcode lâu dài." }
+      }
+    },
+    "models": {
+      "title": "Model đang công bố",
+      "description": "Dùng model id đúng như danh sách bên dưới. Alias auto cho phép gateway chọn model phù hợp khi được hỗ trợ.",
+      "live": "Catalog trực tiếp từ gateway",
+      "fallback": "Đang hiển thị catalog dự phòng"
+    },
+    "billing": {
+      "title": "Credit và tính phí",
+      "description": "NapKey là ví trả trước. Mỗi request thành công được ghi vào Usage cùng model, token tham chiếu và số credit đã quyết toán.",
+      "cards": {
+        "price": { "value": "75 ₫ / credit", "title": "Giá bán lẻ", "body": "Credit được trừ theo usage thực tế gateway ghi nhận." },
+        "minimum": { "value": "10.000 ₫", "title": "Nạp tối thiểu", "body": "Có thể tăng số tiền theo bước 1.000 VNĐ. Credit mua không hết hạn." },
+        "trial": { "value": "50 credit", "title": "Trải nghiệm", "body": "Tặng một lần cho tài khoản đủ điều kiện và có hạn sử dụng 7 ngày." },
+        "bonus": { "value": "+100%", "title": "Lần nạp đầu", "body": "Nạp từ 75.000 VNĐ, tặng tối đa 1.000 credit khuyến mãi trong 30 ngày." }
+      }
+    },
+    "errors": {
+      "title": "Xử lý lỗi",
+      "description": "Bắt đầu từ HTTP status, sau đó kiểm tra API key, số dư, model và trạng thái hệ thống.",
+      "status": "Xem trạng thái hệ thống",
+      "usage": "Kiểm tra Usage",
+      "items": {
+        "request": { "title": "Request không hợp lệ", "body": "Kiểm tra JSON, model, max_tokens và các trường bắt buộc của protocol đang dùng." },
+        "authentication": { "title": "API key không hợp lệ", "body": "Kiểm tra header, biến môi trường, trạng thái đồng bộ và xem key có bị tắt hoặc thu hồi không." },
+        "balance": { "title": "Không đủ credit", "body": "Nạp thêm credit hoặc giảm phạm vi request rồi thử lại." },
+        "rateLimit": { "title": "Vượt giới hạn", "body": "Giảm tốc độ request và retry có backoff. Không retry đồng loạt ngay lập tức." },
+        "upstream": { "title": "Gateway hoặc upstream tạm lỗi", "body": "Kiểm tra trang trạng thái và retry sau một khoảng ngắn với cùng request id khi phù hợp." }
+      }
+    }
   },
   "console": {
     "shell": {

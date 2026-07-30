@@ -13,6 +13,7 @@ const sections = [
   { key: 'pricing', href: '/#pricing' },
   { key: 'integrate', href: '/#integrate' },
   { key: 'billing', href: '/#billing' },
+  { key: 'docs', href: '/docs' },
   { key: 'trust', href: '/#trust' },
   { key: 'compatibility', href: '/compatibility' },
 ] as const;

@@ -4,7 +4,7 @@ import { Logo } from './logo';
 
 const groups = [
   { title: 'product', links: ['pricing', 'integrate', 'billing'] },
-  { title: 'resources', links: ['compatibility', 'trust', 'status', 'contact'] },
+  { title: 'resources', links: ['docs', 'compatibility', 'trust', 'status', 'contact'] },
   { title: 'legal', links: ['terms', 'privacy'] },
 ] as const;
 
@@ -12,6 +12,7 @@ const hrefs: Record<string, string> = {
   pricing: '/#pricing',
   integrate: '/#integrate',
   billing: '/#billing',
+  docs: '/docs',
   trust: '/trust',
   compatibility: '/compatibility',
   status: '/status',

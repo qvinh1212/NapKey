@@ -8,6 +8,7 @@
     "pricing": "Pricing",
     "integrate": "Integrate",
     "billing": "Billing",
+    "docs": "Docs",
     "trust": "Trust",
     "compatibility": "Compatibility",
     "signIn": "Sign in",
@@ -328,6 +329,7 @@
       "billing": "Billing",
       "status": "System status",
       "trust": "Trust center",
+      "docs": "Documentation",
       "compatibility": "Compatibility center",
       "terms": "Terms of service",
       "privacy": "Data policy",
@@ -335,6 +337,71 @@
     },
     "rights": "All rights reserved.",
     "disclaimer": "NapKey is an independent service and is not an Anthropic product. Claude is a trademark of Anthropic PBC."
+  },
+  "docsPage": {
+    "metaTitle": "NapKey integration documentation",
+    "eyebrow": "NapKey Docs",
+    "title": "From API key to first request.",
+    "intro": "Integrate NapKey with Claude Code, the Anthropic SDK, the OpenAI SDK, and compatible clients. Choose a model, copy the setup, and verify usage in one short flow.",
+    "endpointLabel": "Base URL",
+    "endpointHint": "Keep your current SDK or tool, replace its endpoint, and authenticate with an API key issued by NapKey.",
+    "contents": "Contents",
+    "createKey": "Create API key",
+    "nav": { "quickstart": "Quickstart", "api": "API reference", "models": "Models", "billing": "Credits & billing", "errors": "Troubleshooting" },
+    "quickstart": {
+      "title": "Send a request in minutes",
+      "description": "Verified accounts receive trial credits. Create a key, keep it in an environment variable, then choose the setup for your client.",
+      "steps": {
+        "account": { "title": "Sign in", "body": "Continue with Google or verify your email to activate the account." },
+        "key": { "title": "Create an API key", "body": "The full key is shown once. Store it in a secret manager or environment variable." },
+        "request": { "title": "Send a request", "body": "Run the sample and open Usage to verify the model, tokens, and credits." }
+      },
+      "modelLabel": "Model",
+      "toolLabel": "Client",
+      "tools": { "claudeCode": "Claude Code", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL", "powershell": "PowerShell" },
+      "secretTitle": "Do not embed keys in source code",
+      "secretBody": "The samples use NAPKEY_API_KEY. Never commit a key to Git, logs, or screenshots.",
+      "codeLabel": "Ready-to-run setup",
+      "codeHint": "Change the client or model to regenerate the sample.",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
+    "api": {
+      "title": "API reference",
+      "description": "NapKey accepts Anthropic-shaped and OpenAI-shaped requests on the same gateway. Responses retain the structure expected by the selected client.",
+      "authTitle": "Authentication:",
+      "authBody": "Anthropic uses x-api-key; OpenAI uses Authorization: Bearer. Revoked or unsynchronized keys cannot call the API.",
+      "endpoints": {
+        "messages": { "path": "POST /v1/messages", "title": "Anthropic Messages", "body": "Send regular or streaming messages with system prompts, tools, and supported Anthropic fields." },
+        "chat": { "path": "POST /v1/chat/completions", "title": "OpenAI Chat Completions", "body": "Use the OpenAI SDK with the NapKey baseURL and a model from the catalog." },
+        "countTokens": { "path": "POST /v1/messages/count_tokens", "title": "Count tokens", "body": "Estimate tokens for an Anthropic-shaped payload before sending the main request." },
+        "models": { "path": "GET /v1/models", "title": "List models", "body": "The public source of models currently advertised by the gateway. Prefer this endpoint over long-lived hardcoding." }
+      }
+    },
+    "models": { "title": "Advertised models", "description": "Use model IDs exactly as shown. The auto alias lets the gateway select a suitable model when supported.", "live": "Live gateway catalog", "fallback": "Showing fallback catalog" },
+    "billing": {
+      "title": "Credits and billing",
+      "description": "NapKey uses a prepaid wallet. Every successful request appears in Usage with its model, reference token counts, and settled credits.",
+      "cards": {
+        "price": { "value": "75 VND / credit", "title": "Retail price", "body": "Credits are deducted from the usage recorded by the gateway." },
+        "minimum": { "value": "10,000 VND", "title": "Minimum top-up", "body": "Increase the amount in 1,000 VND steps. Purchased credits do not expire." },
+        "trial": { "value": "50 credits", "title": "Trial", "body": "Granted once to eligible accounts and expires after 7 days." },
+        "bonus": { "value": "+100%", "title": "First top-up", "body": "Top up at least 75,000 VND for up to 1,000 promotional credits valid for 30 days." }
+      }
+    },
+    "errors": {
+      "title": "Troubleshooting",
+      "description": "Start with the HTTP status, then inspect the API key, balance, model, and system status.",
+      "status": "View system status",
+      "usage": "Inspect Usage",
+      "items": {
+        "request": { "title": "Invalid request", "body": "Check the JSON, model, max_tokens, and required fields for the protocol in use." },
+        "authentication": { "title": "Invalid API key", "body": "Check the header, environment variable, sync status, and whether the key is disabled or revoked." },
+        "balance": { "title": "Insufficient credits", "body": "Top up the wallet or reduce the request scope before trying again." },
+        "rateLimit": { "title": "Rate limit exceeded", "body": "Reduce request frequency and retry with backoff instead of retrying everything immediately." },
+        "upstream": { "title": "Temporary gateway or upstream failure", "body": "Check the status page and retry after a short delay, preserving the request id when appropriate." }
+      }
+    }
   },
   "console": {
     "shell": {

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { Section } from '@/components/ui/section';
 import { snippets, type Snippet } from '@/lib/snippets';
 
@@ -97,7 +98,9 @@ export function Integration() {
         {copied ? t('copied') : ''}
       </p>
 
-      <p className="mt-6 text-ui text-dim">{t('docsLink')}</p>
+      <Link href="/docs" className="mt-6 inline-flex text-ui text-accent-light hover:underline">
+        {t('docsLink')} <span aria-hidden className="ml-1">→</span>
+      </Link>
     </Section>
   );
 }
