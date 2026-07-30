@@ -152,6 +152,31 @@ func TestWalletReconciliationIncludesTrialCredits(t *testing.T) {
 	}
 }
 
+func TestRetailRepricePreservesExistingCreditQuantities(t *testing.T) {
+	migrations, err := loadMigrations()
+	if err != nil {
+		t.Fatalf("loadMigrations: %v", err)
+	}
+	combined := strings.ToLower(strings.Join(sqlOf(migrations), "\n"))
+	for _, required := range []string{
+		"alter column retail_vnd_per_credit set default 75",
+		"where status <> 'paid'",
+		"and status <> 'underpaid'",
+		"received_amount_micros = 0",
+		"wallet-credit-reprice-60-to-75",
+		"promotional_micros",
+		"update wallet_holds",
+		"update trial_grants",
+		"lock table wallets, wallet_holds, trial_grants, topup_orders",
+		"raise exception 'retail credit reprice would overflow bigint'",
+		"select sum(hold.amount_micros)",
+	} {
+		if !strings.Contains(combined, required) {
+			t.Errorf("75 VND retail reprice migration is missing %q", required)
+		}
+	}
+}
+
 func sqlOf(migrations []migration) []string {
 	out := make([]string, len(migrations))
 	for i, m := range migrations {

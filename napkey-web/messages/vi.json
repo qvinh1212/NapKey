@@ -242,14 +242,14 @@
   "pricing": {
     "eyebrow": "Bảng giá",
     "title": "Một mức giá credit, dùng cho mọi model",
-    "subtitle": "Không cần tự quy đổi input, output hay cache token. NapKey ghi nhận credit do upstream báo về và trừ ví theo mức cố định 60 VNĐ mỗi credit.",
+    "subtitle": "Không cần tự quy đổi input, output hay cache token. NapKey ghi nhận credit do upstream báo về và trừ ví theo mức cố định 75 VNĐ mỗi credit.",
     "popular": "Phổ biến",
     "packages": {
       "starter": "Bắt đầu và thử nghiệm",
       "builder": "Dùng thường xuyên",
       "scale": "Khối lượng lớn"
     },
-    "packageNote": "Cùng đơn giá 60 VNĐ/credit, không khóa gói và không ép cam kết dài hạn.",
+    "packageNote": "Cùng đơn giá 75 VNĐ/credit, không khóa gói và không ép cam kết dài hạn.",
     "rateLabel": "Đơn giá công khai",
     "measurement": "Credit được đo từ usage thực tế do upstream trả về. Dashboard lưu từng request, model, token tham chiếu, credit và số tiền đã trừ để bạn đối soát.",
     "footnote": "Credit trong ví NapKey không hết hạn theo chính sách hiện tại. Usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
@@ -666,7 +666,7 @@
       "loadFailed": "Không tải được ví của bạn.",
       "createFailed": "Không tạo được lệnh nạp tiền.",
       "balance": "Số dư ví",
-      "creditRate": "1.000 credit = 60.000 VNĐ. Credit đã mua không hết hạn.",
+      "creditRate": "1.000 credit = 75.000 VNĐ. Credit đã mua không hết hạn.",
       "promotional": "Credit dùng thử",
       "promotionalExpiry": "Hết hạn vào {date}. Credit dùng thử được sử dụng trước.",
       "promotionalEmpty": "Không có credit khuyến mãi đang hoạt động.",

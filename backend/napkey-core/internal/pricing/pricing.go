@@ -21,7 +21,7 @@ const MicrosPerVND int64 = 1_000_000
 const MicrocreditsPerCredit int64 = 1_000_000
 
 const (
-	RetailVNDPerCredit      int64 = 60
+	RetailVNDPerCredit      int64 = 75
 	UpstreamVNDPerCredit    int64 = 20
 	RetailMicrosPerCredit         = RetailVNDPerCredit * MicrosPerVND
 	UpstreamMicrosPerCredit       = UpstreamVNDPerCredit * MicrosPerVND

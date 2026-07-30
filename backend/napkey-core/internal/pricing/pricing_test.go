@@ -21,8 +21,8 @@ var sonnetRate = Rate{
 }
 
 func TestRetailCreditRate(t *testing.T) {
-	if RetailVNDPerCredit != 60 {
-		t.Fatalf("RetailVNDPerCredit = %d, want 60", RetailVNDPerCredit)
+	if RetailVNDPerCredit != 75 {
+		t.Fatalf("RetailVNDPerCredit = %d, want 75", RetailVNDPerCredit)
 	}
 }
 

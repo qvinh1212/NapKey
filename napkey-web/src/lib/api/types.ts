@@ -247,7 +247,7 @@ export type WalletResponse = {
       available: Credits;
       promotional: Credits;
       promotionalExpiresAt: string | null;
-      vndPerCredit: 60;
+      vndPerCredit: number;
     };
     currency: 'VND';
   };

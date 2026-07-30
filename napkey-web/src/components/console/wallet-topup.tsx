@@ -6,7 +6,7 @@ import { api, ApiError } from '@/lib/api/client';
 import type { TopupHistoryResponse, TopupOrderResponse, WalletResponse } from '@/lib/api/types';
 import { Badge, Panel, PanelHeader, StatCard } from './ui';
 import { creditAmount } from '@/lib/format';
-import { creditsFromVnd, microcreditsFromVnd, MIN_TOPUP_VND, TOPUP_PRESETS, TOPUP_STEP_VND } from '@/lib/pricing';
+import { creditsFromVnd, formatVnd, microcreditsFromVnd, MIN_TOPUP_VND, TOPUP_PRESETS, TOPUP_STEP_VND } from '@/lib/pricing';
 
 export function WalletTopup() {
   const t = useTranslations('console.wallet');
@@ -94,7 +94,7 @@ export function WalletTopup() {
           <PanelHeader title={t('topupTitle')} description={t('topupDescription')} />
           <form onSubmit={createOrder} className="space-y-5 p-5">
             <div className="flex flex-wrap gap-2">
-              {TOPUP_PRESETS.map((value) => <button key={value} type="button" onClick={() => setAmount(value)} className={`rounded-full border px-4 py-2 text-ui tabular-nums ${amount === value ? 'border-accent bg-accent-soft text-accent-light' : 'border-line text-muted hover:text-fg'}`}>{value.toLocaleString('vi-VN')} đ</button>)}
+              {TOPUP_PRESETS.map((value) => <button key={value} type="button" onClick={() => setAmount(value)} className={`rounded-full border px-4 py-2 text-ui tabular-nums ${amount === value ? 'border-accent bg-accent-soft text-accent-light' : 'border-line text-muted hover:text-fg'}`}>{formatVnd(value, locale)}</button>)}
             </div>
             <label className="block max-w-sm text-ui text-muted">{t('customAmount')}<input type="number" min={MIN_TOPUP_VND} max={1000000000} step={TOPUP_STEP_VND} value={amount} onChange={(event) => setAmount(Number(event.target.value))} className="mt-2 w-full rounded-md border border-line bg-black px-4 py-3 text-fg outline-none focus:border-accent" /></label>
             <p className="font-mono text-ui text-accent-light">{t('youReceive', { credits: creditAmount({ micros: microcreditsFromVnd(amount), credits: creditsFromVnd(amount) }, locale) })}</p>

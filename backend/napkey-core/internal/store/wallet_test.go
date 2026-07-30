@@ -38,12 +38,17 @@ func TestWalletCreditValuePreservesLegacyPurchases(t *testing.T) {
 	if err != nil {
 		t.Fatalf("walletCreditMicros: %v", err)
 	}
-	if got != 60_000_000_000 {
-		t.Fatalf("credited micros = %d, want 60000000000", got)
+	if got != 75_000_000_000 {
+		t.Fatalf("credited micros = %d, want 75000000000", got)
 	}
 
 	got, err = walletCreditMicros(60_000_000_000, 60)
-	if err != nil || got != 60_000_000_000 {
+	if err != nil || got != 75_000_000_000 {
+		t.Fatalf("legacy 60 VND credit = %d, %v", got, err)
+	}
+
+	got, err = walletCreditMicros(75_000_000_000, 75)
+	if err != nil || got != 75_000_000_000 {
 		t.Fatalf("current-rate credit = %d, %v", got, err)
 	}
 	if _, err := walletCreditMicros(math.MaxInt64, 1); err == nil {

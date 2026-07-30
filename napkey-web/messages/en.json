@@ -242,14 +242,14 @@
   "pricing": {
     "eyebrow": "Pricing",
     "title": "One credit rate across every model",
-    "subtitle": "No manual input, output, or cache-token conversion. NapKey records upstream-reported credits and deducts the wallet at a fixed 60 VND per credit.",
+    "subtitle": "No manual input, output, or cache-token conversion. NapKey records upstream-reported credits and deducts the wallet at a fixed 75 VND per credit.",
     "popular": "Popular",
     "packages": {
       "starter": "Start and experiment",
       "builder": "Regular building",
       "scale": "Higher volume"
     },
-    "packageNote": "The same 60 VND/credit rate, with no package lock-in or long-term commitment.",
+    "packageNote": "The same 75 VND/credit rate, with no package lock-in or long-term commitment.",
     "rateLabel": "Published rate",
     "measurement": "Credits come from actual usage reported by the upstream service. The dashboard records each request, model, reference token counts, credits, and settled VND for reconciliation.",
     "footnote": "NapKey wallet credits do not expire under the current policy. Settled usage always retains the rate effective when it was recorded."
@@ -666,7 +666,7 @@
       "loadFailed": "Could not load your wallet.",
       "createFailed": "Could not create a top-up order.",
       "balance": "Wallet balance",
-      "creditRate": "1,000 credits = 60,000 VND. Purchased credits do not expire.",
+      "creditRate": "1,000 credits = 75,000 VND. Purchased credits do not expire.",
       "promotional": "Trial credits",
       "promotionalExpiry": "Expires on {date}. Trial credits are spent first.",
       "promotionalEmpty": "No active promotional credit.",
