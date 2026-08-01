@@ -107,7 +107,7 @@ export function LaunchOffer() {
         <p className="relative mt-4 max-w-xl text-ui leading-relaxed text-muted sm:text-lg">{t('body')}</p>
         <div className="relative mt-6 grid gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-line bg-surface p-4 text-ui text-muted">{t('trial')}</div>
-          <div className="rounded-2xl border border-accent/40 bg-accent-soft p-4 text-ui text-accent-light">{t('bonus')}</div>
+          <div className="rounded-2xl border border-accent/40 bg-accent-soft p-4 text-ui text-accent-light">{t('policy')}</div>
         </div>
         <p className="relative mt-5 font-mono text-xl text-fg sm:text-2xl">{t('example')}</p>
         <div className="relative mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">

@@ -86,7 +86,7 @@ func TestRecordUsagePricesFromTheLedgerRate(t *testing.T) {
 	if result.UserID != pgtest.UUID(7) {
 		t.Errorf("UserID = %q, want the key owner", result.UserID)
 	}
-	want := int64(140_250_000)
+	want := int64(748_000_000)
 	if result.CostMicros != want {
 		t.Errorf("CostMicros = %d, want %d", result.CostMicros, want)
 	}
@@ -198,8 +198,8 @@ func TestRecordUsageRecordsUnpricedModel(t *testing.T) {
 	if result.Unpriced {
 		t.Error("credit-priced usage must not depend on a model token rate")
 	}
-	if result.CostMicros != 37_500_000 {
-		t.Errorf("CostMicros = %d, want 37500000", result.CostMicros)
+	if result.CostMicros != 200_000_000 {
+		t.Errorf("CostMicros = %d, want 200000000", result.CostMicros)
 	}
 	if result.RateID != 0 {
 		t.Errorf("RateID = %d, want 0 when no rate applies", result.RateID)

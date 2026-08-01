@@ -177,6 +177,19 @@ func TestTopupMinimumSchemaMatchesApplicationMinimum(t *testing.T) {
 	}
 }
 
+func TestPricingMigrationPreservesCreditQuantitiesAndDisablesNewBonus(t *testing.T) {
+	migrations, err := loadMigrations()
+	if err != nil { t.Fatalf("loadMigrations: %v", err) }
+	combined := strings.ToLower(strings.Join(sqlOf(migrations), "\n"))
+	for _, required := range []string{
+		"\"oldvndpercredit\":75",
+		"\"newvndpercredit\":400",
+		"\"reason\":\"preserve_existing_credits\"",
+	} {
+		if !strings.Contains(combined, required) { t.Errorf("pricing migration is missing %q", required) }
+	}
+}
+
 func TestRetailRepricePreservesExistingCreditQuantities(t *testing.T) {
 	migrations, err := loadMigrations()
 	if err != nil {

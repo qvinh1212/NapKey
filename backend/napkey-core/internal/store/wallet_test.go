@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"math"
+	"os"
 	"strings"
 	"testing"
 
@@ -10,14 +11,22 @@ import (
 	"napkey-core/internal/pricing"
 )
 
-func TestFirstTopupBonusMicros(t *testing.T) {
+func TestFirstTopupBonusMicrosIsDisabled(t *testing.T) {
 	for _, tc := range []struct{name string; paid, purchased, want int64}{
 		{"invalid", -1, 0, 0},
 		{"below minimum receives nothing", 74_000 * pricing.MicrosPerVND, 74_000 * pricing.MicrosPerVND, 0},
-		{"minimum matches purchase", 75_000 * pricing.MicrosPerVND, 75_000 * pricing.MicrosPerVND, FirstTopupBonusCapMicros},
-		{"large topup remains capped", 375_000 * pricing.MicrosPerVND, FirstTopupBonusCapMicros*5, FirstTopupBonusCapMicros},
+		{"eligible first topup receives nothing", 75_000 * pricing.MicrosPerVND, 75_000 * pricing.MicrosPerVND, 0},
+		{"large topup receives nothing", 375_000 * pricing.MicrosPerVND, 1_000_000_000, 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) { if got:=firstTopupBonusMicros(tc.paid,tc.purchased); got!=tc.want { t.Fatalf("got %d, want %d",got,tc.want) } })
+	}
+}
+
+func TestTopupSettlementDoesNotGrantNewPromotion(t *testing.T) {
+	source, err := os.ReadFile("wallet.go")
+	if err != nil { t.Fatalf("read wallet.go: %v", err) }
+	if got := strings.Count(string(source), "grantFirstTopupBonusTx("); got != 1 {
+		t.Fatalf("grantFirstTopupBonusTx references = %d, want only the legacy function definition", got)
 	}
 }
 
@@ -50,17 +59,17 @@ func TestWalletCreditValuePreservesLegacyPurchases(t *testing.T) {
 	if err != nil {
 		t.Fatalf("walletCreditMicros: %v", err)
 	}
-	if got != 75_000_000_000 {
-		t.Fatalf("credited micros = %d, want 75000000000", got)
+	if got != 400_000_000_000 {
+		t.Fatalf("credited micros = %d, want 400000000000", got)
 	}
 
 	got, err = walletCreditMicros(60_000_000_000, 60)
-	if err != nil || got != 75_000_000_000 {
+	if err != nil || got != 400_000_000_000 {
 		t.Fatalf("legacy 60 VND credit = %d, %v", got, err)
 	}
 
 	got, err = walletCreditMicros(75_000_000_000, 75)
-	if err != nil || got != 75_000_000_000 {
+	if err != nil || got != 400_000_000_000 {
 		t.Fatalf("current-rate credit = %d, %v", got, err)
 	}
 	if _, err := walletCreditMicros(math.MaxInt64, 1); err == nil {

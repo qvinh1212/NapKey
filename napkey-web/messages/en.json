@@ -243,20 +243,21 @@
   "pricing": {
     "eyebrow": "Pricing",
     "title": "One credit rate across every model",
-    "subtitle": "No manual input, output, or cache-token conversion. NapKey records upstream-reported credits and deducts the wallet at a fixed 75 VND per credit.",
+    "subtitle": "No manual input, output, or cache-token conversion. NapKey records upstream-reported credits and deducts the wallet at a fixed 400 VND per credit.",
     "popular": "Popular",
     "offer": {
       "eyebrow": "Launch offer",
-      "title": "Top up from 75,000 VND: get 100% extra, capped at 1,000 credits",
-      "body": "Your first eligible top-up of at least 75,000 VND receives a 100% bonus, capped at 1,000 promotional credits valid for 30 days. Smaller top-ups do not consume the offer. Purchased credits never expire.",
-      "example": "75,000 VND → 2,000 credits"
+      "title": "Get 50 credits to try it now",
+      "body": "Top up from 10,000 VND. No monthly fee, and purchased credits never expire.",
+      "example": "10,000 VND → 25 credits"
     },
     "packages": {
       "starter": "Start and experiment",
       "builder": "Regular building",
-      "scale": "Higher volume"
+      "scale": "Higher volume",
+      "pro": "Professional use"
     },
-    "packageNote": "The same 75 VND/credit rate, with no package lock-in or long-term commitment.",
+    "packageNote": "400 VND/credit, no monthly fee, no package lock-in, and purchased credits never expire.",
     "rateLabel": "Published rate",
     "measurement": "Credits come from actual usage reported by the upstream service. The dashboard records each request, model, reference token counts, credits, and settled VND for reconciliation.",
     "footnote": "NapKey wallet credits do not expire under the current policy. Settled usage always retains the rate effective when it was recorded."
@@ -266,12 +267,12 @@
     "title": "One API key. More AI tools. Pay in VND.",
     "body": "Connect Claude Code, Cursor, Cline, the Anthropic SDK, or the OpenAI SDK. No monthly fee — pay only for what you use.",
     "trial": "Get 50 credits after account verification",
-    "bonus": "Top up from 75,000 VND and get 100% extra — capped at 1,000 credits",
-    "example": "Top up 75,000 VND — receive 2,000 credits",
+    "policy": "Get 50 credits to try it now. Top up from 10,000 VND.",
+    "example": "10,000 VND — receive 25 credits",
     "ctaAnonymous": "Create an API key",
     "ctaAuthenticated": "Claim the offer in wallet",
     "ctaLoading": "Checking your account...",
-    "terms": "Applies to the first eligible top-up of at least 75,000 VND. Smaller top-ups do not consume the offer. Bonus credits expire after 30 days; purchased credits never expire.",
+    "terms": "50 trial credits are granted once to eligible accounts. Purchased credits never expire.",
     "close": "Close launch offer"
   },
   "billing": {
@@ -383,10 +384,10 @@
       "title": "Credits and billing",
       "description": "NapKey uses a prepaid wallet. Every successful request appears in Usage with its model, reference token counts, and settled credits.",
       "cards": {
-        "price": { "value": "75 VND / credit", "title": "Retail price", "body": "Credits are deducted from the usage recorded by the gateway." },
+        "price": { "value": "400 VND / credit", "title": "Retail price", "body": "Credits are deducted from the usage recorded by the gateway." },
         "minimum": { "value": "10,000 VND", "title": "Minimum top-up", "body": "Increase the amount in 1,000 VND steps. Purchased credits do not expire." },
         "trial": { "value": "50 credits", "title": "Trial", "body": "Granted once to eligible accounts and expires after 7 days." },
-        "bonus": { "value": "+100%", "title": "First top-up", "body": "Top up at least 75,000 VND for up to 1,000 promotional credits valid for 30 days." }
+        "policy": { "value": "No monthly fee", "title": "Simple policy", "body": "Get 50 trial credits once; purchased credits never expire." }
       }
     },
     "errors": {
@@ -772,7 +773,7 @@
       "loadFailed": "Could not load your wallet.",
       "createFailed": "Could not create a top-up order.",
       "balance": "Wallet balance",
-      "creditRate": "1,000 credits = 75,000 VND. Purchased credits do not expire.",
+      "creditRate": "1,000 credits = 400,000 VND. Purchased credits do not expire.",
       "promotional": "Promotional credits",
       "promotionalExpiry": "Expires on {date}. Promotional credits are spent first.",
       "promotionalEmpty": "No active promotional credit.",
@@ -782,7 +783,7 @@
       "held": "Reserved",
       "heldHint": "Temporarily held for in-flight requests.",
       "topupTitle": "Top up securely with PayOS",
-      "topupDescription": "Choose an amount, then open PayOS checkout. The first eligible top-up of at least 75,000 VND receives a 100% bonus capped at 1,000 credits; smaller top-ups do not consume the offer.",
+      "topupDescription": "Choose an amount, then open PayOS checkout. Top up from 10,000 VND with no monthly fee.",
       "customAmount": "Amount (VND)",
       "youReceive": "You receive {credits}",
       "nonRefundable": "Important: wallet credit can only be used for NapKey API calls and cannot be withdrawn or refunded to a bank account.",

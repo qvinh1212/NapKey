@@ -94,7 +94,7 @@ export default async function DocsPage({ params }: { params: Promise<{ locale: s
             <section id="billing" className="scroll-mt-28 border-t border-line py-16">
               <SectionHeading number="04" title={t('billing.title')} description={t('billing.description')} />
               <div className="mt-8 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2">
-                {(['price', 'minimum', 'trial', 'bonus'] as const).map((item) => <article key={item} className="bg-surface p-6"><p className="font-mono text-xl text-accent-light">{t(`billing.cards.${item}.value`)}</p><h3 className="mt-3 text-base text-fg">{t(`billing.cards.${item}.title`)}</h3><p className="mt-2 text-ui leading-relaxed text-muted">{t(`billing.cards.${item}.body`)}</p></article>)}
+                {(['price', 'minimum', 'trial', 'policy'] as const).map((item) => <article key={item} className="bg-surface p-6"><p className="font-mono text-xl text-accent-light">{t(`billing.cards.${item}.value`)}</p><h3 className="mt-3 text-base text-fg">{t(`billing.cards.${item}.title`)}</h3><p className="mt-2 text-ui leading-relaxed text-muted">{t(`billing.cards.${item}.body`)}</p></article>)}
               </div>
             </section>
 
@@ -118,4 +118,3 @@ export default async function DocsPage({ params }: { params: Promise<{ locale: s
 function SectionHeading({ number, title, description }: { number: string; title: string; description: string }) {
   return <header><p className="font-mono text-label tracking-[0.16em] text-accent uppercase">{number}</p><h2 className="mt-3 text-3xl tracking-[-0.025em] text-fg sm:text-4xl">{title}</h2><p className="mt-4 max-w-3xl text-ui leading-relaxed text-muted sm:text-base">{description}</p></header>;
 }
-

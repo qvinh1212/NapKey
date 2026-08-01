@@ -3,9 +3,6 @@ import test from 'node:test';
 
 import {
   creditsFromVnd,
-  firstTopupBonusCredits,
-  FIRST_TOPUP_BONUS_CAP_CREDITS,
-  FIRST_TOPUP_BONUS_MIN_VND,
   microcreditsFromVnd,
   MIN_TOPUP_VND,
   TOPUP_STEP_VND,
@@ -13,28 +10,24 @@ import {
   VND_PER_CREDIT,
 } from './pricing.ts';
 
-test('uses the public 75 VND per credit rate', () => {
-  assert.equal(VND_PER_CREDIT, 75);
-  assert.equal(creditsFromVnd(75_000), 1_000);
-  assert.equal(microcreditsFromVnd(75_000), 1_000_000_000);
+test('uses the public 400 VND per credit rate and 70 percent gross margin', () => {
+  assert.equal(VND_PER_CREDIT, 400);
+  assert.equal(creditsFromVnd(400_000), 1_000);
+  assert.equal(microcreditsFromVnd(400_000), 1_000_000_000);
+  assert.ok((400 - 110) / 400 >= 0.70);
 });
 
-test('matches the first top-up and caps promotional credit at 1,000', () => {
-  assert.equal(FIRST_TOPUP_BONUS_CAP_CREDITS, 1_000);
-  assert.equal(FIRST_TOPUP_BONUS_MIN_VND, 75_000);
-  assert.equal(creditsFromVnd(75_000) + firstTopupBonusCredits(75_000), 2_000);
-  assert.equal(firstTopupBonusCredits(10_000), 0);
-  assert.equal(firstTopupBonusCredits(74_000), 0);
-  assert.equal(firstTopupBonusCredits(75_000), 1_000);
-  assert.equal(firstTopupBonusCredits(375_000), 1_000);
+test('does not project a first-topup bonus', () => {
+  assert.equal(creditsFromVnd(75_000), 187.5);
+  assert.equal(creditsFromVnd(400_000), 1_000);
 });
 
 test('supports a 10,000 VND entry top-up and round-money presets', () => {
   assert.equal(MIN_TOPUP_VND, 10_000);
   assert.equal(TOPUP_STEP_VND, 1_000);
-  assert.deepEqual(TOPUP_PRESETS, [10_000, 30_000, 75_000, 150_000, 375_000]);
-  assert.equal(creditsFromVnd(MIN_TOPUP_VND), 10_000 / 75);
-  assert.equal(microcreditsFromVnd(MIN_TOPUP_VND), 133_333_333);
+  assert.deepEqual(TOPUP_PRESETS, [10_000, 20_000, 40_000, 100_000, 200_000, 400_000]);
+  assert.equal(creditsFromVnd(MIN_TOPUP_VND), 25);
+  assert.equal(microcreditsFromVnd(MIN_TOPUP_VND), 25_000_000);
 });
 
 test('rejects invalid top-up projections', () => {

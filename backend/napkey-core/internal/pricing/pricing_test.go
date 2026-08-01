@@ -21,8 +21,15 @@ var sonnetRate = Rate{
 }
 
 func TestRetailCreditRate(t *testing.T) {
-	if RetailVNDPerCredit != 75 {
-		t.Fatalf("RetailVNDPerCredit = %d, want 75", RetailVNDPerCredit)
+	if RetailVNDPerCredit != 400 {
+		t.Fatalf("RetailVNDPerCredit = %d, want 400", RetailVNDPerCredit)
+	}
+	if UpstreamVNDPerCredit != 110 {
+		t.Fatalf("UpstreamVNDPerCredit = %d, want 110", UpstreamVNDPerCredit)
+	}
+	margin := float64(RetailVNDPerCredit-UpstreamVNDPerCredit) / float64(RetailVNDPerCredit)
+	if margin < 0.70 {
+		t.Fatalf("gross margin = %.3f, want at least 0.70", margin)
 	}
 }
 

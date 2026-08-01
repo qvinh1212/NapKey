@@ -28,9 +28,7 @@ const (
 )
 
 func firstTopupBonusMicros(paidMicros, purchasedMicros int64) int64 {
-	if paidMicros < FirstTopupBonusMinimumMicros || purchasedMicros <= 0 { return 0 }
-	if purchasedMicros > FirstTopupBonusCapMicros { return FirstTopupBonusCapMicros }
-	return purchasedMicros
+	return 0
 }
 
 type promotionalGrant struct { kind string; remaining int64; expiresAt time.Time }
@@ -356,7 +354,6 @@ func(s *Store)CreditPayOSPayment(ctx context.Context,in PayOSPaymentInput)(bool,
 		err=tx.QueryRowContext(ctx,`UPDATE wallets SET balance_micros=balance_micros+$2,updated_at=now() WHERE user_id=$1 RETURNING balance_micros,held_micros`,order.UserID,creditedMicros).Scan(&balance,&held);if err!=nil{return err}
 		_,err=tx.ExecContext(ctx,`INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key) VALUES($1,'topup',$2,$3,$4,'payment_event',$5,$6)`,order.UserID,creditedMicros,balance,held,in.ProviderTxID,"payos:"+in.ProviderTxID);if err!=nil{return err}
 		paidAt:=time.Now().UTC()
-		if err=grantFirstTopupBonusTx(ctx,tx,order.UserID,order.ID,in.AmountMicros,creditedMicros,paidAt);err!=nil{return err}
 		_,err=tx.ExecContext(ctx,`UPDATE topup_orders SET received_amount_micros=$2,status='paid',paid_at=$3 WHERE id=$1`,order.ID,in.AmountMicros,paidAt);if err!=nil{return err}
 		_,err=tx.ExecContext(ctx,`UPDATE payment_events SET status='credited',matched_order_id=$2,processed_at=now() WHERE id=$1`,eventID,order.ID);return err
 	});if err!=nil{return false,fmt.Errorf("store: crediting PayOS payment: %w",err)};return duplicate,nil
@@ -421,10 +418,6 @@ func (s *Store) CreditPaymentEvent(ctx context.Context,eventID int64,providerTxI
 		if err!=nil{return err}
 		received:=order.ReceivedAmountMicros+amountMicros; status:=topupStatus(order.ExpectedAmountMicros,received)
 		paidAt:=time.Now().UTC()
-		if status==TopupPaid {
-			totalPurchased,convertErr:=walletCreditMicros(received,order.RetailVNDPerCredit);if convertErr!=nil{return convertErr}
-			if err=grantFirstTopupBonusTx(ctx,tx,order.UserID,order.ID,received,totalPurchased,paidAt);err!=nil{return err}
-		}
 		_,err=tx.ExecContext(ctx,`UPDATE topup_orders SET received_amount_micros=$2,status=$3,paid_at=CASE WHEN $3='paid' THEN $4 ELSE paid_at END WHERE id=$1`,order.ID,received,status,paidAt);if err!=nil{return err}
 		_,err=tx.ExecContext(ctx,`UPDATE payment_events SET status='credited',matched_order_id=$2,processed_at=now() WHERE id=$1 AND status='processing'`,eventID,order.ID);return err
 	})
