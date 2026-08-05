@@ -265,6 +265,11 @@ type AccountInfo struct {
 const Version = "1.1.5"
 
 var (
+	// cfg is nil until Init/Load runs. Readers reached before that must not assume a
+	// loaded config: return the documented default for the setting instead of
+	// dereferencing. Note which default is safe -- for anything an access check
+	// consults, the empty value is usually the permissive one, so those readers
+	// report "unavailable" rather than "unset". See GetPassword.
 	cfg     *Config
 	cfgLock sync.RWMutex
 	cfgPath string
@@ -470,7 +475,7 @@ func GetPassword() string {
 func GetPort() int {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
-	if cfg.Port == 0 {
+	if cfg == nil || cfg.Port == 0 {
 		return 8080
 	}
 	return cfg.Port
@@ -479,7 +484,7 @@ func GetPort() int {
 func GetHost() string {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
-	if cfg.Host == "" {
+	if cfg == nil || cfg.Host == "" {
 		return "127.0.0.1"
 	}
 	return cfg.Host
@@ -488,6 +493,9 @@ func GetHost() string {
 func GetAccounts() []Account {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
+	if cfg == nil {
+		return nil
+	}
 	accounts := make([]Account, len(cfg.Accounts))
 	copy(accounts, cfg.Accounts)
 	return accounts
@@ -950,12 +958,20 @@ func UpdateAccountCredentialState(
 func GetApiKey() string {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
+	if cfg == nil {
+		return ""
+	}
 	return cfg.ApiKey
 }
 
 func IsApiKeyRequired() bool {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
+	if cfg == nil {
+		// Not "auth is off": the gate has not been read yet. Reporting false here
+		// would let authenticate() wave every request through unauthenticated.
+		return true
+	}
 	return cfg.RequireApiKey
 }
 
@@ -999,6 +1015,9 @@ func UpdateStats(totalReq, successReq, failedReq, totalTokens int, totalCredits 
 func GetStats() (int, int, int, int, float64) {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
+	if cfg == nil {
+		return 0, 0, 0, 0, 0
+	}
 	return cfg.TotalRequests, cfg.SuccessRequests, cfg.FailedRequests, cfg.TotalTokens, cfg.TotalCredits
 }
 
@@ -1146,6 +1165,9 @@ func GetThinkingConfig() ThinkingConfig {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
 
+	if cfg == nil {
+		return ThinkingConfig{Suffix: "-thinking", OpenAIFormat: "reasoning_content", ClaudeFormat: "thinking"}
+	}
 	suffix := cfg.ThinkingSuffix
 	if suffix == "" {
 		suffix = "-thinking"
@@ -1180,7 +1202,7 @@ func UpdateThinkingConfig(suffix, openaiFormat, claudeFormat string) error {
 func GetPreferredEndpoint() string {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
-	if cfg.PreferredEndpoint == "" {
+	if cfg == nil || cfg.PreferredEndpoint == "" {
 		return "auto"
 	}
 	return cfg.PreferredEndpoint
@@ -1198,7 +1220,7 @@ func UpdatePreferredEndpoint(endpoint string) error {
 func GetEndpointFallback() bool {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
-	if cfg.EndpointFallback == nil {
+	if cfg == nil || cfg.EndpointFallback == nil {
 		return true
 	}
 	return *cfg.EndpointFallback
@@ -1216,6 +1238,9 @@ func UpdateEndpointFallback(enabled bool) error {
 func GetProxyURL() string {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
+	if cfg == nil {
+		return ""
+	}
 	return cfg.ProxyURL
 }
 
