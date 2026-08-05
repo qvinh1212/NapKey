@@ -10,7 +10,7 @@ import (
 
 	"napkey-core/internal/auth"
 	"napkey-core/internal/config"
-	"napkey-core/internal/kiro"
+	"napkey-core/internal/dataplane"
 	"napkey-core/internal/logger"
 	"napkey-core/internal/mail"
 	"napkey-core/internal/payos"
@@ -28,7 +28,7 @@ const (
 type Server struct {
 	cfg    *config.Config
 	store  *store.Store
-	kiro   *kiro.Client
+	plane  dataplane.Provider
 	mailer mail.Sender
 	payos  *payos.Client
 	oauthHTTP *http.Client
@@ -43,11 +43,11 @@ type Server struct {
 }
 
 // New builds the server.
-func New(cfg *config.Config, st *store.Store, kiroClient *kiro.Client, mailer mail.Sender) *Server {
+func New(cfg *config.Config, st *store.Store, plane dataplane.Provider, mailer mail.Sender) *Server {
 	return &Server{
 		cfg:    cfg,
 		store:  st,
-		kiro:   kiroClient,
+		plane:  plane,
 		mailer: mailer,
 		payos:  payos.NewClient(cfg.PayOSClientID, cfg.PayOSAPIKey, cfg.PayOSChecksumKey),
 		oauthHTTP: &http.Client{Timeout: 15 * time.Second},

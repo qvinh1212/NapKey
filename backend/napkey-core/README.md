@@ -13,6 +13,24 @@ NapKey core hiện bao phủ control-plane của Giai đoạn 2-5 trong `DESIGN.
 
 Key chỉ hoạt động sau khi `napkey-core` đẩy được sang `kiro-go`. Đây là lý do việc tạo key thất bại thì trả lỗi ngay chứ không tạo nửa vời.
 
+### Hợp đồng data plane
+
+`internal/dataplane` khai báo **những gì** control plane cần ở một data plane; `internal/kiro` là adapter nói chuyện với `kiro-go`. Handler phụ thuộc vào `dataplane.Provider`, không phụ thuộc adapter cụ thể.
+
+| Gói | Việc |
+| --- | --- |
+| `internal/dataplane` | Interface `Provider`, các kiểu dùng chung, sentinel error, và `Syncer` (logic không phụ thuộc provider) |
+| `internal/kiro` | Adapter HTTP cho `kiro-go`: `/admin/api/api-keys` + `/admin/api/status` |
+
+Phạm vi của `Provider` hẹp có chủ ý: vòng đời key cộng một phép đọc health. Data plane đòi nhiều hơn thế là đang giành quyết định thuộc về control plane.
+
+Hai điểm phải giữ khi viết adapter mới:
+
+- **Trả về sentinel của `dataplane`**, đừng tạo error riêng. Startup coi `ErrUnauthorized` là lỗi chí tử, còn `ErrNotFound` lúc delete là thành công — adapter trả error riêng thì hai nhánh này im lặng ngừng khớp. Có test khoá điều này.
+- **`UpdateKeyRequest` toàn con trỏ**: `nil` là "giữ nguyên", giá trị zero là "đặt về 0". Gộp hai nghĩa lại là xoá hạn mức của khách trong một lần sửa không liên quan.
+
+Ví và cách tính tiền **không** đi qua đây. Chúng nằm ở `/internal/wallet/reserve`, `/internal/wallet/release`, `/internal/usage` — data plane gọi vào, nên thêm provider mới không chạm tới sổ tiền.
+
 ## Vì sao key không lưu thô
 
 `api_keys` chỉ lưu SHA-256 của key. Bản thô hiện đúng một lần lúc tạo rồi biến mất.

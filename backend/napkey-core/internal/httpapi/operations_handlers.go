@@ -23,7 +23,7 @@ func (s *Server) handleAdminOperationsSummary(w http.ResponseWriter, r *http.Req
 		return
 	}
 	margin := summary.RevenueMicros - summary.UpstreamCostMicros
-	dataPlane, dataPlaneErr := s.kiro.OperationsStatus(r.Context())
+	dataPlane, dataPlaneErr := s.plane.OperationsStatus(r.Context())
 	dataPlaneView := map[string]any{"healthy": false, "error": "data plane unavailable"}
 	assessment := reliability.Evaluate(true, nil, dataPlaneErr)
 	if dataPlaneErr == nil {

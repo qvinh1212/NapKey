@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"napkey-core/internal/kiro"
+	"napkey-core/internal/dataplane"
 	"napkey-core/internal/logger"
 	"napkey-core/internal/reliability"
 	"napkey-core/internal/store"
@@ -155,7 +155,7 @@ func (s *Server) handleAdminSetQuota(w http.ResponseWriter, r *http.Request) {
 		creditLimit := updated.CreditLimit
 		rpmLimit := intValue(updated.RPMLimit)
 		tpmLimit := intValue(updated.TPMLimit)
-		if err := s.kiro.UpdateKey(r.Context(), updated.RemoteID, kiro.UpdateKeyRequest{
+		if err := s.plane.UpdateKey(r.Context(), updated.RemoteID, dataplane.UpdateKeyRequest{
 			RPMLimit:    &rpmLimit,
 			TPMLimit:    &tpmLimit,
 			TokenLimit:  &tokenLimit,
@@ -207,7 +207,7 @@ func (s *Server) handleAdminAuditLog(w http.ResponseWriter, r *http.Request) {
 // nobody to bill. Nothing is deleted automatically, because a wrong automatic
 // delete would cut off a paying customer.
 func (s *Server) handleAdminSyncDrift(w http.ResponseWriter, r *http.Request) {
-	syncer := kiro.NewSyncer(s.store, s.kiro, time.Minute)
+	syncer := dataplane.NewSyncer(s.store, s.plane, time.Minute)
 	orphans, err := syncer.DetectDrift(r.Context())
 	if err != nil {
 		logger.Errorf("detecting sync drift failed: %v", err)
@@ -239,7 +239,7 @@ func (s *Server) pushUserKeyState(r *http.Request, userID string) {
 			continue
 		}
 		enabled := k.Enabled
-		if err := s.kiro.UpdateKey(r.Context(), k.RemoteID, kiro.UpdateKeyRequest{Enabled: &enabled}); err != nil {
+		if err := s.plane.UpdateKey(r.Context(), k.RemoteID, dataplane.UpdateKeyRequest{Enabled: &enabled}); err != nil {
 			logger.Warnf("pushing state for key %s failed, queued for retry: %v", k.ID, err)
 			if markErr := s.store.MarkKeySyncFailed(r.Context(), k.ID, err.Error(), false); markErr != nil {
 				logger.Errorf("recording sync failure for key %s: %v", k.ID, markErr)
@@ -280,7 +280,7 @@ func (s *Server) handleReady(w http.ResponseWriter, r *http.Request) {
 		checks["postgres"] = "ok"
 	}
 
-	if err := s.kiro.Health(ctx); err != nil {
+	if err := s.plane.Health(ctx); err != nil {
 		checks["dataPlane"] = "unreachable: " + err.Error()
 	} else {
 		checks["dataPlane"] = "ok"
@@ -309,7 +309,7 @@ func (s *Server) handlePublicStatus(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	postgresOK := s.store.DB().PingContext(ctx) == nil
-	dataPlane, dataPlaneErr := s.kiro.OperationsStatus(ctx)
+	dataPlane, dataPlaneErr := s.plane.OperationsStatus(ctx)
 	var snapshot *reliability.DataPlaneSnapshot
 	if dataPlane != nil {
 		snapshot = &reliability.DataPlaneSnapshot{

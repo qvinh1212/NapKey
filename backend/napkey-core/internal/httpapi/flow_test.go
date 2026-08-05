@@ -279,7 +279,7 @@ func TestCreateKeyFailsClosedWhenDataPlaneIsDown(t *testing.T) {
 	const userID = "00000000-0000-4000-8000-000000000001"
 	h.sessionFor(userID, "user@napkey.vn", "active", true)
 	// Point the client at a dead port so the push fails.
-	h.server.kiro = deadPlaneClient()
+	h.server.plane = deadPlaneClient()
 
 	h.pg.On("SELECT status FROM users", func(pgtest.Query) pgtest.Response {
 		return pgtest.Response{

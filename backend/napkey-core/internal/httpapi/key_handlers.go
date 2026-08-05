@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 
 	"napkey-core/internal/auth"
-	"napkey-core/internal/kiro"
+	"napkey-core/internal/dataplane"
 	"napkey-core/internal/logger"
 	"napkey-core/internal/store"
 )
@@ -147,7 +147,7 @@ func (s *Server) handleCreateKey(w http.ResponseWriter, r *http.Request) {
 
 	// Push to the data plane while the cleartext is still in hand.
 	enabled := true
-	remoteID, pushErr := s.kiro.CreateKey(r.Context(), kiro.CreateKeyRequest{
+	remoteID, pushErr := s.plane.CreateKey(r.Context(), dataplane.CreateKeyRequest{
 		Name:        keyRemoteName(su.User.Email, key.ID),
 		Key:         generated.Value,
 		Enabled:     &enabled,
@@ -258,7 +258,7 @@ func (s *Server) handleUpdateKey(w http.ResponseWriter, r *http.Request) {
 		rpmLimit := intValue(updated.RPMLimit)
 		tpmLimit := intValue(updated.TPMLimit)
 		remoteName := keyRemoteName(su.User.Email, updated.ID)
-		if err := s.kiro.UpdateKey(r.Context(), updated.RemoteID, kiro.UpdateKeyRequest{
+		if err := s.plane.UpdateKey(r.Context(), updated.RemoteID, dataplane.UpdateKeyRequest{
 			Name:        &remoteName,
 			Enabled:     &enabled,
 			RPMLimit:    &rpmLimit,
@@ -309,7 +309,7 @@ func (s *Server) handleRevokeKey(w http.ResponseWriter, r *http.Request) {
 	// Try to remove it from the data plane now. Revocation has to take effect
 	// quickly, since the whole point is usually that the key leaked.
 	if existing.RemoteID != "" {
-		if err := s.kiro.DeleteKey(r.Context(), existing.RemoteID); err != nil {
+		if err := s.plane.DeleteKey(r.Context(), existing.RemoteID); err != nil {
 			logger.Warnf("deleting key %s from the data plane failed, queued for retry: %v", keyID, err)
 			if markErr := s.store.MarkKeySyncFailed(r.Context(), keyID, err.Error(), true); markErr != nil {
 				logger.Errorf("recording delete failure for key %s: %v", keyID, markErr)

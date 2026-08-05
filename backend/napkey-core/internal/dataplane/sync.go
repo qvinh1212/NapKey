@@ -1,4 +1,4 @@
-package kiro
+package dataplane
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"napkey-core/internal/store"
 )
 
-// Syncer reconciles api_keys in Postgres against the kiro-go data plane.
+// Syncer reconciles api_keys in Postgres against a data plane.
 //
 // # Which operations the reconciler can and cannot retry
 //
@@ -28,7 +28,7 @@ import (
 // hashing in the first place. Failing loudly at creation is the better trade.
 type Syncer struct {
 	store  *store.Store
-	client *Client
+	client Provider
 	// interval is how often the loop sweeps.
 	interval time.Duration
 	// staleAfter is how long a key may sit unsynced before it is declared dead.
@@ -38,7 +38,7 @@ type Syncer struct {
 }
 
 // NewSyncer builds the reconciler.
-func NewSyncer(st *store.Store, client *Client, interval time.Duration) *Syncer {
+func NewSyncer(st *store.Store, client Provider, interval time.Duration) *Syncer {
 	if interval <= 0 {
 		interval = time.Minute
 	}
@@ -85,7 +85,7 @@ func (s *Syncer) sweep(ctx context.Context) {
 	s.retireStaleKeys(ctx)
 }
 
-// syncOne pushes a single key's desired state to kiro-go.
+// syncOne pushes a single key's desired state to the data plane.
 func (s *Syncer) syncOne(ctx context.Context, k store.APIKey) {
 	opCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
@@ -196,7 +196,7 @@ func (s *Syncer) retireStaleKeys(ctx context.Context) {
 	}
 }
 
-// DetectDrift reports keys that exist in kiro-go but not in napkey-core.
+// DetectDrift reports keys that exist in the data plane but not in napkey-core.
 //
 // A key in the data plane with no owning row is unattributable traffic: it
 // authenticates, spends upstream quota, and there is nobody to bill. This surfaces

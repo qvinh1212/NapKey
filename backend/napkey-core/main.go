@@ -18,6 +18,7 @@ import (
 
 	"napkey-core/internal/config"
 	"napkey-core/internal/httpapi"
+	"napkey-core/internal/dataplane"
 	"napkey-core/internal/kiro"
 	"napkey-core/internal/logger"
 	"napkey-core/internal/mail"
@@ -83,7 +84,7 @@ func run(migrateOnly bool) error {
 	// than on the first customer who tries to create a key.
 	probeCtx, cancelProbe := context.WithTimeout(startupCtx, 10*time.Second)
 	if err := kiroClient.Health(probeCtx); err != nil {
-		if errors.Is(err, kiro.ErrUnauthorized) {
+		if errors.Is(err, dataplane.ErrUnauthorized) {
 			cancelProbe()
 			return fmt.Errorf("the data plane rejected KIRO_ADMIN_PASSWORD; key provisioning would fail for every user")
 		}
@@ -127,7 +128,7 @@ func run(migrateOnly bool) error {
 	rootCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	syncer := kiro.NewSyncer(st, kiroClient, cfg.KiroSyncInterval)
+	syncer := dataplane.NewSyncer(st, kiroClient, cfg.KiroSyncInterval)
 	go syncer.Run(rootCtx)
 	go payments.NewWorker(st).Run(rootCtx)
 	go payments.NewReconciler(st,cfg.CassoAPIKey).Run(rootCtx)
