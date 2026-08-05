@@ -221,7 +221,7 @@
     "families": {
       "opus": "deep reasoning",
       "sonnet": "balanced coding",
-      "haiku": "fast tasks",
+      "fable": "frontier capability",
       "router": "automatic routing"
     }
   },
@@ -285,7 +285,7 @@
       },
       "use": {
         "title": "Call the API",
-        "body": "Each request deducts the tokens it actually used at the model's rate. No rounding up, no per-request minimum."
+        "body": "Each request deducts the tokens it actually used at the model's rate, plus a flat per-request fee. No rounding up, and every charge is itemised in your ledger."
       },
       "track": {
         "title": "Audit every line",

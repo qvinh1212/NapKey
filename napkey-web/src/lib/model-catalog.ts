@@ -1,6 +1,6 @@
 export type PublicModel = {
   id: string;
-  family: 'auto' | 'opus' | 'sonnet' | 'haiku' | 'openai-alias' | 'other';
+  family: 'auto' | 'opus' | 'sonnet' | 'haiku' | 'fable' | 'openai-alias' | 'other';
   thinking: boolean;
 };
 
@@ -9,7 +9,17 @@ export type ModelCatalog = {
   models: PublicModel[];
 };
 
-const fallbackModels = ['auto', 'claude-sonnet-4-6', 'claude-sonnet-4-6-thinking'];
+/**
+ * The model every code sample and onboarding step uses.
+ *
+ * Documentation that names a model NapKey does not price is documentation whose
+ * first request can fail, so this is defined once and imported rather than repeated
+ * per snippet: eight copies of a literal are eight chances to miss one when the
+ * catalogue moves. It must stay a model with its own row in `model_prices`.
+ */
+export const defaultModel = 'claude-sonnet-5';
+
+const fallbackModels = ['auto', defaultModel];
 
 function modelFamily(id: string): PublicModel['family'] {
   const normalized = id.toLowerCase();
@@ -17,6 +27,7 @@ function modelFamily(id: string): PublicModel['family'] {
   if (normalized.includes('opus')) return 'opus';
   if (normalized.includes('sonnet')) return 'sonnet';
   if (normalized.includes('haiku')) return 'haiku';
+  if (normalized.includes('fable')) return 'fable';
   if (normalized.startsWith('gpt-')) return 'openai-alias';
   return 'other';
 }

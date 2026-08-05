@@ -7,10 +7,12 @@ export const ecosystemClients = [
   { id: 'sdk', badge: 'SDK', mark: '{}' },
 ] as const;
 
+// The models named on the landing diagram. Kept to ids that are actually on sale and
+// priced, so the marketing surface cannot promise a model the API would refuse.
 export const ecosystemModels = [
-  { id: 'claude-opus-4.8', family: 'opus', mark: 'O' },
-  { id: 'claude-sonnet-4.6', family: 'sonnet', mark: 'S' },
-  { id: 'claude-haiku-4.5', family: 'haiku', mark: 'H' },
+  { id: 'claude-opus-5', family: 'opus', mark: 'O' },
+  { id: 'claude-sonnet-5', family: 'sonnet', mark: 'S' },
+  { id: 'claude-fable-5', family: 'fable', mark: 'F' },
   { id: 'auto', family: 'router', mark: 'A' },
 ] as const;
 

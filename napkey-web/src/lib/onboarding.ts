@@ -1,3 +1,5 @@
+﻿import { defaultModel } from './model-catalog.ts';
+
 export type OnboardingTool = 'claudeCode' | 'anthropic' | 'openai' | 'curl';
 
 export type OnboardingResult = {
@@ -33,7 +35,7 @@ client = Anthropic(
 )
 
 message = client.messages.create(
-    model="claude-sonnet-4.6",
+    model="${defaultModel}",
     max_tokens=128,
     messages=[{"role": "user", "content": "Reply with exactly: NapKey ready"}],
 )
@@ -49,7 +51,7 @@ const client = new OpenAI({
 });
 
 const response = await client.chat.completions.create({
-  model: 'claude-sonnet-4.6',
+  model: '${defaultModel}',
   messages: [{ role: 'user', content: 'Reply with exactly: NapKey ready' }],
 });
 console.log(response.choices[0]?.message.content);`,
@@ -61,7 +63,7 @@ console.log(response.choices[0]?.message.content);`,
   -H "anthropic-version: 2023-06-01" \\
   -H "content-type: application/json" \\
   -d '{
-    "model": "claude-sonnet-4.6",
+    "model": "${defaultModel}",
     "max_tokens": 32,
     "messages": [{"role": "user", "content": "Reply with exactly: NapKey ready"}]
   }'`,

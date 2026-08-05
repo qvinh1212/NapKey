@@ -1,3 +1,4 @@
+﻿import { defaultModel } from './model-catalog';
 import { site } from './site';
 
 export type Snippet = {
@@ -28,7 +29,7 @@ client = Anthropic(
 )
 
 message = client.messages.create(
-    model="claude-sonnet-4.6",
+    model="${defaultModel}",
     max_tokens=1024,
     messages=[{"role": "user", "content": "Chao Claude"}],
 )
@@ -45,7 +46,7 @@ const client = new OpenAI({
 });
 
 const res = await client.chat.completions.create({
-  model: 'claude-sonnet-4.6',
+  model: '${defaultModel}',
   messages: [{ role: 'user', content: 'Chao Claude' }],
   stream: true,
 });
@@ -62,7 +63,7 @@ for await (const chunk of res) {
   -H "anthropic-version: 2023-06-01" \\
   -H "content-type: application/json" \\
   -d '{
-    "model": "claude-sonnet-4.6",
+    "model": "${defaultModel}",
     "max_tokens": 1024,
     "messages": [{"role": "user", "content": "Chao Claude"}]
   }'`,

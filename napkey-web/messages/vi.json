@@ -221,7 +221,7 @@
     "families": {
       "opus": "suy luận sâu",
       "sonnet": "coding cân bằng",
-      "haiku": "tác vụ nhanh",
+      "fable": "năng lực đầu ngành",
       "router": "tự động định tuyến"
     }
   },
@@ -285,7 +285,7 @@
       },
       "use": {
         "title": "Gọi API",
-        "body": "Mỗi request trừ đúng số token thực dùng theo giá model. Không làm tròn lên, không phí tối thiểu mỗi request."
+        "body": "Mỗi request trừ đúng số token thực dùng theo giá model, cộng một khoản phí cố định mỗi request. Không làm tròn lên, mọi khoản đều ghi rõ trong sổ."
       },
       "track": {
         "title": "Theo dõi từng dòng",

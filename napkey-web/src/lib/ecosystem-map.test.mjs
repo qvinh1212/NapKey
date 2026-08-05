@@ -14,8 +14,33 @@ test('maps NapKey to supported developer clients and Claude model families', () 
   );
   assert.deepEqual(
     ecosystemModels.map((model) => model.id),
-    ['claude-opus-4.8', 'claude-sonnet-4.6', 'claude-haiku-4.5', 'auto'],
+    ['claude-opus-5', 'claude-sonnet-5', 'claude-fable-5', 'auto'],
   );
+});
+
+// The landing diagram is a promise about what the API accepts. Naming a model with no
+// price row would advertise something that bills through the '*' fallback rate, so the
+// marketing surface is pinned to the models actually on sale.
+test('only advertises models the price book covers', () => {
+  const priced = new Set([
+    'claude-sonnet-5',
+    'claude-opus-5',
+    'claude-fable-5',
+    'claude-opus-4.7',
+    'claude-opus-4.8',
+    // Resolved by the gateway before anything reaches the upstream.
+    'auto',
+  ]);
+  for (const { id } of ecosystemModels) {
+    assert.ok(priced.has(id), `${id} is advertised but has no seeded price row`);
+  }
+});
+
+// Each row renders its family as an i18n label, so a duplicated family shows the same
+// caption twice and reads like a rendering bug.
+test('each advertised model has a distinct family label', () => {
+  const families = ecosystemModels.map((model) => model.family);
+  assert.equal(new Set(families).size, families.length);
 });
 
 test('does not advertise unrelated model providers', () => {

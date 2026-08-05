@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { api } from '@/lib/api/client';
 import type { CreateKeyResponse, KeyListResponse, KeySyncState, Money, UsageRecordsResponse } from '@/lib/api/types';
 import { isValidOnboardingResponse, onboardingSnippet, parseOnboardingResponse, type OnboardingTool } from '@/lib/onboarding';
+import { defaultModel } from '@/lib/model-catalog';
 import { site } from '@/lib/site';
 import { Badge, Panel, PanelHeader } from './ui';
 
@@ -90,7 +91,7 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
           'x-api-key': created.key,
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4.6',
+          model: defaultModel,
           max_tokens: 32,
           messages: [{ role: 'user', content: 'Reply with exactly: NapKey ready' }],
         }),
@@ -108,7 +109,7 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
       setTest({
         status: 'success',
         text: result.text || t('testEmptyResult'),
-        model: result.model || 'claude-sonnet-4.6',
+        model: result.model || defaultModel,
         tokens: result.inputTokens + result.outputTokens,
         cost,
       });
