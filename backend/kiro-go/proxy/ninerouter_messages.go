@@ -85,6 +85,10 @@ func (h *Handler) handleNineRouterMessages(w http.ResponseWriter, r *http.Reques
 	billing := billingLeaseFromContext(r.Context())
 	reqStart := time.Now()
 
+	// Measured from the caller's own request, before translation, so it reflects what
+	// they sent. Used only to report upstream prompt overhead, never to bill.
+	estimatedInput := estimateClaudeRequestInputTokens(&req)
+
 	// Same requirement as the chat path: without include_usage a streamed completion
 	// reports no tokens and cannot be priced. The client never sees this frame here,
 	// because the Anthropic protocol carries usage inside message_delta instead.
@@ -98,7 +102,7 @@ func (h *Handler) handleNineRouterMessages(w http.ResponseWriter, r *http.Reques
 	}
 
 	if resp.Stream != nil {
-		h.streamNineRouterMessages(w, resp, requestedModel, apiKeyID, billing, reqStart)
+		h.streamNineRouterMessages(w, resp, requestedModel, apiKeyID, billing, reqStart, estimatedInput)
 		return
 	}
 
@@ -119,7 +123,7 @@ func (h *Handler) handleNineRouterMessages(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(claudeResp)
 
-	h.recordNineRouterUsage(usage, resp, requestedModel, apiKeyID, billing, reqStart)
+	h.recordNineRouterUsage(usage, resp, requestedModel, apiKeyID, billing, reqStart, estimatedInput)
 }
 
 // streamNineRouterMessages relays a streamed completion as Anthropic SSE events.
@@ -127,7 +131,7 @@ func (h *Handler) handleNineRouterMessages(w http.ResponseWriter, r *http.Reques
 // Frames are translated and flushed as they arrive so the customer sees tokens at
 // upstream speed. Unlike the chat path this cannot be a byte copy: the two protocols
 // structure a stream differently, so every frame is parsed and re-emitted.
-func (h *Handler) streamNineRouterMessages(w http.ResponseWriter, resp *nineRouterResponse, model, apiKeyID string, billing *billingLease, reqStart time.Time) {
+func (h *Handler) streamNineRouterMessages(w http.ResponseWriter, resp *nineRouterResponse, model, apiKeyID string, billing *billingLease, reqStart time.Time, estimatedInput int) {
 	defer resp.Stream.Close()
 
 	w.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
@@ -169,7 +173,7 @@ func (h *Handler) streamNineRouterMessages(w http.ResponseWriter, resp *nineRout
 		h.sendSSE(w, flusher, ev.Event, ev.Data)
 	}
 
-	h.recordNineRouterUsage(state.usage, resp, model, apiKeyID, billing, reqStart)
+	h.recordNineRouterUsage(state.usage, resp, model, apiKeyID, billing, reqStart, estimatedInput)
 }
 
 // upstreamErrorMessage pulls a readable message out of an upstream error body.
