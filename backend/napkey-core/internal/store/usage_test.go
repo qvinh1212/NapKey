@@ -20,6 +20,7 @@ func priceColumnsFor() []pgtest.Column {
 		{Name: "cache_read_micros_per_1k", OID: 20}, {Name: "cache_write_micros_per_1k", OID: 20},
 		{Name: "upstream_input_micros_per_1k", OID: 20}, {Name: "upstream_output_micros_per_1k", OID: 20},
 		{Name: "upstream_cache_read_micros_per_1k", OID: 20}, {Name: "upstream_cache_write_micros_per_1k", OID: 20},
+		{Name: "request_fee_micros", OID: 20}, {Name: "upstream_request_fee_micros", OID: 20},
 		{Name: "effective_from", OID: 1184}, {Name: "effective_to", OID: 1184},
 		{Name: "source_note"},
 	}
@@ -33,6 +34,7 @@ func sonnetPriceRow() []*string {
 		pgtest.Text("10140000"), pgtest.Text("126750000"),
 		pgtest.Text("78000000"), pgtest.Text("390000000"),
 		pgtest.Text("7800000"), pgtest.Text("97500000"),
+		pgtest.Text("480000000"), pgtest.Text("84000000"),
 		pgtest.Text("2020-01-01 00:00:00+00"), pgtest.Null,
 		pgtest.Text("seed"),
 	}
@@ -216,6 +218,7 @@ func TestRecordUsageUnknownKeyIsNotFound(t *testing.T) {
 
 	_, err := st.RecordUsage(context.Background(), RecordUsageParams{
 		RequestID: "req-ghost", KeyID: pgtest.UUID(9), Model: "claude-sonnet-4-20250514",
+		Tokens: pricing.Tokens{Input: 100, Output: 10},
 	})
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("expected ErrNotFound, got %v", err)

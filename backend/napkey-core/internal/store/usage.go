@@ -104,13 +104,62 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 		}
 		out.UserID = userID
 
-		costMicros, err := pricing.ComputeCreditCost(p.CreditsMicros, pricing.RetailMicrosPerCredit)
-		if err != nil {
-			return fmt.Errorf("store: pricing credits for request %q: %w", p.RequestID, err)
-		}
-		upstreamCostMicros, err := pricing.ComputeCreditCost(p.CreditsMicros, pricing.UpstreamMicrosPerCredit)
-		if err != nil {
-			return fmt.Errorf("store: pricing upstream credits for request %q: %w", p.RequestID, err)
+		// Two ways to price a request, and which one applies depends on what the data
+		// plane could measure.
+		//
+		// When the upstream reports its own credit meter, that number is authoritative
+		// and is used directly. When it does not, the request is priced from the token
+		// counts against model_prices, which is the same path the wallet hold already
+		// uses. The second case is not hypothetical: only the Kiro pool emits a credit
+		// meter, so any other upstream reports tokens alone.
+		//
+		// The important property is that neither path can silently produce a zero
+		// charge. Before this split, a report with no credits priced to exactly zero
+		// and was stored as priced, so served traffic became free with no error, no
+		// flag, and nothing in the reconciliation view. Failing that way is worse than
+		// failing loudly, because nothing surfaces it until an upstream invoice does.
+		var (
+			costMicros         int64
+			upstreamCostMicros int64
+			requestFeeMicros   int64
+			pricedWith         *int64
+			unpriced           bool
+		)
+		switch {
+		case p.CreditsMicros > 0:
+			costMicros, err = pricing.ComputeCreditCost(p.CreditsMicros, pricing.RetailMicrosPerCredit)
+			if err != nil {
+				return fmt.Errorf("store: pricing credits for request %q: %w", p.RequestID, err)
+			}
+			upstreamCostMicros, err = pricing.ComputeCreditCost(p.CreditsMicros, pricing.UpstreamMicrosPerCredit)
+			if err != nil {
+				return fmt.Errorf("store: pricing upstream credits for request %q: %w", p.RequestID, err)
+			}
+		default:
+			rate, rateErr := findRateTx(ctx, tx, p.Model, p.OccurredAt)
+			if rateErr != nil {
+				return rateErr
+			}
+			if rate == nil {
+				// No price on file, not even the '*' fallback. The request was already
+				// served, so the row is still written; it is flagged instead, which is
+				// what /v1/admin/usage-audit reports on.
+				unpriced = true
+				break
+			}
+			retail, computeErr := pricing.Compute(p.Tokens, *rate)
+			if computeErr != nil {
+				return fmt.Errorf("store: pricing tokens for request %q: %w", p.RequestID, computeErr)
+			}
+			upstream, computeErr := pricing.Compute(p.Tokens, rate.UpstreamRate())
+			if computeErr != nil {
+				return fmt.Errorf("store: pricing upstream tokens for request %q: %w", p.RequestID, computeErr)
+			}
+			costMicros = retail.Micros
+			upstreamCostMicros = upstream.Micros
+			requestFeeMicros = retail.RequestFeeMicros
+			rateID := rate.ID
+			pricedWith = &rateID
 		}
 
 		var recordID int64
@@ -120,14 +169,16 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 				input_tokens, output_tokens, cache_read_tokens, cache_write_tokens,
 				cost_micros, upstream_cost_micros, upstream_cost_estimated, priced_with, unpriced,
 				credits_micros, credit_price_micros_per_credit, upstream_credit_price_micros_per_credit,
+				request_fee_micros,
 				upstream_account_id, latency_ms, status, tokens_estimated, created_at)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, false, NULL, false, $11, $12, $13, $14, $15, $16, $17, $18)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, false, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
 			ON CONFLICT (request_id) DO NOTHING
 			RETURNING id`,
 			userID, p.KeyID, p.RequestID, pricing.NormalizeModel(p.Model),
 			p.Tokens.Input, p.Tokens.Output, p.Tokens.CacheRead, p.Tokens.CacheWrite,
-			costMicros, upstreamCostMicros,
-			p.CreditsMicros, pricing.RetailMicrosPerCredit, pricing.UpstreamMicrosPerCredit,
+			costMicros, upstreamCostMicros, pricedWith, unpriced,
+			p.CreditsMicros, creditPriceForRow(p.CreditsMicros), upstreamCreditPriceForRow(p.CreditsMicros),
+			requestFeeMicros,
 			p.UpstreamAccountID, p.LatencyMS, p.Status, p.TokensEstimated,
 			p.OccurredAt.UTC(),
 		).Scan(&recordID)
@@ -202,12 +253,22 @@ func validateRecordUsage(p *RecordUsageParams) error {
 	if p.CreditsMicros < 0 {
 		return errors.New("store: usage credits cannot be negative")
 	}
+
 	switch p.Status {
 	case "":
 		p.Status = UsageStatusSuccess
 	case UsageStatusSuccess, UsageStatusError, UsageStatusCancelled:
 	default:
 		return fmt.Errorf("store: %q is not a valid usage status", p.Status)
+	}
+
+	// A report with neither a credit meter nor any tokens describes a request that
+	// consumed nothing measurable, and it would price to zero on every path. That is
+	// indistinguishable from a data plane that lost its usage numbers, so it is
+	// refused rather than stored as a free request. Errors and cancellations legally
+	// consume nothing, so they are exempt.
+	if p.CreditsMicros == 0 && p.Tokens.IsZero() && p.Status == UsageStatusSuccess {
+		return errors.New("store: a successful request must report either credits or token counts")
 	}
 	if p.OccurredAt.IsZero() {
 		p.OccurredAt = time.Now()
@@ -226,4 +287,25 @@ func validateRecordUsage(p *RecordUsageParams) error {
 		p.Model = p.Model[:200]
 	}
 	return nil
+}
+
+// creditPriceForRow reports the credit rate to store on a usage row.
+//
+// It is zero unless the row was actually priced from a credit meter. The check
+// constraint added in 0008 requires an unpriced row to carry a zero credit price,
+// and a token-priced row has no credit rate to attribute, so recording the constant
+// unconditionally would both violate the constraint and imply a basis that was
+// never used.
+func creditPriceForRow(creditsMicros int64) int64 {
+	if creditsMicros > 0 {
+		return pricing.RetailMicrosPerCredit
+	}
+	return 0
+}
+
+func upstreamCreditPriceForRow(creditsMicros int64) int64 {
+	if creditsMicros > 0 {
+		return pricing.UpstreamMicrosPerCredit
+	}
+	return 0
 }

@@ -22,6 +22,7 @@ const priceColumns = `
 	       cache_read_micros_per_1k, cache_write_micros_per_1k,
 	       upstream_input_micros_per_1k, upstream_output_micros_per_1k,
 	       upstream_cache_read_micros_per_1k, upstream_cache_write_micros_per_1k,
+	       request_fee_micros, upstream_request_fee_micros,
 	       effective_from, effective_to, source_note
 	FROM model_prices`
 
@@ -31,6 +32,7 @@ func scanRate(sc interface{ Scan(...any) error }) (*pricing.Rate, error) {
 		&r.CacheReadPer1k, &r.CacheWritePer1k,
 		&r.UpstreamInputPer1k, &r.UpstreamOutputPer1k,
 		&r.UpstreamCacheReadPer1k, &r.UpstreamCacheWritePer1k,
+		&r.RequestFee, &r.UpstreamRequestFee,
 		&r.EffectiveFrom, &r.EffectiveTo, &r.SourceNote)
 	if err != nil {
 		return nil, err
@@ -123,16 +125,20 @@ func (s *Store) ListRates(ctx context.Context, model string, includeExpired bool
 
 // SetRateParams carries a new price.
 type SetRateParams struct {
-	Model           string
-	InputPer1k      int64
-	OutputPer1k     int64
-	CacheReadPer1k  int64
-	CacheWritePer1k int64
+	Model                   string
+	InputPer1k              int64
+	OutputPer1k             int64
+	CacheReadPer1k          int64
+	CacheWritePer1k         int64
 	UpstreamInputPer1k      int64
 	UpstreamOutputPer1k     int64
 	UpstreamCacheReadPer1k  int64
 	UpstreamCacheWritePer1k int64
-	SourceNote      string
+	// RequestFee is the flat per-request charge in micro-VND; UpstreamRequestFee is
+	// its cost basis, kept so margin reporting does not treat the retail fee as cost.
+	RequestFee         int64
+	UpstreamRequestFee int64
+	SourceNote         string
 	// EffectiveFrom defaults to now when zero. A future value schedules a price
 	// change; a past value is allowed but only affects usage recorded after this
 	// call, since cost_micros on existing rows is frozen at insert time.
@@ -156,7 +162,8 @@ func (s *Store) SetRate(ctx context.Context, p SetRateParams) (*pricing.Rate, er
 		return nil, fmt.Errorf("store: a price needs a model")
 	}
 	if p.InputPer1k < 0 || p.OutputPer1k < 0 || p.CacheReadPer1k < 0 || p.CacheWritePer1k < 0 ||
-		p.UpstreamInputPer1k < 0 || p.UpstreamOutputPer1k < 0 || p.UpstreamCacheReadPer1k < 0 || p.UpstreamCacheWritePer1k < 0 {
+		p.UpstreamInputPer1k < 0 || p.UpstreamOutputPer1k < 0 || p.UpstreamCacheReadPer1k < 0 || p.UpstreamCacheWritePer1k < 0 ||
+		p.RequestFee < 0 || p.UpstreamRequestFee < 0 {
 		return nil, fmt.Errorf("store: prices cannot be negative")
 	}
 	from := p.EffectiveFrom
@@ -200,15 +207,18 @@ func (s *Store) SetRate(ctx context.Context, p SetRateParams) (*pricing.Rate, er
 			                          cache_read_micros_per_1k, cache_write_micros_per_1k,
 			                          upstream_input_micros_per_1k, upstream_output_micros_per_1k,
 			                          upstream_cache_read_micros_per_1k, upstream_cache_write_micros_per_1k,
+			                          request_fee_micros, upstream_request_fee_micros,
 			                          source_note, effective_from)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 			RETURNING id, model, input_micros_per_1k, output_micros_per_1k,
 			          cache_read_micros_per_1k, cache_write_micros_per_1k,
 			          upstream_input_micros_per_1k, upstream_output_micros_per_1k,
 			          upstream_cache_read_micros_per_1k, upstream_cache_write_micros_per_1k,
+			          request_fee_micros, upstream_request_fee_micros,
 			          effective_from, effective_to, source_note`,
 			model, p.InputPer1k, p.OutputPer1k, p.CacheReadPer1k, p.CacheWritePer1k,
 			p.UpstreamInputPer1k, p.UpstreamOutputPer1k, p.UpstreamCacheReadPer1k, p.UpstreamCacheWritePer1k,
+			p.RequestFee, p.UpstreamRequestFee,
 			p.SourceNote, from)
 		rate, err := scanRate(row)
 		if err != nil {

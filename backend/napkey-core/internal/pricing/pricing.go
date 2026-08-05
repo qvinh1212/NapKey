@@ -82,9 +82,16 @@ type Rate struct {
 	UpstreamOutputPer1k     int64
 	UpstreamCacheReadPer1k  int64
 	UpstreamCacheWritePer1k int64
-	EffectiveFrom           time.Time
-	EffectiveTo             *time.Time
-	SourceNote              string
+	// RequestFee is charged once per request, in micro-VND, on top of the token
+	// rates. Coding-agent traffic is many small calls, so a token-only price
+	// undercharges the fixed cost each upstream call carries regardless of size.
+	// It also closes the reverse gap: without a token component a single huge
+	// request would pay only the flat fee.
+	RequestFee         int64
+	UpstreamRequestFee int64
+	EffectiveFrom      time.Time
+	EffectiveTo        *time.Time
+	SourceNote         string
 }
 
 func (r Rate) UpstreamRate() Rate {
@@ -92,6 +99,7 @@ func (r Rate) UpstreamRate() Rate {
 	r.OutputPer1k = r.UpstreamOutputPer1k
 	r.CacheReadPer1k = r.UpstreamCacheReadPer1k
 	r.CacheWritePer1k = r.UpstreamCacheWritePer1k
+	r.RequestFee = r.UpstreamRequestFee
 	return r
 }
 
@@ -127,6 +135,8 @@ type Cost struct {
 	OutputMicros     int64
 	CacheReadMicros  int64
 	CacheWriteMicros int64
+	// RequestFeeMicros is the flat per-request component of Micros.
+	RequestFeeMicros int64
 	// RateID is the model_prices row used. Zero means no price was found.
 	RateID int64
 	// Unpriced is true when no rate covered this model at this time. The request
@@ -163,7 +173,13 @@ func Compute(t Tokens, r Rate) (Cost, error) {
 		return Cost{}, fmt.Errorf("pricing: cache write tokens: %w", err)
 	}
 
-	total, err := addAll(input, output, cacheRead, cacheWrite)
+	if r.RequestFee < 0 {
+		return Cost{}, errors.New("pricing: request fee cannot be negative")
+	}
+	// The fee applies even to a request that reported no tokens: the upstream call
+	// was still made and still cost money. Charging zero for it is the gap that
+	// makes a token-only price exploitable.
+	total, err := addAll(input, output, cacheRead, cacheWrite, r.RequestFee)
 	if err != nil {
 		return Cost{}, err
 	}
@@ -173,6 +189,7 @@ func Compute(t Tokens, r Rate) (Cost, error) {
 		OutputMicros:     output,
 		CacheReadMicros:  cacheRead,
 		CacheWriteMicros: cacheWrite,
+		RequestFeeMicros: r.RequestFee,
 		RateID:           r.ID,
 	}, nil
 }

@@ -24,6 +24,10 @@ type rateView struct {
 	UpstreamOutputPer1k     int64 `json:"upstreamOutputMicrosPer1k"`
 	UpstreamCacheReadPer1k  int64 `json:"upstreamCacheReadMicrosPer1k"`
 	UpstreamCacheWritePer1k int64 `json:"upstreamCacheWriteMicrosPer1k"`
+	// RequestFee is the flat per-request charge in micro-VND, exposed so an operator
+	// can see the whole price rather than only its token component.
+	RequestFee         int64      `json:"requestFeeMicros"`
+	UpstreamRequestFee int64      `json:"upstreamRequestFeeMicros"`
 	EffectiveFrom   time.Time  `json:"effectiveFrom"`
 	EffectiveTo     *time.Time `json:"effectiveTo"`
 	SourceNote      string     `json:"sourceNote,omitempty"`
@@ -43,6 +47,8 @@ func toRateView(r pricing.Rate) rateView {
 		UpstreamOutputPer1k: r.UpstreamOutputPer1k,
 		UpstreamCacheReadPer1k: r.UpstreamCacheReadPer1k,
 		UpstreamCacheWritePer1k: r.UpstreamCacheWritePer1k,
+		RequestFee:         r.RequestFee,
+		UpstreamRequestFee: r.UpstreamRequestFee,
 		EffectiveFrom:   r.EffectiveFrom,
 		EffectiveTo:     r.EffectiveTo,
 		SourceNote:      r.SourceNote,
@@ -81,6 +87,11 @@ type setPriceRequest struct {
 	UpstreamOutputPer1k     int64 `json:"upstreamOutputMicrosPer1k"`
 	UpstreamCacheReadPer1k  int64 `json:"upstreamCacheReadMicrosPer1k"`
 	UpstreamCacheWritePer1k int64 `json:"upstreamCacheWriteMicrosPer1k"`
+	// RequestFee is charged once per request on top of the token rates, with
+	// UpstreamRequestFee as its cost basis. Both optional and default to zero, so a
+	// caller that only sets token rates keeps the previous token-only behaviour.
+	RequestFee         int64 `json:"requestFeeMicros"`
+	UpstreamRequestFee int64 `json:"upstreamRequestFeeMicros"`
 	// SourceNote records where these numbers came from: list price, exchange rate,
 	// margin. Required, because a price nobody can explain is a price nobody can
 	// defend in six months.
@@ -120,6 +131,8 @@ func (s *Server) handleAdminSetPrice(w http.ResponseWriter, r *http.Request) {
 		"upstreamOutputMicrosPer1k": req.UpstreamOutputPer1k,
 		"upstreamCacheReadMicrosPer1k": req.UpstreamCacheReadPer1k,
 		"upstreamCacheWriteMicrosPer1k": req.UpstreamCacheWritePer1k,
+		"requestFeeMicros":              req.RequestFee,
+		"upstreamRequestFeeMicros":      req.UpstreamRequestFee,
 	} {
 		if value < 0 {
 			fields[name] = "must not be negative"
@@ -150,6 +163,8 @@ func (s *Server) handleAdminSetPrice(w http.ResponseWriter, r *http.Request) {
 		UpstreamOutputPer1k: req.UpstreamOutputPer1k,
 		UpstreamCacheReadPer1k: req.UpstreamCacheReadPer1k,
 		UpstreamCacheWritePer1k: req.UpstreamCacheWritePer1k,
+		RequestFee:         req.RequestFee,
+		UpstreamRequestFee: req.UpstreamRequestFee,
 		SourceNote:      strings.TrimSpace(req.SourceNote),
 		EffectiveFrom:   effectiveFrom,
 	})
@@ -177,6 +192,8 @@ func (s *Server) handleAdminSetPrice(w http.ResponseWriter, r *http.Request) {
 			"upstreamOutputMicrosPer1k": rate.UpstreamOutputPer1k,
 			"upstreamCacheReadMicrosPer1k": rate.UpstreamCacheReadPer1k,
 			"upstreamCacheWriteMicrosPer1k": rate.UpstreamCacheWritePer1k,
+			"requestFeeMicros":              rate.RequestFee,
+			"upstreamRequestFeeMicros":      rate.UpstreamRequestFee,
 			"effectiveFrom":         rate.EffectiveFrom.UTC().Format(time.RFC3339),
 			"sourceNote":            rate.SourceNote,
 		},
@@ -245,6 +262,10 @@ func (s *Server) handleAdminQuotePrice(w http.ResponseWriter, r *http.Request) {
 			"output":     costView(cost.OutputMicros),
 			"cacheRead":  costView(cost.CacheReadMicros),
 			"cacheWrite": costView(cost.CacheWriteMicros),
+			// Broken out because it is the component that does not scale with tokens:
+			// a quote that folded it into the total would make a small request look
+			// mispriced rather than flat-fee dominated.
+			"requestFee": costView(cost.RequestFeeMicros),
 		},
 	})
 }
