@@ -77,9 +77,16 @@ the whole API hostname.
 account pool; any other value keeps 9Router, so a typo cannot silently move
 traffic onto a pool that may hold no accounts.
 
-The process refuses to start when neither upstream can serve, so a missing
-endpoint or key fails the deploy instead of every request. The startup log line
-`Upstream: ...` records which one was chosen.
+The startup log records which upstream was chosen as `Upstream: ...`. When neither
+can serve, the line reads `No usable upstream, so every request will be refused` and
+the process **still starts**. That is deliberate: an empty account pool is the state a
+fresh deployment begins in, and it is repaired by adding an account through the admin
+panel that this same process serves, so exiting would remove the only way to fix it.
+Read that warning as a failed deploy even though the container is up.
+
+Requests fail closed while it persists: each is refused with a 503, and `/status`
+reports zero capacity, so the outage is visible rather than silently served through an
+upstream nobody selected.
 
 Check reachability without waiting for a customer request. The admin API is
 restricted to the configured admin host, so run this against that hostname or from
@@ -122,7 +129,7 @@ consider changing it:
   cannot map them back to a public id customers can send.
 
 The retired OpenAI ids (`gpt-4o`, `gpt-4`, `gpt-3.5-turbo`) are not advertised, and are
-rewritten to a served model if a client sends one anyway ? they are what an OpenAI SDK
+rewritten to a served model if a client sends one anyway — they are what an OpenAI SDK
 sends by default, and forwarding them unchanged would 404 after the request had already
 been authenticated and held against the wallet. `auto` is **not** rewritten: the
 upstream publishes its own `auto` route, and replacing it with a fixed model would strip
@@ -135,8 +142,8 @@ that is 38 models, while the price book names 5; the other 33 fall through to th
 row, which charges the same rate and fee, so **nothing is served free**.
 
 What is not covered is the cost side. The 2,097 VND/1M and 110 VND/call basis was
-measured on Claude traffic. The pool also carries non-Claude models ? `gpt-5.6-*`,
-`deepseek-3.2`, `glm-5`, `minimax-*`, `qwen3-coder-next` ? whose real upstream cost is
+measured on Claude traffic. The pool also carries non-Claude models — `gpt-5.6-*`,
+`deepseek-3.2`, `glm-5`, `minimax-*`, `qwen3-coder-next` — whose real upstream cost is
 unmeasured. If any of them costs more than the Claude basis, margin reporting will show
 roughly 72% while the actual margin is lower.
 
@@ -153,6 +160,34 @@ credit meter. `napkey-core` prices it from token counts against `model_prices`, 
 every model on sale needs a row there before enabling 9Router. A successful request
 that reports neither credits nor tokens is refused rather than stored as free, and
 `/v1/admin/usage-audit` lists anything served without a price.
+
+### The upstream injects a prompt into every request
+
+Measured on the live endpoint: a one-word prompt is billed as ~4,541 input tokens, and a
+prompt 500 words longer is billed 498 tokens more. The increment tracks the caller's text
+exactly, so the remainder is a fixed block the upstream prepends and then charges for.
+
+It is not NapKey's doing. The translator copies the customer's `system` field and nothing
+else, no prompt filter runs on the 9Router path, and both `/v1/messages` and
+`/v1/chat/completions` report the same counts.
+
+**Customers pay it.** The upstream bills us for those tokens, so absorbing them would
+sell below cost. Margin is unharmed, but a customer who sends "Hi" is billed for ~4,500
+input tokens, and support cannot tell an inflated bill from a legitimate one by eye. So
+each request logs the gap at info level:
+
+```
+[9Router] upstream prompt overhead for claude-sonnet-5: billed 4552 input tokens,
+caller sent ~11, overhead ~4541 (100% of the charge)
+```
+
+The figure is derived per request rather than hardcoded, because it is the upstream's
+prompt and can change without notice. Watch it for two things: a sudden jump means the
+upstream changed its prompt and every bill moved with it, and the line disappearing means
+the overhead is gone and the pricing assumption should be revisited.
+
+Two open questions worth resolving before volume grows: whether the upstream can be asked
+to stop injecting it, and whether the overhead should be disclosed in published pricing.
 
 ### Pricing on the token path
 
@@ -185,7 +220,7 @@ Two consequences worth knowing when reading the ledger:
   calls than it can pay for.
 
 Changing the fee is a price change, not a config change: add a migration that closes
-the open period and inserts a successor. Never edit a row in place ? settled usage is
+the open period and inserts a successor. Never edit a row in place — settled usage is
 priced against it, and `usage_records.request_fee_micros` is frozen at insert time.
 
 ## Incident priorities
