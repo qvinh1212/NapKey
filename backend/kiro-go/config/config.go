@@ -496,6 +496,12 @@ func GetAccounts() []Account {
 func GetEnabledAccounts() []Account {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
+	// Nil before the config is loaded. Every other reader of cfg guards this; without
+	// the guard, anything that inspects the pool before load panics instead of seeing
+	// the empty pool that is the honest answer.
+	if cfg == nil {
+		return nil
+	}
 	var accounts []Account
 	for _, a := range cfg.Accounts {
 		if a.Enabled {

@@ -66,15 +66,24 @@ func main() {
 	// 初始化账号池
 	pool.GetPool()
 
-	// Resolve the upstream before binding a port. A missing 9Router endpoint or key,
-	// or an empty account pool with 9Router switched off, means no request can be
-	// served: failing the deploy here surfaces it in the deploy log instead of as a
-	// customer-facing outage discovered one refused request at a time.
-	upstream, err := proxy.DescribeUpstream()
-	if err != nil {
-		logger.Fatalf("No usable upstream: %v", err)
+	// Report which upstream will serve traffic, so a misconfiguration is visible in
+	// the deploy log rather than discovered by the first customer whose request is
+	// refused.
+	//
+	// Deliberately not fatal. An empty account pool is the state a fresh deployment
+	// starts in, and the fix is to add an account through the admin panel — which is
+	// served by this process, so exiting here removes the only way to repair it. The
+	// same applies to a missing 9Router key: the operator sets it and redeploys, and a
+	// crash loop in between costs the admin panel and /health for no benefit.
+	//
+	// Requests still fail closed. Each one is refused with a 503 rather than served
+	// through an upstream nobody selected, and capacity() reports zero available so
+	// the public status page shows the outage.
+	if upstream, err := proxy.DescribeUpstream(); err != nil {
+		logger.Warnf("No usable upstream, so every request will be refused: %v", err)
+	} else {
+		logger.Infof("Upstream: %s", upstream)
 	}
-	logger.Infof("Upstream: %s", upstream)
 
 	// 创建 HTTP 处理器（包含后台刷新任务）
 	handler := proxy.NewHandler()
