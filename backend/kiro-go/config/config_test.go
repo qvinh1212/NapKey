@@ -84,7 +84,7 @@ func TestUpdateSettingsPatchPreservesOmittedAPIKeyFields(t *testing.T) {
 	if !IsApiKeyRequired() {
 		t.Fatalf("expected requireApiKey to stay enabled")
 	}
-	if got := GetPassword(); got != "new-admin-password" {
+	if got, _ := GetPassword(); got != "new-admin-password" {
 		t.Fatalf("expected password to update, got %q", got)
 	}
 }
@@ -109,7 +109,7 @@ func TestUpdateSettingsPatchCanExplicitlyDisableAPIKey(t *testing.T) {
 	if IsApiKeyRequired() {
 		t.Fatalf("expected requireApiKey to be disabled")
 	}
-	if got := GetPassword(); got != "admin-password" {
+	if got, _ := GetPassword(); got != "admin-password" {
 		t.Fatalf("expected password to be preserved, got %q", got)
 	}
 }

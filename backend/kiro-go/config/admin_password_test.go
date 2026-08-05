@@ -37,7 +37,10 @@ func TestLoadRotatesLegacyDefaultPassword(t *testing.T) {
 		t.Fatalf("init: %v", err)
 	}
 
-	pw := GetPassword()
+	pw, ok := GetPassword()
+	if !ok {
+		t.Fatal("no password is available after a successful load")
+	}
 	if pw == legacyDefaultPassword {
 		t.Fatalf("legacy default password was preserved")
 	}
@@ -68,7 +71,7 @@ func TestLoadRotatesLegacyDefaultPassword(t *testing.T) {
 	if err := Init(path); err != nil {
 		t.Fatalf("re-init: %v", err)
 	}
-	if got := GetPassword(); got != pw {
+	if got, _ := GetPassword(); got != pw {
 		t.Fatalf("password changed across reload: got %q want %q", got, pw)
 	}
 	if got := TakeGeneratedPassword(); got != "" {
@@ -84,8 +87,9 @@ func TestLoadRotatesEmptyPassword(t *testing.T) {
 	if err := Init(path); err != nil {
 		t.Fatalf("init: %v", err)
 	}
-	if GetPassword() == "" {
-		t.Fatalf("empty password must not survive load")
+	pw, ok := GetPassword()
+	if !ok || pw == "" {
+		t.Fatalf("empty password must not survive load (ok=%v, pw=%q)", ok, pw)
 	}
 	if TakeGeneratedPassword() == "" {
 		t.Fatalf("expected the generated password to be reported")
@@ -100,7 +104,7 @@ func TestLoadPreservesOperatorPassword(t *testing.T) {
 	if err := Init(path); err != nil {
 		t.Fatalf("init: %v", err)
 	}
-	if got := GetPassword(); got != chosen {
+	if got, _ := GetPassword(); got != chosen {
 		t.Fatalf("GetPassword = %q, want %q", got, chosen)
 	}
 	if got := TakeGeneratedPassword(); got != "" {
@@ -115,8 +119,8 @@ func TestLoadGeneratesPasswordOnFirstRun(t *testing.T) {
 	if err := Init(path); err != nil {
 		t.Fatalf("init: %v", err)
 	}
-	pw := GetPassword()
-	if pw == "" || pw == legacyDefaultPassword {
+	pw, ok := GetPassword()
+	if !ok || pw == "" || pw == legacyDefaultPassword {
 		t.Fatalf("first run produced an unusable password: %q", pw)
 	}
 	if len(pw) < 16 {
@@ -132,7 +136,7 @@ func TestSetPasswordClearsGeneratedPassword(t *testing.T) {
 		t.Fatalf("init: %v", err)
 	}
 	SetPassword("from-environment")
-	if got := GetPassword(); got != "from-environment" {
+	if got, _ := GetPassword(); got != "from-environment" {
 		t.Fatalf("GetPassword = %q, want %q", got, "from-environment")
 	}
 	if got := TakeGeneratedPassword(); got != "" {

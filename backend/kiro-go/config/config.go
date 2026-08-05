@@ -466,10 +466,24 @@ func Get() *Config {
 	return cfg
 }
 
-func GetPassword() string {
+// GetPassword returns the admin password, and reports whether one is available.
+//
+// The ok flag exists because the empty string cannot stand in for "no password".
+// The admin gate authenticates by comparing the submitted password against this one,
+// so returning "" for an unloaded config makes a request that sends no password at
+// all compare equal and take over the panel. Callers must refuse when ok is false
+// rather than treating the returned string as an expected value.
+//
+// Load already rotates an empty or legacy password to a fresh secret, so ok is
+// false only before the config is loaded -- but that is exactly when an admin
+// request must not be let through.
+func GetPassword() (string, bool) {
 	cfgLock.RLock()
 	defer cfgLock.RUnlock()
-	return cfg.Password
+	if cfg == nil || cfg.Password == "" {
+		return "", false
+	}
+	return cfg.Password, true
 }
 
 func GetPort() int {

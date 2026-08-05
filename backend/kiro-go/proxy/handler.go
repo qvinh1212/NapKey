@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -2617,7 +2618,11 @@ func (h *Handler) handleAdminAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if password != config.GetPassword() {
+	// An unavailable password is not an empty one. Comparing against "" would let a
+	// request carrying no password match and take over the panel, so a config that
+	// has not been loaded refuses admin access outright.
+	expected, ok := config.GetPassword()
+	if !ok || subtle.ConstantTimeCompare([]byte(password), []byte(expected)) != 1 {
 		w.WriteHeader(401)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Unauthorized"})
 		return

@@ -20,6 +20,7 @@ func TestReadersDoNotPanicBeforeLoad(t *testing.T) {
 		"GetPort":               func() { GetPort() },
 		"GetHost":               func() { GetHost() },
 		"GetStats":              func() { GetStats() },
+		"GetPassword":           func() { GetPassword() },
 		"IsApiKeyRequired":      func() { IsApiKeyRequired() },
 		"GetLogLevel":           func() { GetLogLevel() },
 		"GetThinkingConfig":     func() { GetThinkingConfig() },
@@ -37,6 +38,23 @@ func TestReadersDoNotPanicBeforeLoad(t *testing.T) {
 			}()
 			read()
 		})
+	}
+}
+
+// An unloaded config must not report the admin password as usable.
+//
+// The admin gate authenticates with a comparison against this value, so handing back
+// the empty string would make a request carrying no password at all compare equal and
+// take over the panel. The ok flag is what keeps that from being expressible.
+func TestGetPasswordReportsNoPasswordAsUnavailable(t *testing.T) {
+	unloadConfig(t)
+
+	pw, ok := GetPassword()
+	if ok {
+		t.Error("an unloaded config reported a usable admin password")
+	}
+	if pw != "" {
+		t.Errorf("password = %q, want empty", pw)
 	}
 }
 
