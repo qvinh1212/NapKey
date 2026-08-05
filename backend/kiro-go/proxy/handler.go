@@ -505,6 +505,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer lease.releaseIfUnused()
+		if nineRouterConfigured() {
+			h.handleNineRouterMessages(w, ar)
+			return
+		}
 		h.handleClaudeMessages(w, ar)
 	case path == "/v1/messages/count_tokens" || path == "/messages/count_tokens":
 		ar := h.authenticateForClaude(w, r)
@@ -525,6 +529,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer lease.releaseIfUnused()
+		// The 9Router upstream replaces the account pool rather than joining it, so
+		// the switch happens before any pool selection. Authentication, rate limiting
+		// and the wallet hold above are unchanged: those belong to NapKey regardless
+		// of which upstream serves the request.
+		if nineRouterConfigured() {
+			h.handleNineRouterChat(w, ar)
+			return
+		}
 		h.handleOpenAIChat(w, ar)
 	case path == "/v1/responses" || path == "/responses":
 		ar := h.authenticateForOpenAI(w, r)
@@ -539,6 +551,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer lease.releaseIfUnused()
+		// No 9Router path for the Responses API yet. Falling through to the account
+		// pool would serve from the upstream the operator just switched away from, so
+		// this refuses instead of quietly using the other one.
+		if nineRouterConfigured() {
+			h.sendOpenAIError(w, http.StatusNotImplemented, "invalid_request_error",
+				"the responses API is not available on this upstream")
+			return
+		}
 		h.handleOpenAIResponses(w, ar)
 	case path == "/v1/models" || path == "/models":
 		h.handleModels(w, r)
@@ -619,11 +639,12 @@ func (h *Handler) handleHealth(w http.ResponseWriter, r *http.Request) {
 // handleStats 统计数据（需要 API Key 鉴权）
 func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	capacity := h.capacity()
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"status":          "ok",
 		"version":         config.Version,
-		"accounts":        h.pool.Count(),
-		"available":       h.pool.AvailableCount(),
+		"accounts":        capacity.Accounts,
+		"available":       capacity.Available,
 		"totalRequests":   atomic.LoadInt64(&h.totalRequests),
 		"successRequests": atomic.LoadInt64(&h.successRequests),
 		"failedRequests":  atomic.LoadInt64(&h.failedRequests),
@@ -635,6 +656,14 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 
 // handleModels 模型列表
 func (h *Handler) handleModels(w http.ResponseWriter, r *http.Request) {
+	// With 9Router serving, the account pool is empty by design, so the cache below
+	// can never fill and the static fallback would advertise models this upstream
+	// does not have. Ask the upstream what it actually serves instead.
+	if nineRouterConfigured() {
+		h.handleNineRouterModels(w, r)
+		return
+	}
+
 	// 尝试用缓存的真实模型列表
 	h.modelsCacheMu.RLock()
 	cached := h.cachedModels
@@ -2659,6 +2688,8 @@ func (h *Handler) handleAdminAPI(w http.ResponseWriter, r *http.Request) {
 		h.apiImportCredentials(w, r)
 	case path == "/status" && r.Method == "GET":
 		h.apiGetStatus(w, r)
+	case path == "/upstream/probe" && r.Method == "POST":
+		h.apiUpstreamProbe(w, r)
 	case path == "/settings" && r.Method == "GET":
 		h.apiGetSettings(w, r)
 	case path == "/settings" && r.Method == "POST":
@@ -4158,10 +4189,11 @@ func (h *Handler) apiImportCredentials(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) apiGetStatus(w http.ResponseWriter, r *http.Request) {
 	recentRequests, recentFailures := h.recentRequestStats(15*time.Minute, time.Now())
+	capacity := h.capacity()
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"version":         config.Version,
-		"accounts":        h.pool.Count(),
-		"available":       h.pool.AvailableCount(),
+		"accounts":        capacity.Accounts,
+		"available":       capacity.Available,
 		"totalRequests":   h.totalRequests,
 		"successRequests": h.successRequests,
 		"failedRequests":  h.failedRequests,

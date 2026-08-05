@@ -26,6 +26,20 @@ services:
       ADMIN_HOST: ${KIRO_ADMIN_HOST:-}
       NAPKEY_CORE_URL: http://napkey-core:8081
       NAPKEY_INTERNAL_TOKEN: ${KIRO_ADMIN_PASSWORD_V2}
+      # 9Router is the upstream. Set NINEROUTER_ENABLED=false only to fall back to the
+      # local account pool; kiro-go refuses to start when neither upstream can serve,
+      # so a missing endpoint or key fails the deploy instead of every request.
+      NINEROUTER_ENABLED: ${NINEROUTER_ENABLED:-true}
+      NINEROUTER_RUNTIME_BASE_URL: ${NINEROUTER_RUNTIME_BASE_URL:-}
+      NINEROUTER_API_KEY: ${NINEROUTER_API_KEY:-}
+      NINEROUTER_CF_ACCESS_CLIENT_ID: ${NINEROUTER_CF_ACCESS_CLIENT_ID:-}
+      NINEROUTER_CF_ACCESS_CLIENT_SECRET: ${NINEROUTER_CF_ACCESS_CLIENT_SECRET:-}
+      NINEROUTER_TIMEOUT_MS: ${NINEROUTER_TIMEOUT_MS:-180000}
+      # Defaults to Viberouter/ inside kiro-go when unset. A prefix naming a pool the
+      # upstream does not serve fails every request, so verify it against /v1/models
+      # before changing it.
+      NINEROUTER_MODEL_PREFIX: ${NINEROUTER_MODEL_PREFIX:-Viberouter/}
+      NINEROUTER_MODEL_MAP: ${NINEROUTER_MODEL_MAP:-}
     volumes:
       - kiro-data:/app/data
     expose: ["8080"]
