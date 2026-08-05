@@ -61,3 +61,57 @@ func hasIssue(issues []Issue, code string) bool {
 	}
 	return false
 }
+
+// A single healthy upstream is at full capacity, not low capacity.
+//
+// kiro-go reports the 9Router upstream as one link: Accounts=1, Available=1 when it is
+// serving normally. The old threshold treated any Available <= 1 as nearly exhausted,
+// so a system answering every request showed customers "degraded" on the public status
+// page permanently -- which trains them to ignore the page for a real incident.
+func TestEvaluateTreatsASingleUpstreamAsFullCapacity(t *testing.T) {
+	got := Evaluate(true, &DataPlaneSnapshot{
+		Accounts: 1, Available: 1, RecentRequests: 100,
+		UsageHealthy: 1,
+	}, nil)
+
+	if got.Status != StatusOperational {
+		t.Fatalf("status = %q, want operational: a healthy single upstream is not degraded", got.Status)
+	}
+	if hasIssue(got.Issues, "upstream_capacity_low") {
+		t.Error("a single upstream at full capacity was reported as low capacity")
+	}
+}
+
+// A single upstream that cannot serve is still an outage.
+//
+// Relaxing the low-capacity warning must not also silence the case that matters.
+func TestEvaluateStillReportsASingleUpstreamOutage(t *testing.T) {
+	got := Evaluate(true, &DataPlaneSnapshot{
+		Accounts: 1, Available: 0, RecentRequests: 100,
+		UsageHealthy: 1,
+	}, nil)
+
+	if got.Status != StatusOutage {
+		t.Fatalf("status = %q, want outage", got.Status)
+	}
+	if !hasIssue(got.Issues, "upstream_capacity_empty") {
+		t.Error("an unusable single upstream was not reported as empty capacity")
+	}
+}
+
+// A real pool down to its last account is still degraded.
+//
+// This is the case the threshold was written for, and it must survive the fix.
+func TestEvaluateStillWarnsOnAPoolDownToItsLastAccount(t *testing.T) {
+	got := Evaluate(true, &DataPlaneSnapshot{
+		Accounts: 3, Available: 1, RecentRequests: 100,
+		UsageHealthy: 1,
+	}, nil)
+
+	if !hasIssue(got.Issues, "upstream_capacity_low") {
+		t.Error("a pool with one account left was not reported as low capacity")
+	}
+	if got.Status != StatusDegraded {
+		t.Fatalf("status = %q, want degraded", got.Status)
+	}
+}

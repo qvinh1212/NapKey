@@ -54,7 +54,7 @@ func Evaluate(postgresOK bool, snapshot *DataPlaneSnapshot, dataPlaneErr error) 
 	}
 	if snapshot.Available <= 0 {
 		add("upstream_capacity_empty", StatusOutage)
-	} else if snapshot.Available <= 1 || (snapshot.Accounts >= 4 && out.AvailablePercent <= 25) {
+	} else if capacityIsLow(snapshot.Accounts, snapshot.Available, out.AvailablePercent) {
 		add("upstream_capacity_low", StatusDegraded)
 	}
 	if snapshot.UsageHealthy != 1 {
@@ -73,6 +73,24 @@ func Evaluate(postgresOK bool, snapshot *DataPlaneSnapshot, dataPlaneErr error) 
 		add("error_rate_high", StatusDegraded)
 	}
 	return out
+}
+
+// capacityIsLow reports whether the remaining capacity is worth warning about.
+//
+// "One left" only means nearly exhausted when there was more than one to begin with.
+// The 9Router upstream is a single link, so it reports Accounts=1, Available=1 when
+// perfectly healthy -- and a bare `Available <= 1` test called that degraded, which
+// showed customers a permanent yellow status page for a system serving every request
+// normally. Anything below one is already handled as an outage before this is reached.
+//
+// For a real pool the warning is unchanged: down to the last account, or a quarter of
+// a pool of four or more still available.
+func capacityIsLow(accounts, available int, availablePercent float64) bool {
+	if accounts <= 1 {
+		// Nothing to be low against: a single upstream is either serving or it is not.
+		return false
+	}
+	return available <= 1 || (accounts >= 4 && availablePercent <= 25)
 }
 
 func roundPercent(value float64) float64 {

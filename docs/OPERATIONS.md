@@ -226,6 +226,10 @@ priced against it, and `usage_records.request_fee_micros` is frozen at insert ti
 ## Incident priorities
 
 - Critical: wallet drift, expired open holds, stuck payment processing, usage reports dropped.
-- Warning: unmatched Casso payments, key sync failures, pool capacity below one usable account.
+- Warning: unmatched Casso payments, key sync failures, upstream capacity low.
+  Capacity is only "low" when there is something to be low against: a pool down to its
+  last account, or a quarter of a pool of four or more. A single 9Router upstream reports
+  one link, which is full capacity, not a warning -- it is either serving or it is an
+  outage. Treat `upstream_capacity_empty` as the incident for that path.
 - Warning: `[9Router] no usage reported` in the data plane log means traffic was served but could not be priced.
 - Never auto-correct wallet drift. Investigate and post an audited adjustment if required.
