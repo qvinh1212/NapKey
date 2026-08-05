@@ -27,8 +27,10 @@ services:
       NAPKEY_CORE_URL: http://napkey-core:8081
       NAPKEY_INTERNAL_TOKEN: ${KIRO_ADMIN_PASSWORD_V2}
       # 9Router is the upstream. Set NINEROUTER_ENABLED=false only to fall back to the
-      # local account pool; kiro-go refuses to start when neither upstream can serve,
-      # so a missing endpoint or key fails the deploy instead of every request.
+      # local account pool. When neither upstream can serve, kiro-go still starts and
+      # logs "No usable upstream" while refusing each request with a 503: an empty pool
+      # is repaired through the admin panel this same container serves, so exiting would
+      # remove the only way in. Treat that log line as a failed deploy.
       NINEROUTER_ENABLED: ${NINEROUTER_ENABLED:-true}
       NINEROUTER_RUNTIME_BASE_URL: ${NINEROUTER_RUNTIME_BASE_URL:-}
       NINEROUTER_API_KEY: ${NINEROUTER_API_KEY:-}

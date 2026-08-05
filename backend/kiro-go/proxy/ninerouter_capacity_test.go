@@ -68,11 +68,11 @@ func TestCapacityReportsNineRouterNotTheEmptyPool(t *testing.T) {
 	}
 }
 
-// A misconfigured upstream must fail the startup check rather than the first request.
+// A misconfigured upstream must be reported, not passed off as usable.
 //
-// DescribeUpstream is what main calls before binding a port. Returning nil here
-// would let the process come up healthy and refuse every request afterwards, which
-// is the failure mode the check exists to prevent.
+// main logs this at startup, so returning nil here would put "Upstream: " in the
+// deploy log for a process that cannot serve, and the operator would go looking for
+// the fault somewhere else entirely.
 func TestDescribeUpstreamRefusesIncompleteConfig(t *testing.T) {
 	t.Setenv(envNineRouterEnabled, "true")
 	t.Setenv(envNineRouterBaseURL, "")
