@@ -52,6 +52,35 @@ func (s *Store) ListOpenOperationsAlerts(ctx context.Context, limit int) ([]Oper
 	return alerts, rows.Err()
 }
 
+// RecordBackgroundJobResult opens or resolves an alert for a periodic job.
+//
+// Background jobs log a warning and carry on, which is right -- one failed sweep must
+// not stop the process. But it means a job can stay broken indefinitely with nothing
+// to show for it: two queries failed on every tick from at least 2026-07-30 until
+// 2026-08-06, and were found only by reading container logs during an unrelated
+// deploy. While they were broken the unmatched-payment alert never opened and expired
+// trial credit was never reclaimed.
+//
+// The alert clears itself on the first successful run, so a transient database blip
+// resolves without anyone touching it, while a real breakage stays visible on the
+// operations dashboard.
+//
+// Failing to record the alert is deliberately not returned to the caller: the job's
+// own error is the interesting one, and masking it with a bookkeeping failure would
+// lose the very information this exists to surface.
+func (s *Store) RecordBackgroundJobResult(ctx context.Context, job string, jobErr error) {
+	fingerprint := "background-job:" + job
+	if jobErr == nil {
+		_, _ = s.db.ExecContext(ctx, `UPDATE operations_alerts SET status = 'resolved', resolved_at = now()
+			WHERE fingerprint = $1 AND status = 'open'`, fingerprint)
+		return
+	}
+	_, _ = s.db.ExecContext(ctx, `INSERT INTO operations_alerts (alert_type, severity, fingerprint, title, metadata)
+		VALUES ('background_job_failed', 'warning', $1, $2, jsonb_build_object('error', $3::text, 'job', $4::text))
+		ON CONFLICT (fingerprint) WHERE status = 'open' DO UPDATE SET metadata = excluded.metadata`,
+		fingerprint, "Background job "+job+" is failing", jobErr.Error(), job)
+}
+
 func (s *Store) RefreshOperationsAlerts(ctx context.Context) error {
 	type check struct {
 		fingerprint string

@@ -17,8 +17,8 @@ import (
 	"time"
 
 	"napkey-core/internal/config"
-	"napkey-core/internal/httpapi"
 	"napkey-core/internal/dataplane"
+	"napkey-core/internal/httpapi"
 	"napkey-core/internal/kiro"
 	"napkey-core/internal/logger"
 	"napkey-core/internal/mail"
@@ -131,7 +131,7 @@ func run(migrateOnly bool) error {
 	syncer := dataplane.NewSyncer(st, kiroClient, cfg.KiroSyncInterval)
 	go syncer.Run(rootCtx)
 	go payments.NewWorker(st).Run(rootCtx)
-	go payments.NewReconciler(st,cfg.CassoAPIKey).Run(rootCtx)
+	go payments.NewReconciler(st, cfg.CassoAPIKey).Run(rootCtx)
 	go runJanitor(rootCtx, st)
 	go runWalletReconciler(rootCtx, st)
 
@@ -176,9 +176,11 @@ func runWalletReconciler(ctx context.Context, st *store.Store) {
 		} else if count > 0 {
 			logger.Errorf("wallet balance reconciliation found drift in %d wallets", count)
 		}
-		if err := st.RefreshOperationsAlerts(ctx); err != nil {
-			logger.Warnf("refreshing operations alerts failed: %v", err)
+		alertsErr := st.RefreshOperationsAlerts(ctx)
+		if alertsErr != nil {
+			logger.Warnf("refreshing operations alerts failed: %v", alertsErr)
 		}
+		st.RecordBackgroundJobResult(ctx, "operations-alerts", alertsErr)
 		select {
 		case <-ctx.Done():
 			return
@@ -214,17 +216,25 @@ func runJanitor(ctx context.Context, st *store.Store) {
 		} else if n > 0 {
 			logger.Debugf("pruned %d old auth attempt(s)", n)
 		}
-		if n, err := st.ReleaseExpiredHolds(sweepCtx, 500); err != nil {
-			logger.Warnf("releasing expired wallet holds failed: %v", err)
-		} else if n > 0 {
-			logger.Infof("released %d expired wallet hold(s)", n)
+		released, holdsErr := st.ReleaseExpiredHolds(sweepCtx, 500)
+		if holdsErr != nil {
+			logger.Warnf("releasing expired wallet holds failed: %v", holdsErr)
+		} else if released > 0 {
+			logger.Infof("released %d expired wallet hold(s)", released)
 		}
-		if n, err := st.ExpirePromotionalCredits(sweepCtx, 500); err != nil {
-			logger.Warnf("expiring promotional credits failed: %v", err)
+		st.RecordBackgroundJobResult(sweepCtx, "expired-holds", holdsErr)
+		n, expiryErr := st.ExpirePromotionalCredits(sweepCtx, 500)
+		if expiryErr != nil {
+			logger.Warnf("expiring promotional credits failed: %v", expiryErr)
 		} else if n > 0 {
 			logger.Infof("processed %d expired promotional wallet(s)", n)
 		}
-		if n,err:=st.CountStaleUnmatchedPayments(sweepCtx,30*time.Minute);err!=nil{logger.Warnf("checking unmatched Casso payments failed: %v",err)}else if n>0{logger.Warnf("%d Casso payment(s) have been unmatched for more than 30 minutes",n)}
+		st.RecordBackgroundJobResult(sweepCtx, "promotional-expiry", expiryErr)
+		if n, err := st.CountStaleUnmatchedPayments(sweepCtx, 30*time.Minute); err != nil {
+			logger.Warnf("checking unmatched Casso payments failed: %v", err)
+		} else if n > 0 {
+			logger.Warnf("%d Casso payment(s) have been unmatched for more than 30 minutes", n)
+		}
 	}
 
 	sweep()
