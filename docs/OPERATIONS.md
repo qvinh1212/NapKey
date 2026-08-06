@@ -33,23 +33,21 @@ docker exec -e PGPASSWORD="$(docker exec $PG printenv POSTGRES_PASSWORD)" $PG \
 ### The full upstream chain
 
 ```
-customer -> kiro-go -> Viberouter -> vibegateway -> provider
+customer -> kiro-go -> 9Router (vibegateway) -> provider
 ```
 
 - **kiro-go** (this repo, `backend/kiro-go`) sends `Viberouter/<model>` to whatever
-  `NINEROUTER_RUNTIME_BASE_URL` points at.
-- **Viberouter** (separate repo) forwards through `NineRouterAdapter`, and its own
-  `NINEROUTER_RUNTIME_BASE_URL` points one hop further on.
-- **vibegateway** runs on the host, not in a container: `/opt/vibegateway`, listening on
+  `NINEROUTER_RUNTIME_BASE_URL` points at. That prefix names a **model pool**, not a
+  service; `viberouter.io.vn` is simply the domain 9Router answers on. There is no
+  separate forwarding service between the two, whatever the hostnames suggest.
+- **9Router** runs on the host, not in a container: `/opt/vibegateway`, listening on
   `10.0.1.1:20242`, started as `/usr/bin/node /opt/vibegateway/dist/main.js`. Find it with
   `ss -tlnp | grep 20242` and read its source at `/proc/<pid>/cwd`. It is derived from
   `github.com/decolua/9router` and carries a local patch under `ops/9router-patches/`.
-- **provider** is configured in the Viberouter dashboard under
-  `/dashboard/providers`, and is the layer that injects the system prompt and ignores
-  `max_tokens`.
+- **provider** is configured in the 9Router dashboard under `/dashboard/providers`, and is
+  the layer that injects the system prompt and ignores `max_tokens`.
 
-"9Router" in this repo means that whole chain below kiro-go, not one component. Nothing
-in it is a third-party service to petition; every hop is operated here.
+Nothing in this chain is a third-party service to petition; both hops are operated here.
 
 ## Release gate
 
@@ -329,11 +327,10 @@ have one exceeded, which is the common case on the OpenAI path.
 
 **Where the cap is lost.** Traced through every layer on 2026-08-06: `kiro-go` forwards
 `max_tokens` unchanged (both request rewriters edit a generic map precisely so unmodelled
-fields survive), Viberouter spreads the body through `NineRouterAdapter`, and vibegateway
-at `/opt/vibegateway` validates the field in `protocols/chat-completions.ts` but never
-translates it into an output limit -- it does not appear in `upstream.ts` at all. The
-provider behind it ignores it. Every layer we own is correct, so there is nothing to fix
-in this repo.
+fields survive), and 9Router at `/opt/vibegateway` validates the field in
+`protocols/chat-completions.ts` but never translates it into an output limit -- it does
+not appear in `upstream.ts` at all. The provider behind it ignores it. Every layer we own
+is correct, so there is nothing to fix in this repo.
 
 Three field names were tried against the live endpoint, all with a limit of 100:
 `max_tokens` returned 1,121 tokens, `max_completion_tokens` 757, `max_output_tokens` 875.

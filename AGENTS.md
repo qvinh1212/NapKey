@@ -23,20 +23,22 @@ Two traps worth naming, because both have cost real time:
 ## The upstream chain
 
 ```
-customer -> kiro-go -> Viberouter -> vibegateway -> provider
+customer -> kiro-go -> 9Router (vibegateway) -> provider
 ```
 
-"9Router" in this repo means that whole chain below `kiro-go`, not one component:
+Three hops, not four. `viberouter.io.vn` is **just the domain 9Router answers on** — it is
+not a service in the path, and `Viberouter/<model>` is a pool name, not a component. An
+earlier version of this file listed it as a forwarding hop; that was wrong and it cost a
+session chasing a container that does not exist.
 
-- **Viberouter** — separate repo (`D:\WorkCoding\Viberouter` on the dev machine), forwards
-  through `NineRouterAdapter.ts`. Its own `NINEROUTER_RUNTIME_BASE_URL` points one hop on.
-- **vibegateway** — runs on the host, *not* in a container. Source at `/opt/vibegateway`,
+- **9Router** — runs on the host, *not* in a container. Source at `/opt/vibegateway`,
   listening on `10.0.1.1:20242`. Locate it with `ss -tlnp | grep 20242`, then read
-  `/proc/<pid>/cwd`. Derived from `github.com/decolua/9router` plus a local patch.
-- **provider** — configured in the Viberouter dashboard at `/dashboard/providers`. This is
+  `/proc/<pid>/cwd`. Derived from `github.com/decolua/9router` plus a local patch under
+  `ops/9router-patches/`. `kiro-go` reaches it through `NINEROUTER_RUNTIME_BASE_URL`.
+- **provider** — configured in the 9Router dashboard at `/dashboard/providers`. This is
   the layer that injects a system prompt and ignores `max_tokens`.
 
-Every hop is operated by us. None of it is a third-party service to file a bug with. If a
+Both hops are operated by us. Neither is a third-party service to file a bug with. If a
 request behaves oddly, trace it down this chain rather than guessing what sits below.
 
 ## Reaching things on the server
