@@ -353,6 +353,7 @@
       "api": "API reference",
       "models": "Model",
       "billing": "Credit & tính phí",
+      "limitations": "Giới hạn",
       "errors": "Xử lý lỗi"
     },
     "quickstart": {
@@ -399,6 +400,20 @@
         "minimum": { "value": "10.000 ₫", "title": "Nạp tối thiểu", "body": "Có thể tăng số tiền theo bước 1.000 VNĐ. Credit mua không hết hạn." },
         "trial": { "value": "50 credit", "title": "Trải nghiệm", "body": "Tặng một lần cho tài khoản đủ điều kiện và có hạn sử dụng 7 ngày." },
         "policy": { "value": "Không phí tháng", "title": "Chính sách đơn giản", "body": "Tặng một lần 50 credit dùng thử; credit đã mua không hết hạn." }
+      }
+    },
+    "limitations": {
+      "title": "Giới hạn cần biết",
+      "description": "Hai điều về cách upstream tính token mà bạn nên biết trước khi ước lượng chi phí. Cả hai đều nằm ngoài tầm kiểm soát của NapKey, nên chúng tôi công bố thay vì để bạn phát hiện qua hóa đơn.",
+      "items": {
+        "maxTokens": {
+          "title": "max_tokens không được đảm bảo",
+          "body": "Bạn vẫn gửi max_tokens như bình thường và NapKey chuyển nguyên vẹn lên upstream, nhưng upstream hiện không áp dụng giới hạn này. Đo ngày 06/08/2026: request đặt max_tokens=100 nhận về 1.121 token output. Token vượt vẫn được tính phí vì upstream tính phí chúng tôi cho phần đó. Nếu cần chặn chi phí cứng, hãy dùng hạn mức trên API key thay vì dụa vào max_tokens."
+        },
+        "promptOverhead": {
+          "title": "Mỗi request có khoảng 2.000-2.600 token phụ trội",
+          "body": "Upstream chèn system prompt riêng vào trước nội dung của bạn rồi tính phí phần đó. Vì vậy một câu hỏi ngắn vẫn được ghi nhận vài nghìn token input. Đây là lý do số token trong Usage cao hơn độ dài tin nhắn bạn gửi, và nó đã được tính vào bảng giá."
+        }
       }
     },
     "errors": {

@@ -244,10 +244,23 @@ Only a response more than 25% past its budget is logged; a few tokens over is th
 tokenisers disagreeing, not a cap that failed. A caller who set no `max_tokens` cannot
 have one exceeded, which is the common case on the OpenAI path.
 
-**Expect support questions about this.** A customer who caps output at 600 and is billed
-for 1,431 is right to ask why. Grep this line for their request before answering, and
-raise it with the upstream if volume grows: it is their cap to enforce.
+**Where the cap is lost.** Traced through every layer on 2026-08-06: `kiro-go` forwards
+`max_tokens` unchanged (both request rewriters edit a generic map precisely so unmodelled
+fields survive), Viberouter spreads the body through `NineRouterAdapter`, and vibegateway
+at `/opt/vibegateway` validates the field in `protocols/chat-completions.ts` but never
+translates it into an output limit -- it does not appear in `upstream.ts` at all. The
+provider behind it ignores it. Every layer we own is correct, so there is nothing to fix
+in this repo.
 
+Three field names were tried against the live endpoint, all with a limit of 100:
+`max_tokens` returned 1,121 tokens, `max_completion_tokens` 757, `max_output_tokens` 875.
+So it is not a naming mismatch either.
+
+**It is published rather than hidden.** The docs page carries a "Limitations" section
+stating that `max_tokens` is accepted but not guaranteed, with the measured figures, and
+points customers at per-key limits for a hard spend ceiling. A customer who caps output
+at 600 and is billed for 1,431 is right to ask why; the answer should already be on the
+page before they ask. Grep this log line for their request when they do.
 ### Pricing on the token path
 
 Traffic served through 9Router is priced from tokens **plus a flat fee per request**

@@ -348,7 +348,7 @@
     "endpointHint": "Keep your current SDK or tool, replace its endpoint, and authenticate with an API key issued by NapKey.",
     "contents": "Contents",
     "createKey": "Create API key",
-    "nav": { "quickstart": "Quickstart", "api": "API reference", "models": "Models", "billing": "Credits & billing", "errors": "Troubleshooting" },
+    "nav": { "quickstart": "Quickstart", "api": "API reference", "models": "Models", "billing": "Credits & billing", "limitations": "Limitations", "errors": "Troubleshooting" },
     "quickstart": {
       "title": "Send a request in minutes",
       "description": "Verified accounts receive trial credits. Create a key, keep it in an environment variable, then choose the setup for your client.",
@@ -388,6 +388,20 @@
         "minimum": { "value": "10,000 VND", "title": "Minimum top-up", "body": "Increase the amount in 1,000 VND steps. Purchased credits do not expire." },
         "trial": { "value": "50 credits", "title": "Trial", "body": "Granted once to eligible accounts and expires after 7 days." },
         "policy": { "value": "No monthly fee", "title": "Simple policy", "body": "Get 50 trial credits once; purchased credits never expire." }
+      }
+    },
+    "limitations": {
+      "title": "Known limitations",
+      "description": "Two things about how the upstream counts tokens, worth knowing before you estimate cost. Both are outside NapKey's control, so we publish them rather than let you find them on an invoice.",
+      "items": {
+        "maxTokens": {
+          "title": "max_tokens is not enforced",
+          "body": "You send max_tokens as normal and NapKey forwards it unchanged, but the upstream currently does not apply it. Measured 2026-08-06: a request with max_tokens=100 returned 1,121 output tokens. The overage is billed, because the upstream bills us for it. For a hard spend limit, use the per-key limits rather than relying on max_tokens."
+        },
+        "promptOverhead": {
+          "title": "Every request carries 2,000-2,600 extra tokens",
+          "body": "The upstream prepends its own system prompt to your content and charges for it. A short question is therefore recorded as a few thousand input tokens. This is why the token count in Usage exceeds the length of what you sent, and it is already accounted for in our pricing."
+        }
       }
     },
     "errors": {

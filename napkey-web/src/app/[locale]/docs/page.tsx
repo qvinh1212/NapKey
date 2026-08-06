@@ -8,7 +8,7 @@ import { readModelCatalog } from '@/lib/model-catalog';
 import { publicPageMetadata } from '@/lib/public-metadata';
 import { site } from '@/lib/site';
 
-const sections = ['quickstart', 'api', 'models', 'billing', 'errors'] as const;
+const sections = ['quickstart', 'api', 'models', 'billing', 'limitations', 'errors'] as const;
 const endpoints = ['messages', 'chat', 'countTokens', 'models'] as const;
 const errorStatuses = [400, 401, 402, 429, 503] as const;
 
@@ -98,8 +98,22 @@ export default async function DocsPage({ params }: { params: Promise<{ locale: s
               </div>
             </section>
 
+            {/* Published because the upstream does not honour max_tokens and prepends its own
+                prompt, both of which a customer would otherwise discover from an invoice. */}
+            <section id="limitations" className="scroll-mt-28 border-t border-line py-16">
+              <SectionHeading number="05" title={t('limitations.title')} description={t('limitations.description')} />
+              <div className="mt-8 divide-y divide-line overflow-hidden rounded-lg border border-warn/30 bg-warn/5">
+                {(['maxTokens', 'promptOverhead'] as const).map((item) => (
+                  <article key={item} className="p-5 sm:p-6">
+                    <h3 className="text-base text-fg">{t(`limitations.items.${item}.title`)}</h3>
+                    <p className="mt-2 text-ui leading-relaxed text-muted">{t(`limitations.items.${item}.body`)}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
             <section id="errors" className="scroll-mt-28 border-t border-line pt-16">
-              <SectionHeading number="05" title={t('errors.title')} description={t('errors.description')} />
+              <SectionHeading number="06" title={t('errors.title')} description={t('errors.description')} />
               <div className="mt-8 divide-y divide-line overflow-hidden rounded-lg border border-line">
                 {errorStatuses.map((status) => {
                   const diagnosis = diagnoseApiFailure(status);
