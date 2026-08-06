@@ -2,7 +2,12 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { Section } from '@/components/ui/section';
-import { creditPackages, formatVnd, VND_PER_CREDIT } from '@/lib/pricing';
+import {
+  MIN_TOPUP_VND,
+  requestCostVnd,
+  requestsFromVnd,
+  requestShapes,
+} from '@/lib/pricing';
 
 export function PricingTable() {
   const t = useTranslations('pricing');
@@ -11,9 +16,9 @@ export function PricingTable() {
   return (
     <Section id="pricing" eyebrow={t('eyebrow')} title={t('title')} subtitle={t('subtitle')}>
       <div className="grid gap-4 lg:grid-cols-3">
-        {creditPackages.map((pack, index) => (
+        {requestShapes.map((shape, index) => (
           <article
-            key={pack.credits}
+            key={shape.key}
             className={
               'relative overflow-hidden rounded-xl border p-6 ' +
               (index === 1
@@ -26,18 +31,24 @@ export function PricingTable() {
                 {t('popular')}
               </span>
             ) : null}
-            <p className="text-ui text-muted">{t(`packages.${pack.key}`)}</p>
+            <p className="text-ui text-muted">{t(`shapes.${shape.key}`)}</p>
             <p className="mt-5 font-mono text-4xl text-fg tabular-nums">
-              {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US').format(pack.credits)}
-              <span className="ml-2 text-base text-dim">credit</span>
+              {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
+                maximumFractionDigits: 0,
+              }).format(requestCostVnd(shape.inputTokens, shape.outputTokens))}
+              <span className="ml-2 text-base text-dim">VND</span>
             </p>
-            <p className="mt-3 font-mono text-lg text-accent-light">{formatVnd(pack.vnd, locale)}</p>
+            <p className="mt-1 text-ui text-dim">{t('shapes.perRequest')}</p>
+            <p className="mt-3 font-mono text-lg text-accent-light">
+              {t('shapes.buys', { count: requestsFromVnd(MIN_TOPUP_VND, shape) })}
+            </p>
             <p className="mt-5 border-t border-line/70 pt-4 text-ui leading-relaxed text-dim">
               {t('packageNote')}
             </p>
           </article>
         ))}
       </div>
+      <p className="mt-3 text-ui leading-relaxed text-dim">{t('shapes.note')}</p>
 
       <div className="relative mt-6 overflow-hidden rounded-xl border border-accent/40 bg-accent-soft p-5 sm:p-7">
         <div aria-hidden="true" className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-accent/15 blur-3xl" />
@@ -56,10 +67,11 @@ export function PricingTable() {
       <div className="mt-6 grid gap-4 rounded-xl border border-line bg-surface p-5 md:grid-cols-[0.7fr_1.3fr] md:items-center">
         <div>
           <p className="font-mono text-micro uppercase tracking-[0.14em] text-dim">{t('rateLabel')}</p>
-          <p className="mt-2 font-mono text-2xl text-fg">1 credit = {VND_PER_CREDIT} VND</p>
+          <p className="mt-2 font-mono text-xl leading-snug text-fg">{t('rateValue')}</p>
         </div>
         <div className="space-y-2 text-ui leading-relaxed text-muted">
           <p>{t('measurement')}</p>
+          <p>{t('feeNote')}</p>
           <p className="text-dim">{t('footnote')}</p>
         </div>
       </div>
