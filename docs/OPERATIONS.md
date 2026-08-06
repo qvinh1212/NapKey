@@ -135,31 +135,62 @@ been authenticated and held against the wallet. `auto` is **not** rewritten: the
 upstream publishes its own `auto` route, and replacing it with a fixed model would strip
 a capability the caller asked for.
 
-### Cost basis is only measured for Claude
+### Cost basis, measured per model
 
-`/v1/models` advertises everything the configured pool serves. On the verified upstream
-that is 38 models, while the price book names 5; the other 33 fall through to the `*`
-row, which charges the same rate and fee, so **nothing is served free**.
+Measured against the live upstream on 2026-08-06 with `scripts/measure_model_cost.py`,
+which solves `billed = overhead + rate * size` across three request sizes. Every model
+the pool serves came back between **65.9% and 66.6% margin**, so the single
+2,097 VND/1M basis holds across the catalogue and no model needs its own rate.
 
-What is not covered is the cost side. The 2,097 VND/1M and 110 VND/call basis was
-measured on Claude traffic. The pool also carries non-Claude models — `gpt-5.6-*`,
-`deepseek-3.2`, `glm-5`, `minimax-*`, `qwen3-coder-next` — whose real upstream cost is
-unmeasured. If any of them costs more than the Claude basis, margin reporting will show
-roughly 72% while the actual margin is lower.
+| model | injected prompt | margin |
+|---|---|---|
+| claude-haiku-4-5, claude-opus-4-6 | ~2,050 tokens | 65.9-66.1% |
+| claude-sonnet-5, claude-opus-4.8 | ~2,200 tokens | 66.1% |
+| claude-sonnet-4-6 | ~2,557 tokens | 66.5% |
+| claude-haiku-4.5, claude-sonnet-4.6/4.7 | ~2,600 tokens | 66.2-66.5% |
+| claude-opus-5, claude-opus-4.6/4-7/4-8 | ~2,623 tokens | 66.4-66.6% |
 
-`auto` has the same gap for a different reason: the upstream picks the model per
-request, so a call billed at the flat fallback rate may have been routed to an expensive
-model.
+The basis was previously assumed rather than checked: 0018 measured it on Claude
+traffic and every other model inherited it through `*`. The assumption turned out to be
+correct, but it had never been tested, and the same reasoning had left eleven models
+priced off the fallback row. Migration 0020 gave each of them its own row.
 
-Neither is a reason to hold the deploy, but measure per-family cost before promoting
-non-Claude models, and give any model sold in volume its own price row rather than
-leaving it on `*`.
+Two spellings of one version (`claude-opus-4.6` and `claude-opus-4-6`) are published
+separately upstream and measure differently -- 2,623 tokens of injected prompt against
+2,050 -- so they are distinct backends behind equivalent names, and both are priced.
+
+**Re-measure when the pool changes.** A model added upstream is sold immediately, since
+the catalogue is read from the upstream rather than from a list here, so it reaches
+customers before anyone has priced it. Run the script and add a row.
+
+`auto` is excluded from sale: the upstream picks the model per request, so a call billed
+at one rate may have been routed to a model that costs another.
 
 Traffic on this path reports `credits=0`, because the OpenAI protocol carries no
 credit meter. `napkey-core` prices it from token counts against `model_prices`, so
 every model on sale needs a row there before enabling 9Router. A successful request
 that reports neither credits nor tokens is refused rather than stored as free, and
 `/v1/admin/usage-audit` lists anything served without a price.
+
+### Verifying the catalogue actually serves
+
+Pricing a model states that NapKey will serve it. Two ids in this catalogue did not:
+`claude-sonnet-4.8` returned no usable response and `gpt-image-2` is an image model the
+chat endpoint cannot serve. Both were advertised for weeks, and each customer who tried
+one paid for a request that was authenticated and held against their wallet before the
+upstream refused it. They are now filtered out by `nineRouterUnservable`.
+
+`scripts/check_model_health.py` catches this class of fault. It sends several
+concurrent requests per model -- concurrency being the point, since a model that answers
+one probe can still fail when requests land together -- and separates three outcomes: a
+model that never answers, one that answers intermittently, and one that is merely slow.
+It exits non-zero when a priced model cannot serve at all.
+
+```
+python3 scripts/check_model_health.py --requests 6 --concurrency 3
+```
+
+Run it after any change to the pool, and before promoting a newly published model.
 
 ### The upstream injects a prompt into every request
 
@@ -188,6 +219,34 @@ the overhead is gone and the pricing assumption should be revisited.
 
 Two open questions worth resolving before volume grows: whether the upstream can be asked
 to stop injecting it, and whether the overhead should be disclosed in published pricing.
+
+### The upstream ignores max_tokens
+
+Measured on 2026-08-06: a request capped at `max_tokens: 600` came back with 751 to
+1,431 output tokens depending on the model. The cap is advisory at best and absent at
+worst.
+
+This costs the customer, not margin -- output bills at the same rate as input, so the
+overage is charged to whoever set the limit. A caller who sets a budget to bound their
+spend does not actually get one.
+
+NapKey cannot fix it from here. Truncating the response would mean charging for tokens
+the customer never receives, which is worse than delivering tokens they did not ask
+for. So the overshoot is logged instead, at warn level rather than info, because unlike
+the injected prompt this breaks a contract the caller believes they have:
+
+```
+[9Router] upstream ignored max_tokens for claude-opus-5: caller allowed 600 output
+tokens, upstream billed 1431 (139% over); the customer pays the difference
+```
+
+Only a response more than 25% past its budget is logged; a few tokens over is the two
+tokenisers disagreeing, not a cap that failed. A caller who set no `max_tokens` cannot
+have one exceeded, which is the common case on the OpenAI path.
+
+**Expect support questions about this.** A customer who caps output at 600 and is billed
+for 1,431 is right to ask why. Grep this line for their request before answering, and
+raise it with the upstream if volume grows: it is their cap to enforce.
 
 ### Pricing on the token path
 
