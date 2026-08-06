@@ -1,5 +1,56 @@
 # NapKey Operations Runbook
 
+## Which service does what
+
+Read this before running anything against a container. The names do not say what the
+services do, and picking the wrong one wastes a session: `kiro-go` is not the Kiro pool,
+and `napkey-core` never talks to the upstream.
+
+| service | role | holds `NINEROUTER_*` | holds `DATABASE_URL` |
+|---|---|---|---|
+| `kiro-go` | data plane: authenticates customer requests, calls the upstream, reports usage | **yes** | no |
+| `napkey-core` | control plane: wallet, price book, usage ledger, settlement | no | **yes** |
+| `postgres` | the database itself | no | — |
+| `napkey-web` | the customer-facing site and console | no | no |
+
+So the upstream key comes from the data plane:
+
+```bash
+docker exec $(docker ps -qf name=kiro-go) printenv NINEROUTER_API_KEY
+```
+
+while the price book is reached through Postgres. `docker ps -qf name=postgres` can match
+more than one container on a host running other projects, so pin it:
+
+```bash
+docker ps --format "{{.ID}}  {{.Names}}" | grep postgres   # confirm which one is NapKey
+PG=$(docker ps -qf name=postgres | head -1)
+docker exec -e PGPASSWORD="$(docker exec $PG printenv POSTGRES_PASSWORD)" $PG \
+  psql -U "$(docker exec $PG printenv POSTGRES_USER)" -d "$(docker exec $PG printenv POSTGRES_DB)" \
+  -c "SELECT model, effective_from FROM model_prices WHERE effective_to IS NULL ORDER BY model;"
+```
+
+### The full upstream chain
+
+```
+customer -> kiro-go -> Viberouter -> vibegateway -> provider
+```
+
+- **kiro-go** (this repo, `backend/kiro-go`) sends `Viberouter/<model>` to whatever
+  `NINEROUTER_RUNTIME_BASE_URL` points at.
+- **Viberouter** (separate repo) forwards through `NineRouterAdapter`, and its own
+  `NINEROUTER_RUNTIME_BASE_URL` points one hop further on.
+- **vibegateway** runs on the host, not in a container: `/opt/vibegateway`, listening on
+  `10.0.1.1:20242`, started as `/usr/bin/node /opt/vibegateway/dist/main.js`. Find it with
+  `ss -tlnp | grep 20242` and read its source at `/proc/<pid>/cwd`. It is derived from
+  `github.com/decolua/9router` and carries a local patch under `ops/9router-patches/`.
+- **provider** is configured in the Viberouter dashboard under
+  `/dashboard/providers`, and is the layer that injects the system prompt and ignores
+  `max_tokens`.
+
+"9Router" in this repo means that whole chain below kiro-go, not one component. Nothing
+in it is a third-party service to petition; every hop is operated here.
+
 ## Release gate
 
 Run from the repository root:

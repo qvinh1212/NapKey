@@ -1,0 +1,101 @@
+# AGENTS.md — NapKey
+
+Orientation for an agent starting a session here. Everything below was verified against
+running containers and source, not inferred from names.
+
+## The names lie; check this table first
+
+| service | role | `NINEROUTER_*` | `DATABASE_URL` |
+|---|---|---|---|
+| `kiro-go` | data plane: customer auth, upstream calls, usage reporting | **yes** | no |
+| `napkey-core` | control plane: wallet, price book, usage ledger, settlement | no | **yes** |
+| `postgres` | the database | no | — |
+| `napkey-web` | public site and customer console | no | no |
+
+Two traps worth naming, because both have cost real time:
+
+- **`kiro-go` is not the Kiro pool.** It is the proxy that serves every customer request,
+  and 9Router is what it calls. All the `NINEROUTER_*` configuration lives here
+  (`docker-compose.coolify.yml`).
+- **`napkey-core` never touches the upstream.** It owns money and prices. Reach for it
+  when the question is about billing, and for `kiro-go` when it is about serving traffic.
+
+## The upstream chain
+
+```
+customer -> kiro-go -> Viberouter -> vibegateway -> provider
+```
+
+"9Router" in this repo means that whole chain below `kiro-go`, not one component:
+
+- **Viberouter** — separate repo (`D:\WorkCoding\Viberouter` on the dev machine), forwards
+  through `NineRouterAdapter.ts`. Its own `NINEROUTER_RUNTIME_BASE_URL` points one hop on.
+- **vibegateway** — runs on the host, *not* in a container. Source at `/opt/vibegateway`,
+  listening on `10.0.1.1:20242`. Locate it with `ss -tlnp | grep 20242`, then read
+  `/proc/<pid>/cwd`. Derived from `github.com/decolua/9router` plus a local patch.
+- **provider** — configured in the Viberouter dashboard at `/dashboard/providers`. This is
+  the layer that injects a system prompt and ignores `max_tokens`.
+
+Every hop is operated by us. None of it is a third-party service to file a bug with. If a
+request behaves oddly, trace it down this chain rather than guessing what sits below.
+
+## Reaching things on the server
+
+```bash
+# upstream key -- from the data plane
+docker exec $(docker ps -qf name=kiro-go) printenv NINEROUTER_API_KEY
+
+# price book -- pin the container; other projects on this host also run postgres
+docker ps --format "{{.ID}}  {{.Names}}" | grep postgres
+PG=$(docker ps -qf name=postgres | head -1)
+docker exec -e PGPASSWORD="$(docker exec $PG printenv POSTGRES_PASSWORD)" $PG \
+  psql -U "$(docker exec $PG printenv POSTGRES_USER)" -d "$(docker exec $PG printenv POSTGRES_DB)" \
+  -c "SELECT model, effective_from FROM model_prices WHERE effective_to IS NULL ORDER BY model;"
+
+# the catalogue kiro-go advertises
+docker exec $(docker ps -qf name=kiro-go) wget -qO- http://localhost:8080/v1/models
+```
+
+Coolify deploys are **manual**: pushing to `origin/main` does not deploy. Someone has to
+press Redeploy, so verifying a change on production means confirming the deploy landed
+first. `docker exec ... printenv` is the way to read config; environment variables set in
+the Coolify UI exist only inside containers, never in a local shell.
+
+## Upstream behaviour that surprises people
+
+Measured 2026-08-06, documented in `docs/OPERATIONS.md`:
+
+- **`max_tokens` is not enforced.** A cap of 100 returned 1,121 output tokens. Every layer
+  we own forwards the field correctly; the provider ignores it. Published as a limitation
+  on the docs page rather than worked around -- truncating would charge for tokens the
+  customer never receives.
+- **Every request carries 2,000-2,600 injected tokens.** The upstream prepends its own
+  prompt and bills for it. Margin is unaffected because the customer is billed from the
+  `prompt_tokens` the upstream reports, so it is resold at retail. It is why a one-line
+  chat records as thousands of input tokens.
+- **The endpoint always streams.** `text/event-stream` regardless of the `stream` flag,
+  with `usage` only on the final chunk. Parsing the body as one JSON object fails.
+- **Cloudflare fronts the gateway** and rejects default HTTP agents with error 1010. Send
+  a curl-like `User-Agent`.
+
+## Two scripts worth knowing
+
+- `scripts/measure_model_cost.py` — what the upstream really bills per model. Solves
+  `billed = overhead + rate * size` across three request sizes, so no client tokeniser is
+  needed. There is a PowerShell twin, `scripts/measure-model-cost.ps1`.
+- `scripts/check_model_health.py` — whether every priced model can actually serve, under
+  concurrency. Exits non-zero when a priced model cannot answer at all.
+
+Both hit the live upstream with real, billable requests on a key shared with production.
+Start with one model.
+
+## Conventions
+
+- Go sources are CRLF in this repo. `gofmt -l` flags almost every file for that reason
+  alone; check content by copying to a temp file with LF endings before assuming a
+  formatting problem.
+- `napkey-web/messages/{vi,en}.json` must stay key-for-key identical. Both are CRLF with
+  two-space indent, and reserialising them with a JSON writer rewrites every line -- splice
+  additions in as text instead.
+- Migrations are append-only and never reprice settled traffic. Adding a model means a new
+  row guarded by `WHERE NOT EXISTS`, not closing and reopening an existing price period.
