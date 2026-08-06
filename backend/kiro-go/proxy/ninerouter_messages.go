@@ -102,7 +102,7 @@ func (h *Handler) handleNineRouterMessages(w http.ResponseWriter, r *http.Reques
 	}
 
 	if resp.Stream != nil {
-		h.streamNineRouterMessages(w, resp, requestedModel, apiKeyID, billing, reqStart, estimatedInput)
+		h.streamNineRouterMessages(w, resp, requestedModel, apiKeyID, billing, reqStart, estimatedInput, req.MaxTokens)
 		return
 	}
 
@@ -123,7 +123,7 @@ func (h *Handler) handleNineRouterMessages(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(claudeResp)
 
-	h.recordNineRouterUsage(usage, resp, requestedModel, apiKeyID, billing, reqStart, estimatedInput)
+	h.recordNineRouterUsage(usage, resp, requestedModel, apiKeyID, billing, reqStart, estimatedInput, req.MaxTokens)
 }
 
 // streamNineRouterMessages relays a streamed completion as Anthropic SSE events.
@@ -131,7 +131,7 @@ func (h *Handler) handleNineRouterMessages(w http.ResponseWriter, r *http.Reques
 // Frames are translated and flushed as they arrive so the customer sees tokens at
 // upstream speed. Unlike the chat path this cannot be a byte copy: the two protocols
 // structure a stream differently, so every frame is parsed and re-emitted.
-func (h *Handler) streamNineRouterMessages(w http.ResponseWriter, resp *nineRouterResponse, model, apiKeyID string, billing *billingLease, reqStart time.Time, estimatedInput int) {
+func (h *Handler) streamNineRouterMessages(w http.ResponseWriter, resp *nineRouterResponse, model, apiKeyID string, billing *billingLease, reqStart time.Time, estimatedInput, outputBudget int) {
 	defer resp.Stream.Close()
 
 	w.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
@@ -173,7 +173,7 @@ func (h *Handler) streamNineRouterMessages(w http.ResponseWriter, resp *nineRout
 		h.sendSSE(w, flusher, ev.Event, ev.Data)
 	}
 
-	h.recordNineRouterUsage(state.usage, resp, model, apiKeyID, billing, reqStart, estimatedInput)
+	h.recordNineRouterUsage(state.usage, resp, model, apiKeyID, billing, reqStart, estimatedInput, outputBudget)
 }
 
 // upstreamErrorMessage pulls a readable message out of an upstream error body.

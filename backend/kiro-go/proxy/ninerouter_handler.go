@@ -80,7 +80,7 @@ func (h *Handler) handleNineRouterChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if resp.Stream != nil {
-		h.streamNineRouter(w, resp, req.Model, apiKeyID, billing, reqStart, clientWantsUsage, estimatedInput)
+		h.streamNineRouter(w, resp, req.Model, apiKeyID, billing, reqStart, clientWantsUsage, estimatedInput, req.MaxTokens)
 		return
 	}
 
@@ -93,7 +93,7 @@ func (h *Handler) handleNineRouterChat(w http.ResponseWriter, r *http.Request) {
 	if resp.Status >= 300 {
 		return
 	}
-	h.recordNineRouterUsage(resp.Usage, resp, req.Model, apiKeyID, billing, reqStart, estimatedInput)
+	h.recordNineRouterUsage(resp.Usage, resp, req.Model, apiKeyID, billing, reqStart, estimatedInput, req.MaxTokens)
 }
 
 // streamNineRouter relays an SSE stream to the client while capturing the trailing
@@ -102,7 +102,7 @@ func (h *Handler) handleNineRouterChat(w http.ResponseWriter, r *http.Request) {
 // The stream is forwarded chunk by chunk and flushed as it arrives, so the customer
 // sees tokens at upstream speed. A copy is retained only to read the usage block at
 // the end, which OpenAI-compatible streams place on the final frame.
-func (h *Handler) streamNineRouter(w http.ResponseWriter, resp *nineRouterResponse, model, apiKeyID string, billing *billingLease, reqStart time.Time, clientWantsUsage bool, estimatedInput int) {
+func (h *Handler) streamNineRouter(w http.ResponseWriter, resp *nineRouterResponse, model, apiKeyID string, billing *billingLease, reqStart time.Time, clientWantsUsage bool, estimatedInput, outputBudget int) {
 	defer resp.Stream.Close()
 
 	w.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
@@ -151,7 +151,7 @@ func (h *Handler) streamNineRouter(w http.ResponseWriter, resp *nineRouterRespon
 		logger.Warnf("[9Router] stream ended early: %v", err)
 	}
 
-	h.recordNineRouterUsage(usage, resp, model, apiKeyID, billing, reqStart, estimatedInput)
+	h.recordNineRouterUsage(usage, resp, model, apiKeyID, billing, reqStart, estimatedInput, outputBudget)
 }
 
 // recordNineRouterUsage reports one completed request for billing.
@@ -161,7 +161,7 @@ func (h *Handler) streamNineRouter(w http.ResponseWriter, resp *nineRouterRespon
 // against model_prices. Synthesising a credit figure here would put a number
 // nobody measured into the ledger, and it would be indistinguishable from a real
 // meter reading once stored.
-func (h *Handler) recordNineRouterUsage(usage *nineRouterUsage, resp *nineRouterResponse, model, apiKeyID string, billing *billingLease, reqStart time.Time, estimatedInput int) {
+func (h *Handler) recordNineRouterUsage(usage *nineRouterUsage, resp *nineRouterResponse, model, apiKeyID string, billing *billingLease, reqStart time.Time, estimatedInput, outputBudget int) {
 	if usage == nil {
 		// Served but unmeasured. The control plane cannot price this, and inventing
 		// token counts would bill a guess, so it is logged for the reconciliation
@@ -186,6 +186,10 @@ func (h *Handler) recordNineRouterUsage(usage *nineRouterUsage, resp *nineRouter
 
 	// Surface an upstream-injected prompt if there is one. Does not change the charge.
 	reportPromptOverhead(model, estimatedInput, usage.PromptTokens)
+
+	// Same for a response that ran past the budget the caller asked for. The upstream
+	// does not enforce max_tokens, and the customer is billed for the overage.
+	reportOutputBudgetOvershoot(model, outputBudget, usage.CompletionTokens)
 
 	h.recordSuccessForApiKey(apiKeyID, usage.PromptTokens, usage.CompletionTokens, 0, usageDetail{
 		Billing:             billing,

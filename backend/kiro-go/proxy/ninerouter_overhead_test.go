@@ -60,3 +60,37 @@ func TestUpstreamBillingLessIsNotOverhead(t *testing.T) {
 		t.Errorf("overhead = %d, want 0 when the upstream bills less", got)
 	}
 }
+
+// The upstream does not enforce max_tokens: a request capped at 600 was measured
+// returning 751 to 1,431 tokens depending on the model. The caller is billed for the
+// overage, so it has to be visible.
+func TestOutputBudgetExceededFlagsAnIgnoredCap(t *testing.T) {
+	if !outputBudgetExceeded(600, 1431) {
+		t.Error("a response more than twice its budget must be reported")
+	}
+	if !outputBudgetExceeded(600, 751) {
+		t.Error("a response 25% over its budget must be reported")
+	}
+}
+
+// A few tokens over is the two tokenisers disagreeing, not a cap that failed. Reporting
+// it would bury the real cases in noise.
+func TestOutputBudgetExceededIgnoresRounding(t *testing.T) {
+	if outputBudgetExceeded(600, 610) {
+		t.Error("a response within rounding of its budget is not a finding")
+	}
+	if outputBudgetExceeded(600, 600) {
+		t.Error("a response exactly at its budget is not a finding")
+	}
+}
+
+// A caller who set no budget cannot have one exceeded. max_tokens is optional on the
+// OpenAI path, so this is the common case rather than an edge case.
+func TestOutputBudgetExceededNeedsABudget(t *testing.T) {
+	if outputBudgetExceeded(0, 5000) {
+		t.Error("no budget means no overshoot to report")
+	}
+	if outputBudgetExceeded(600, 0) {
+		t.Error("an unmeasured response is not an overshoot")
+	}
+}
