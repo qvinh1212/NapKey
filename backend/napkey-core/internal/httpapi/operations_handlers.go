@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -75,6 +76,19 @@ func (s *Server) handleAdminBusinessSummary(w http.ResponseWriter, r *http.Reque
 	if summary.PaidOrders > 0 {
 		averageOrderMicros = summary.CashCollectedMicros / summary.PaidOrders
 	}
+	// Cash collected answers "how much came in", not "are we profitable": a top-up is
+	// a liability until it is spent. Profit is usage revenue less upstream cost, so
+	// both are reported alongside the margin they imply.
+	grossProfitMicros := summary.GrossProfitMicros()
+	marginPercent := 0.0
+	if summary.UsageRevenueMicros > 0 {
+		marginPercent = 100 * float64(grossProfitMicros) / float64(summary.UsageRevenueMicros)
+	}
+	revenuePerRequestMicros, costPerRequestMicros := int64(0), int64(0)
+	if summary.SuccessRequests > 0 {
+		revenuePerRequestMicros = summary.UsageRevenueMicros / summary.SuccessRequests
+		costPerRequestMicros = summary.UpstreamCostMicros / summary.SuccessRequests
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"windowDays": days,
 		"funnel": map[string]int64{
@@ -86,8 +100,21 @@ func (s *Server) handleAdminBusinessSummary(w http.ResponseWriter, r *http.Reque
 			"paidOrders": summary.PaidOrders, "cashCollected": costView(summary.CashCollectedMicros),
 			"averageOrder": costView(averageOrderMicros),
 		},
+		"profitAndLoss": map[string]any{
+			"successRequests": summary.SuccessRequests,
+			"usageRevenue":    costView(summary.UsageRevenueMicros),
+			"upstreamCost":    costView(summary.UpstreamCostMicros),
+			"grossProfit":     costView(grossProfitMicros),
+			"marginPercent":   math.Round(marginPercent*10) / 10,
+			"perRequest": map[string]any{
+				"revenue": costView(revenuePerRequestMicros),
+				"cost":    costView(costPerRequestMicros),
+				"profit":  costView(revenuePerRequestMicros - costPerRequestMicros),
+			},
+			"trialGranted": costView(summary.TrialGrantedMicros),
+		},
 		"walletLiability": costView(summary.WalletLiabilityMicros),
-		"generatedAt": time.Now().UTC(),
+		"generatedAt":     time.Now().UTC(),
 	})
 }
 

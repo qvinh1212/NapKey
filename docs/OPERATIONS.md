@@ -80,6 +80,38 @@ database restore; never hand-edit wallet or ledger rows to imitate a rollback.
 .\scripts\restore-postgres.ps1 -Container napkey-postgres -Database napkey_restore_check -User napkey -BackupFile .\backups\napkey-YYYYMMDD-HHMMSS.dump
 ```
 
+## Live smoke test after every deploy
+
+The release gate proves the code is self-consistent. It cannot prove that a real
+request moves the right amount of money, because the numbers that decide that come
+from the upstream at request time. The hold shortfall found on 2026-08-06 passed
+every unit test and still let requests be served without being billed.
+
+Run on the server with a live customer key:
+
+```bash
+./scripts/smoke-live-request.sh nk_live_xxx claude-sonnet-5
+```
+
+It serves one real request and then checks the money: the wallet fell, the debit
+equals the charge recorded in `usage_records`, the model had a price on file, and no
+hold is stuck open. It exits non-zero if any of those fail, so it can gate a deploy.
+It also prints the realised margin for that one request.
+
+## Answering "are we profitable"
+
+`GET /v1/admin/business/summary?days=30` reports `profitAndLoss`. Read it in this
+order, because the tempting number is the wrong one:
+
+- **Cash collected is not revenue.** A top-up is a liability until it is spent; it
+  appears under `payments` and in `walletLiability`, not in profit.
+- **`usageRevenue` less `upstreamCost` is the gross profit**, both summed from
+  `usage_records`, which freezes cost at insert time.
+- **`perRequest`** shows whether the flat request fee is still carrying small calls.
+  If per-request profit approaches zero, the fee has fallen behind upstream cost.
+- **`trialGranted`** is retail value given away and sits outside the margin. Only the
+  part customers actually spend becomes real upstream spend.
+
 ## Casso go-live acceptance
 
 This requires the real Casso account and cannot be simulated by a local fixture:

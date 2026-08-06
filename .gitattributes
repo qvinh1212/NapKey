@@ -1,0 +1,4 @@
+# Shell scripts run on the Linux server. A CRLF checkout there makes the shebang
+# line end in \r, and the kernel reports "no such file or directory" for an
+# interpreter that plainly exists -- so these stay LF regardless of core.autocrlf.
+*.sh text eol=lf
