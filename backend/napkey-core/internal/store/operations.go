@@ -22,12 +22,12 @@ type OperationsSummary struct {
 }
 
 type OperationsAlert struct {
-	ID        string         `json:"id"`
-	Type      string         `json:"type"`
-	Severity  string         `json:"severity"`
-	Title     string         `json:"title"`
-	Metadata  map[string]any `json:"metadata"`
-	OpenedAt  time.Time      `json:"openedAt"`
+	ID       string         `json:"id"`
+	Type     string         `json:"type"`
+	Severity string         `json:"severity"`
+	Title    string         `json:"title"`
+	Metadata map[string]any `json:"metadata"`
+	OpenedAt time.Time      `json:"openedAt"`
 }
 
 func (s *Store) ListOpenOperationsAlerts(ctx context.Context, limit int) ([]OperationsAlert, error) {
@@ -74,7 +74,7 @@ func (s *Store) RefreshOperationsAlerts(ctx context.Context) error {
 		}
 		if count > 0 {
 			_, err := s.db.ExecContext(ctx, `INSERT INTO operations_alerts (alert_type, severity, fingerprint, title, metadata)
-				VALUES ($1, $2, $3, $4, jsonb_build_object('count', $5))
+				VALUES ($1, $2, $3, $4, jsonb_build_object('count', $5::bigint))
 				ON CONFLICT (fingerprint) WHERE status = 'open' DO UPDATE SET metadata = excluded.metadata`,
 				item.alertType, item.severity, item.fingerprint, item.title, count)
 			if err != nil {

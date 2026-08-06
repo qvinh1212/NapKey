@@ -46,10 +46,17 @@ services:
       - kiro-data:/app/data
     expose: ["8080"]
     healthcheck:
+      # 5s, not 15s: Docker runs the first check one interval after the container
+      # starts, so a 15s interval leaves a container that is already serving marked
+      # "starting" for a further 15 seconds. Coolify gives up before that and fails a
+      # deploy whose services are all healthy -- exactly what happened on 2026-08-06,
+      # when it abandoned napkey-core 4 seconds before its first check was due.
+      # start_period keeps slow-start failures from burning retries.
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health >/dev/null"]
-      interval: 15s
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
+      start_period: 30s
 
   napkey-core:
     build:
@@ -99,10 +106,17 @@ services:
       ADMIN_EMAILS: ${ADMIN_EMAILS}
     expose: ["8081"]
     healthcheck:
+      # 5s, not 15s: Docker runs the first check one interval after the container
+      # starts, so a 15s interval leaves a container that is already serving marked
+      # "starting" for a further 15 seconds. Coolify gives up before that and fails a
+      # deploy whose services are all healthy -- exactly what happened on 2026-08-06,
+      # when it abandoned napkey-core 4 seconds before its first check was due.
+      # start_period keeps slow-start failures from burning retries.
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8081/ready >/dev/null"]
-      interval: 15s
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
+      start_period: 30s
 
   napkey-web:
     build:
@@ -123,10 +137,17 @@ services:
       NEXT_PUBLIC_API_BASE_URL: https://api.napkey.io.vn
     expose: ["3000"]
     healthcheck:
+      # 5s, not 15s: Docker runs the first check one interval after the container
+      # starts, so a 15s interval leaves a container that is already serving marked
+      # "starting" for a further 15 seconds. Coolify gives up before that and fails a
+      # deploy whose services are all healthy -- exactly what happened on 2026-08-06,
+      # when it abandoned napkey-core 4 seconds before its first check was due.
+      # start_period keeps slow-start failures from burning retries.
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/vi >/dev/null"]
-      interval: 15s
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
+      start_period: 30s
 
 volumes:
   postgres-data:
