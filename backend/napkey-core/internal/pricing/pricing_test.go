@@ -21,15 +21,11 @@ var sonnetRate = Rate{
 }
 
 func TestRetailCreditRate(t *testing.T) {
+	// The rate wallet top-ups are denominated in. Margin is no longer asserted here
+	// because credits do not price a request: that check belongs to the token rates,
+	// where TestTokenRatesHoldTheTargetMargin measures it against the real basis.
 	if RetailVNDPerCredit != 400 {
 		t.Fatalf("RetailVNDPerCredit = %d, want 400", RetailVNDPerCredit)
-	}
-	if UpstreamVNDPerCredit != 110 {
-		t.Fatalf("UpstreamVNDPerCredit = %d, want 110", UpstreamVNDPerCredit)
-	}
-	margin := float64(RetailVNDPerCredit-UpstreamVNDPerCredit) / float64(RetailVNDPerCredit)
-	if margin < 0.70 {
-		t.Fatalf("gross margin = %.3f, want at least 0.70", margin)
 	}
 }
 
@@ -312,4 +308,51 @@ func TestRateFieldsStayIntegral(t *testing.T) {
 	var _ int64 = c.OutputMicros
 	var _ int64 = c.CacheReadMicros
 	var _ int64 = c.CacheWriteMicros
+}
+
+// The margin check that used to live on the credit rate, moved to the basis that
+// actually prices a request.
+//
+// It is expressed as request shapes rather than a rate ratio because the flat
+// request fee makes the two differ: at 12,000 VND/1M against a 2,097 VND/1M cost the
+// token component alone is 82.5% margin, but a short request is mostly fee, and the
+// fee's margin (300 against 110) is 63%. Only priced end to end does the number mean
+// anything, and short requests are the shape this business actually serves.
+func TestTokenRatesHoldTheTargetMargin(t *testing.T) {
+	rate := Rate{
+		InputPer1k: 12_000_000, OutputPer1k: 12_000_000,
+		CacheReadPer1k: 12_000_000, CacheWritePer1k: 12_000_000,
+		UpstreamInputPer1k: 2_097_000, UpstreamOutputPer1k: 2_097_000,
+		UpstreamCacheReadPer1k: 2_097_000, UpstreamCacheWritePer1k: 2_097_000,
+		RequestFee: 300 * MicrosPerVND, UpstreamRequestFee: 110 * MicrosPerVND,
+	}
+	// Measured against the live upstream on 2026-08-06, including the ~2,600 tokens
+	// it injects into every prompt.
+	shapes := []struct {
+		name    string
+		tokens  Tokens
+		wantVND int64
+	}{
+		{"short chat", Tokens{Input: 2_600, Output: 1_100}, 344},
+		{"agent step", Tokens{Input: 4_100, Output: 1_400}, 366},
+		{"large context", Tokens{Input: 52_600, Output: 1_400}, 948},
+	}
+	for _, shape := range shapes {
+		retail, err := Compute(shape.tokens, rate)
+		if err != nil {
+			t.Fatalf("%s: %v", shape.name, err)
+		}
+		upstream, err := Compute(shape.tokens, rate.UpstreamRate())
+		if err != nil {
+			t.Fatalf("%s upstream: %v", shape.name, err)
+		}
+		if got := VNDFromMicros(retail.Micros); got != shape.wantVND {
+			t.Errorf("%s costs %d VND, want %d; the published price page quotes this figure",
+				shape.name, got, shape.wantVND)
+		}
+		margin := float64(retail.Micros-upstream.Micros) / float64(retail.Micros)
+		if margin < 0.65 {
+			t.Errorf("%s margin = %.3f, want at least 0.65", shape.name, margin)
+		}
+	}
 }

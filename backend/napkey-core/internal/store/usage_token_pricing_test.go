@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 
@@ -168,28 +169,26 @@ func TestRecordUsageStoresTheRequestFeeItCharged(t *testing.T) {
 	}
 }
 
-// A credit-metered request records no per-request fee.
+// A usage report carrying a credit meter is refused.
 //
-// The credit meter already prices the request end to end, and the fee belongs to the
-// token path. Charging both would bill the same fixed cost twice, and recording a fee
-// the customer was not charged would make the row disagree with cost_micros.
-func TestRecordUsageChargesNoRequestFeeOnTheCreditPath(t *testing.T) {
-	srv, st := usageHarness(t)
+// Only the Kiro pool emitted that meter, and it was retired on 2026-07-30 together
+// with the rate that priced it. The rate was wrong in a way that hid itself:
+// UpstreamVNDPerCredit held 110, the cost of one upstream *call*, but it was
+// multiplied by the *credit count*, and the meter reported about 0.124 credits per
+// call. Requests costing 110 VND were booked at 13.6, so the margin dashboard showed
+// 70% on traffic that lost money. Refusing the report is what makes a return of that
+// upstream visible instead of silently mispriced.
+func TestRecordUsageRefusesCreditMeteredReports(t *testing.T) {
+	_, st := usageHarness(t)
 
-	if _, err := st.RecordUsage(context.Background(), RecordUsageParams{
+	_, err := st.RecordUsage(context.Background(), RecordUsageParams{
 		RequestID:     "req-credit-metered",
 		KeyID:         pgtest.UUID(1),
 		Model:         "claude-sonnet-4-20250514",
+		Tokens:        pricing.Tokens{Input: 1_000, Output: 100},
 		CreditsMicros: 5 * pricing.MicrocreditsPerCredit,
-	}); err != nil {
-		t.Fatalf("RecordUsage: %v", err)
-	}
-
-	insertParams := usageInsertParams(t, srv)
-	if len(insertParams) < 16 {
-		t.Fatalf("expected at least 16 bound params, got %d", len(insertParams))
-	}
-	if fee := insertParams[15]; fee != "0" {
-		t.Errorf("request_fee_micros = %q, want 0 when the credit meter priced the request", fee)
+	})
+	if !errors.Is(err, ErrCreditMeteringRetired) {
+		t.Fatalf("RecordUsage error = %v, want ErrCreditMeteringRetired", err)
 	}
 }

@@ -23,6 +23,13 @@ const (
 	UsageStatusCancelled = "cancelled"
 )
 
+// ErrCreditMeteringRetired means a usage report carried a credit meter. Only the
+// Kiro pool ever emitted one, and it was retired on 2026-07-30 along with the rate
+// used to price it. A live report carrying credits therefore means an upstream is
+// serving traffic whose cost nobody has measured, so it is refused rather than
+// guessed at.
+var ErrCreditMeteringRetired = errors.New("store: credit-metered billing was retired")
+
 // maxRequestIDLength matches the check constraint in migration 0003.
 const maxRequestIDLength = 200
 
@@ -104,20 +111,24 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 		}
 		out.UserID = userID
 
-		// Two ways to price a request, and which one applies depends on what the data
-		// plane could measure.
+		// Every request is priced from its token counts against model_prices, the
+		// same basis the wallet hold uses.
 		//
-		// When the upstream reports its own credit meter, that number is authoritative
-		// and is used directly. When it does not, the request is priced from the token
-		// counts against model_prices, which is the same path the wallet hold already
-		// uses. The second case is not hypothetical: only the Kiro pool emits a credit
-		// meter, so any other upstream reports tokens alone.
+		// There used to be a second path: when the upstream reported its own credit
+		// meter, that number was multiplied by a flat rate per credit. Only the Kiro
+		// pool ever emitted that meter, and it was retired on 2026-07-30. The branch
+		// is gone rather than left dormant, because it carried a costing error that
+		// would return silently if anything switched back to it. UpstreamVNDPerCredit
+		// was 110, the measured cost of one upstream *call*, but it was multiplied by
+		// the *credit count* -- and the meter reported about 0.124 credits per call.
+		// So a request that cost 110 VND was recorded as costing 13.6, and the margin
+		// dashboard read 70% on traffic that was losing money. Nothing surfaced it;
+		// the numbers looked healthy the whole time.
 		//
-		// The important property is that neither path can silently produce a zero
-		// charge. Before this split, a report with no credits priced to exactly zero
-		// and was stored as priced, so served traffic became free with no error, no
-		// flag, and nothing in the reconciliation view. Failing that way is worse than
-		// failing loudly, because nothing surfaces it until an upstream invoice does.
+		// A report that still carries credits is now refused instead of priced. An
+		// upstream whose cost basis nobody has measured must not be able to bill a
+		// customer, and failing loudly is the only version of that failure anyone
+		// notices.
 		var (
 			costMicros         int64
 			upstreamCostMicros int64
@@ -125,28 +136,16 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 			pricedWith         *int64
 			unpriced           bool
 		)
-		switch {
-		case p.CreditsMicros > 0:
-			costMicros, err = pricing.ComputeCreditCost(p.CreditsMicros, pricing.RetailMicrosPerCredit)
-			if err != nil {
-				return fmt.Errorf("store: pricing credits for request %q: %w", p.RequestID, err)
-			}
-			upstreamCostMicros, err = pricing.ComputeCreditCost(p.CreditsMicros, pricing.UpstreamMicrosPerCredit)
-			if err != nil {
-				return fmt.Errorf("store: pricing upstream credits for request %q: %w", p.RequestID, err)
-			}
-		default:
-			rate, rateErr := findRateTx(ctx, tx, p.Model, p.OccurredAt)
-			if rateErr != nil {
-				return rateErr
-			}
-			if rate == nil {
-				// No price on file, not even the '*' fallback. The request was already
-				// served, so the row is still written; it is flagged instead, which is
-				// what /v1/admin/usage-audit reports on.
-				unpriced = true
-				break
-			}
+		rate, rateErr := findRateTx(ctx, tx, p.Model, p.OccurredAt)
+		if rateErr != nil {
+			return rateErr
+		}
+		if rate == nil {
+			// No price on file, not even the '*' fallback. The request was already
+			// served, so the row is still written; it is flagged instead, which is
+			// what /v1/admin/usage-audit reports on.
+			unpriced = true
+		} else {
 			retail, computeErr := pricing.Compute(p.Tokens, *rate)
 			if computeErr != nil {
 				return fmt.Errorf("store: pricing tokens for request %q: %w", p.RequestID, computeErr)
@@ -177,7 +176,7 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 			userID, p.KeyID, p.RequestID, pricing.NormalizeModel(p.Model),
 			p.Tokens.Input, p.Tokens.Output, p.Tokens.CacheRead, p.Tokens.CacheWrite,
 			costMicros, upstreamCostMicros, pricedWith, unpriced,
-			p.CreditsMicros, creditPriceForRow(p.CreditsMicros), upstreamCreditPriceForRow(p.CreditsMicros),
+			0, 0, 0,
 			requestFeeMicros,
 			p.UpstreamAccountID, p.LatencyMS, p.Status, p.TokensEstimated,
 			p.OccurredAt.UTC(),
@@ -201,7 +200,14 @@ func (s *Store) RecordUsage(ctx context.Context, p RecordUsageParams) (*RecordUs
 
 		out.RecordID = recordID
 		out.CostMicros = costMicros
-		out.Unpriced = false
+		// Carry the flag the pricing branch set. This was hardcoded false when the
+		// credit meter priced every request and nothing could be unpriced; with that
+		// path gone, hardcoding it would report a model with no rate on file as
+		// priced, and /v1/admin/usage-audit would never see the row it exists to find.
+		out.Unpriced = unpriced
+		if pricedWith != nil {
+			out.RateID = *pricedWith
+		}
 
 		// Fold into the counters. These are a derived cache: kiro-go's limit check
 		// and the console's headline numbers read one row instead of aggregating
@@ -250,8 +256,9 @@ func validateRecordUsage(p *RecordUsageParams) error {
 	if p.KeyID == "" {
 		return errors.New("store: usage needs a key id")
 	}
-	if p.CreditsMicros < 0 {
-		return errors.New("store: usage credits cannot be negative")
+	if p.CreditsMicros != 0 {
+		return fmt.Errorf("%w: request %q reported %d microcredits",
+			ErrCreditMeteringRetired, p.RequestID, p.CreditsMicros)
 	}
 
 	switch p.Status {
@@ -262,13 +269,12 @@ func validateRecordUsage(p *RecordUsageParams) error {
 		return fmt.Errorf("store: %q is not a valid usage status", p.Status)
 	}
 
-	// A report with neither a credit meter nor any tokens describes a request that
-	// consumed nothing measurable, and it would price to zero on every path. That is
-	// indistinguishable from a data plane that lost its usage numbers, so it is
-	// refused rather than stored as a free request. Errors and cancellations legally
-	// consume nothing, so they are exempt.
-	if p.CreditsMicros == 0 && p.Tokens.IsZero() && p.Status == UsageStatusSuccess {
-		return errors.New("store: a successful request must report either credits or token counts")
+	// A report with no tokens describes a request that consumed nothing measurable
+	// and would price to zero. That is indistinguishable from a data plane that lost
+	// its usage numbers, so it is refused rather than stored as a free request.
+	// Errors and cancellations legally consume nothing, so they are exempt.
+	if p.Tokens.IsZero() && p.Status == UsageStatusSuccess {
+		return errors.New("store: a successful request must report token counts")
 	}
 	if p.OccurredAt.IsZero() {
 		p.OccurredAt = time.Now()
@@ -287,25 +293,4 @@ func validateRecordUsage(p *RecordUsageParams) error {
 		p.Model = p.Model[:200]
 	}
 	return nil
-}
-
-// creditPriceForRow reports the credit rate to store on a usage row.
-//
-// It is zero unless the row was actually priced from a credit meter. The check
-// constraint added in 0008 requires an unpriced row to carry a zero credit price,
-// and a token-priced row has no credit rate to attribute, so recording the constant
-// unconditionally would both violate the constraint and imply a basis that was
-// never used.
-func creditPriceForRow(creditsMicros int64) int64 {
-	if creditsMicros > 0 {
-		return pricing.RetailMicrosPerCredit
-	}
-	return 0
-}
-
-func upstreamCreditPriceForRow(creditsMicros int64) int64 {
-	if creditsMicros > 0 {
-		return pricing.UpstreamMicrosPerCredit
-	}
-	return 0
 }

@@ -69,11 +69,10 @@ func TestRecordUsagePricesFromTheLedgerRate(t *testing.T) {
 	srv, st := usageHarness(t)
 
 	result, err := st.RecordUsage(context.Background(), RecordUsageParams{
-		RequestID:     "req-abc",
-		KeyID:         pgtest.UUID(1),
-		Model:         "claude-sonnet-4-20250514",
-		Tokens:        pricing.Tokens{Input: 10_000, Output: 2_000, CacheRead: 50_000},
-		CreditsMicros: 1_870_000,
+		RequestID: "req-abc",
+		KeyID:     pgtest.UUID(1),
+		Model:     "claude-sonnet-4-20250514",
+		Tokens:    pricing.Tokens{Input: 10_000, Output: 2_000, CacheRead: 50_000},
 	})
 	if err != nil {
 		t.Fatalf("RecordUsage: %v", err)
@@ -88,7 +87,9 @@ func TestRecordUsagePricesFromTheLedgerRate(t *testing.T) {
 	if result.UserID != pgtest.UUID(7) {
 		t.Errorf("UserID = %q, want the key owner", result.UserID)
 	}
-	want := int64(748_000_000)
+	// 10,000 input + 2,000 output + 50,000 cache-read at the seeded Sonnet rate,
+	// plus the flat request fee.
+	want := int64(3_015_000_000)
 	if result.CostMicros != want {
 		t.Errorf("CostMicros = %d, want %d", result.CostMicros, want)
 	}
@@ -188,20 +189,22 @@ func TestRecordUsageRecordsUnpricedModel(t *testing.T) {
 	st := openTestStore(t, srv)
 
 	result, err := st.RecordUsage(context.Background(), RecordUsageParams{
-		RequestID:     "req-nomodel",
-		KeyID:         pgtest.UUID(1),
-		Model:         "some-model-nobody-priced",
-		Tokens:        pricing.Tokens{Input: 1_000, Output: 500},
-		CreditsMicros: 500_000,
+		RequestID: "req-nomodel",
+		KeyID:     pgtest.UUID(1),
+		Model:     "some-model-nobody-priced",
+		Tokens:    pricing.Tokens{Input: 1_000, Output: 500},
 	})
 	if err != nil {
 		t.Fatalf("usage for an unpriced model must still be recorded: %v", err)
 	}
-	if result.Unpriced {
-		t.Error("credit-priced usage must not depend on a model token rate")
+	// With the credit path gone, a model with no rate on file has nothing left to
+	// price it. The request was already served, so the row is written and flagged
+	// for /v1/admin/usage-audit rather than dropped or charged at a guessed rate.
+	if !result.Unpriced {
+		t.Error("a model with no rate on file must be flagged unpriced")
 	}
-	if result.CostMicros != 200_000_000 {
-		t.Errorf("CostMicros = %d, want 200000000", result.CostMicros)
+	if result.CostMicros != 0 {
+		t.Errorf("CostMicros = %d, want 0 for an unpriced model", result.CostMicros)
 	}
 	if result.RateID != 0 {
 		t.Errorf("RateID = %d, want 0 when no rate applies", result.RateID)

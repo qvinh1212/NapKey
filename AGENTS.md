@@ -61,6 +61,28 @@ press Redeploy, so verifying a change on production means confirming the deploy 
 first. `docker exec ... printenv` is the way to read config; environment variables set in
 the Coolify UI exist only inside containers, never in a local shell.
 
+## Billing has one path: tokens
+
+Requests are priced from token counts against `model_prices`. There is no second
+mechanism, and a usage report that carries a credit meter is now **refused**
+(`store.ErrCreditMeteringRetired`).
+
+Do not reintroduce credit-metered billing without measuring the upstream's cost per
+call first. The retired version was wrong in a way that hid itself:
+`UpstreamVNDPerCredit` held 110, the measured cost of one upstream *call*, but it was
+multiplied by the *credit count*, and the Kiro meter reported ~0.124 credits per call.
+Requests costing 110 VND were booked at 13.6, and the margin dashboard read a healthy
+70% on traffic that was losing money for a month.
+
+Credits still exist as the unit a **wallet top-up** is denominated in
+(`RetailVNDPerCredit = 400`). That is a customer-facing label for money held, not a
+billing basis. Keep the two apart when reading `usage_records`.
+
+Reading history correctly matters here: the credit path served real traffic until
+2026-07-30, so any query over `usage_records` that does not cut by date mixes two
+pricing mechanisms and two cost bases. `priced_with IS NULL AND NOT unpriced`
+identifies the old credit rows.
+
 ## Upstream behaviour that surprises people
 
 Measured 2026-08-06, documented in `docs/OPERATIONS.md`:

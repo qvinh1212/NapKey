@@ -20,11 +20,20 @@ const MicrosPerVND int64 = 1_000_000
 // MicrocreditsPerCredit is the fixed-point scale for upstream credit usage.
 const MicrocreditsPerCredit int64 = 1_000_000
 
+// RetailVNDPerCredit is the rate a wallet top-up is denominated in. It is a
+// customer-facing unit for money held, not a billing basis: requests are priced
+// from tokens against model_prices.
+//
+// There was an UpstreamVNDPerCredit of 110 beside it, used to record what a
+// credit-metered request cost. It was wrong. 110 VND is the measured cost of one
+// upstream *call*, but it was multiplied by the *credit count*, and the retired
+// Kiro meter reported about 0.124 credits per call -- so a 110 VND request was
+// booked at 13.6 and the margin dashboard read 70% on traffic that lost money. It
+// is deleted rather than corrected because there is no longer an upstream it
+// describes, and a plausible-looking constant is how the error survived this long.
 const (
-	RetailVNDPerCredit      int64 = 400
-	UpstreamVNDPerCredit    int64 = 110
-	RetailMicrosPerCredit         = RetailVNDPerCredit * MicrosPerVND
-	UpstreamMicrosPerCredit       = UpstreamVNDPerCredit * MicrosPerVND
+	RetailVNDPerCredit    int64 = 400
+	RetailMicrosPerCredit       = RetailVNDPerCredit * MicrosPerVND
 )
 
 // tokensPerUnit is the denominator of every rate: prices are quoted per 1,000
