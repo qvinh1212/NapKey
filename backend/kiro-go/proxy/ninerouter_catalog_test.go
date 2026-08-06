@@ -62,6 +62,32 @@ func TestPublicModelsDropsNestedNamespaces(t *testing.T) {
 }
 
 // Duplicates and blanks must not reach the response.
+// An id the pool publishes but cannot serve must not be advertised: the customer pays
+// for the discovery with an authenticated request that the upstream then refuses.
+func TestPublicModelsDropsUnservableModels(t *testing.T) {
+	got := publicModelsFromUpstream([]string{
+		"Viberouter/claude-sonnet-5",
+		"Viberouter/claude-sonnet-4.8",
+		"Viberouter/gpt-image-2",
+	}, "Viberouter/")
+
+	want := []string{"claude-sonnet-5"}
+	if len(got) != len(want) || got[0] != want[0] {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+}
+
+// The unservable check is the reason these ids have no price row, so the two lists
+// have to agree. A model that reaches billing without a price settles at '*', which is
+// the state migration 0020 exists to end.
+func TestFallbackCatalogExcludesUnservableModels(t *testing.T) {
+	for _, model := range nineRouterFallbackModels() {
+		if nineRouterUnservable(model) {
+			t.Errorf("fallback catalog advertises unservable model %q", model)
+		}
+	}
+}
+
 func TestPublicModelsDeduplicates(t *testing.T) {
 	got := publicModelsFromUpstream([]string{
 		"Kiro/claude-sonnet-5",
@@ -123,8 +149,11 @@ func TestModelsEndpointServesTheUpstreamCatalog(t *testing.T) {
 	if ids["Viberouter/claude-opus-5"] || ids["claude-opus-5"] {
 		t.Error("a model from another pool must not be advertised")
 	}
-	// The hardcoded Anthropic list must not leak in on this path.
-	if ids["claude-sonnet-4.6"] {
+	// The hardcoded Anthropic list must not leak in on this path. claude-sonnet-4.5
+	// is the sentinel because it appears only there: claude-sonnet-4.6 used to serve
+	// that role, but the pool publishes it and 0020 prices it, so it can no longer
+	// tell the two lists apart.
+	if ids["claude-sonnet-4.5"] {
 		t.Error("the account-pool fallback list must not be served under 9Router")
 	}
 }
@@ -148,7 +177,7 @@ func TestModelsEndpointFallsBackToThePricedCatalog(t *testing.T) {
 	if !ids["claude-sonnet-5"] {
 		t.Error("the static catalog must still advertise the models on sale")
 	}
-	if ids["claude-sonnet-4.6"] || ids["claude-opus-4.5"] {
+	if ids["claude-sonnet-4.5"] || ids["claude-opus-4.5"] {
 		t.Error("the account-pool list must not be used as the 9Router fallback")
 	}
 }

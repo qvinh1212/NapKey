@@ -162,6 +162,9 @@ func publicModelsFromUpstream(upstreamIDs []string, prefix string) []string {
 		if public == "" || strings.Contains(public, "/") {
 			continue
 		}
+		if nineRouterUnservable(public) {
+			continue
+		}
 		key := strings.ToLower(public)
 		if seen[key] {
 			continue
@@ -172,6 +175,30 @@ func publicModelsFromUpstream(upstreamIDs []string, prefix string) []string {
 	// Stable order so the response does not churn between calls for no reason.
 	sort.Slice(out, func(i, j int) bool { return strings.ToLower(out[i]) < strings.ToLower(out[j]) })
 	return out
+}
+
+// nineRouterUnservable reports whether an id the pool publishes cannot actually be
+// served over this endpoint.
+//
+// The catalog is taken from the upstream, so anything the pool lists is offered for
+// sale. Two ids do not survive contact with a request, verified against the live
+// upstream on 2026-08-06:
+//
+//	claude-sonnet-4.8  published, but a completion returns no usable response
+//	gpt-image-2        an image model; /v1/chat/completions cannot serve it
+//
+// Advertising either one costs the customer a real request: it is authenticated and
+// held against their wallet before the upstream refuses it. Dropping them from the
+// list is why they also have no price row in migration 0020 -- an id NapKey cannot
+// serve should not be priced, and should not be offered.
+//
+// Matched case-insensitively, as the ids arrive in mixed case from clients.
+func nineRouterUnservable(publicModel string) bool {
+	switch strings.ToLower(strings.TrimSpace(publicModel)) {
+	case "claude-sonnet-4.8", "claude-sonnet-4-8", "gpt-image-2":
+		return true
+	}
+	return false
 }
 
 // nineRouterModelList renders the /v1/models payload for this upstream.
@@ -190,18 +217,35 @@ func nineRouterModelList(ids []string) []map[string]interface{} {
 // nineRouterFallbackModels is the list used when the upstream cannot be reached.
 //
 // These are the models NapKey sells on this upstream, and they are the same ids the
-// control plane has price rows for. Keeping the two lists aligned is what stops a
-// client being pointed at a model that would fall through to the '*' fallback rate
-// instead of its own price.
+// control plane has price rows for (migrations 0018, 0019 and 0020). Keeping the two
+// lists aligned is what stops a client being pointed at a model that would fall
+// through to the '*' fallback rate instead of its own price.
+//
+// That alignment only ever governed this fallback, never the live path: the upstream
+// list wins whenever it can be read, and it published eleven ids this list did not,
+// every one of them settling at the '*' rate until 0020 priced them. The lists match
+// again now, but the guarantee is worth stating precisely -- it is the price book,
+// not this slice, that has to cover whatever the pool serves.
 //
 // It is a fallback, not the source of truth: the upstream list wins whenever it can
-// be read, so adding a model there does not require editing this.
+// be read, so adding a model there does not require editing this. Ids that cannot be
+// served are excluded here for the same reason nineRouterUnservable drops them from
+// the live list.
 func nineRouterFallbackModels() []string {
 	return []string{
 		"claude-fable-5",
+		"claude-haiku-4-5",
+		"claude-haiku-4.5",
+		"claude-opus-4-6",
+		"claude-opus-4.6",
+		"claude-opus-4-7",
 		"claude-opus-4.7",
+		"claude-opus-4-8",
 		"claude-opus-4.8",
 		"claude-opus-5",
+		"claude-sonnet-4-6",
+		"claude-sonnet-4.6",
+		"claude-sonnet-4.7",
 		"claude-sonnet-5",
 	}
 }
