@@ -346,6 +346,42 @@ Changing the fee is a price change, not a config change: add a migration that cl
 the open period and inserts a successor. Never edit a row in place — settled usage is
 priced against it, and `usage_records.request_fee_micros` is frozen at insert time.
 
+## Wallet holds cover more than the caller declares
+
+A hold is quoted from the size a caller declares; settlement is priced from the size the
+upstream reports. On this upstream those disagree in the same direction every time, so a
+hold taken at face value settles short.
+
+Measured 2026-08-06, before the allowance existed:
+
+| request shape | held | settled | unsecured |
+|---|---|---|---|
+| small cap, agent step | 301.5 | 337.5 | **36.0 VND** |
+| no cap declared | 402.5 | 348.0 | covered |
+| large context | 949.2 | 945.6 | covered |
+| large prompt, small cap | 900.2 | 948.4 | **48.2 VND** |
+
+The consequence is not a small loss. Settlement updates the wallet `WHERE balance_micros
+>= $2`, so on a nearly empty wallet the charge matches no row: the request was already
+served, nothing is deducted, and the hold stays `open` until it expires fifteen minutes
+later. That is the `expired open holds` entry under incident priorities, reached by
+ordinary traffic rather than by a fault.
+
+`walletHoldTokens` closes it by holding against the billable size instead of the declared
+one: the injected prompt is **added** to the caller's input (it is charged on top of
+their text, so a floor would cover a short prompt and do nothing for a long one), and the
+output allowance is a **floor** (it stands in for a cap that is not applied at all).
+Both figures are token counts priced through `pricing.Compute`, so they follow a rate
+change instead of going stale.
+
+Checked against the trial grant and the minimum top-up: a 50-credit trial still affords
+more than five concurrent holds, and 10,000 VND affords more than ten, so the larger hold
+does not turn a funded wallet into a one-request-at-a-time wallet.
+
+**Re-measure the allowance when the upstream changes its prompt.** The `[9Router] upstream
+prompt overhead` log line is the signal; if it climbs above the allowance, holds start
+coming up short again.
+
 ## Incident priorities
 
 - Critical: wallet drift, expired open holds, stuck payment processing, usage reports dropped.
