@@ -241,8 +241,8 @@ func expirePromotionalWalletTx(ctx context.Context, tx *sql.Tx, userID string) e
 	}
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO ledger_entries(user_id,kind,amount_micros,balance_after_micros,held_after_micros,ref_type,ref_id,idempotency_key,metadata)
-		VALUES($1,'adjustment',$2,$3,$4,'promotional_expiry',$1::text,'promotional-expiry:'||gen_random_uuid()::text,jsonb_build_object('reason','promotional_credit_expired'))`,
-		userID, -expired, balance, held)
+		VALUES($1,'adjustment',$2,$3,$4,'promotional_expiry',$5,'promotional-expiry:'||gen_random_uuid()::text,jsonb_build_object('reason','promotional_credit_expired'))`,
+		userID, -expired, balance, held, userID)
 	return err
 }
 
