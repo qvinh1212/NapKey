@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { CloseIcon } from '@/components/ui/icon';
 import { ButtonLink } from '@/components/ui/button';
 import { useSession } from '@/components/console/session-provider';
 
@@ -96,9 +97,9 @@ export function LaunchOffer() {
           type="button"
           onClick={dismiss}
           aria-label={t('close')}
-          className="absolute right-4 top-4 grid min-h-11 min-w-11 place-items-center rounded-full border border-line bg-surface text-xl text-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-accent"
+          className="absolute right-4 top-4 grid min-h-11 min-w-11 place-items-center rounded-full border border-line bg-surface text-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-accent"
         >
-          ×
+          <CloseIcon className="size-4" />
         </button>
         <p className="relative font-mono text-micro uppercase tracking-[0.18em] text-accent-light">{t('eyebrow')}</p>
         <h2 id="launch-offer-title" className="relative mt-4 max-w-xl font-display text-3xl font-bold leading-tight text-fg sm:text-5xl">

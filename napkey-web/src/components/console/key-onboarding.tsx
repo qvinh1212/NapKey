@@ -8,6 +8,7 @@ import type { CreateKeyResponse, KeyListResponse, KeySyncState, Money, UsageReco
 import { isValidOnboardingResponse, onboardingSnippet, parseOnboardingResponse, type OnboardingTool } from '@/lib/onboarding';
 import { defaultModel } from '@/lib/model-catalog';
 import { site } from '@/lib/site';
+import { ArrowRightIcon, CheckIcon } from '@/components/ui/icon';
 import { Badge, Panel, PanelHeader } from './ui';
 
 type TestState =
@@ -127,7 +128,7 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
         {['save', 'connect', 'test', 'usage'].map((step, index) => (
           <li key={step} className="flex items-center gap-2 border-line px-4 py-3 sm:border-r sm:last:border-r-0">
             <span className={`flex size-5 items-center justify-center rounded-full border font-mono text-[10px] ${steps[index] ? 'border-accent bg-accent text-bg' : 'border-line text-dim'}`}>
-              {steps[index] ? '✓' : index + 1}
+              {steps[index] ? <CheckIcon className="size-3" /> : index + 1}
             </span>
             <span className="text-ui text-muted">{t(`steps.${step}`)}</span>
           </li>
@@ -190,7 +191,9 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
                   <span>{t('tokens', { count: test.tokens })}</span>
                   <span>{test.cost ? t('cost', { value: test.cost.formatted }) : t('costPending')}</span>
                 </div>
-                <Link href="/console/usage" className="mt-3 inline-flex text-ui text-accent-light hover:underline">{t('viewUsage')} →</Link>
+                <Link href="/console/usage" className="mt-3 inline-flex text-ui text-accent-light hover:underline">{t('viewUsage')}
+                  <ArrowRightIcon className="ml-1.5 size-3.5" />
+                </Link>
               </div>
             ) : null}
           </div>

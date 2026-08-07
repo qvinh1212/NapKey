@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { ButtonLink } from '@/components/ui/button';
 import { site } from '@/lib/site';
+import { ArrowUpRightIcon } from '@/components/ui/icon';
 
 export function Hero() {
   const t = useTranslations('hero');
@@ -132,7 +133,7 @@ export function Hero() {
             >
               <span aria-hidden className="size-1.5 rounded-full bg-accent animate-pulse-dot" />
               {t('statusLink')}
-              <span aria-hidden>↗</span>
+              <ArrowUpRightIcon className="size-3.5" />
             </a>
           </div>
         </div>

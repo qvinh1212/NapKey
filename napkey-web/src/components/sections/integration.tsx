@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Section } from '@/components/ui/section';
 import { snippets, type Snippet } from '@/lib/snippets';
+import { ArrowRightIcon } from '@/components/ui/icon';
 
 export function Integration() {
   const t = useTranslations('integrate');
@@ -99,7 +100,8 @@ export function Integration() {
       </p>
 
       <Link href="/docs" className="mt-6 inline-flex text-ui text-accent-light hover:underline">
-        {t('docsLink')} <span aria-hidden className="ml-1">→</span>
+        {t('docsLink')}
+        <ArrowRightIcon className="ml-1.5 size-3.5" />
       </Link>
     </Section>
   );

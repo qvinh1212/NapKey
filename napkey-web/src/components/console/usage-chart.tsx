@@ -7,7 +7,7 @@ import { count, dayLabel, money } from '@/lib/format';
 import { usageBarPercent } from '@/lib/usage-chart-layout';
 
 /**
- * Bieu do cot credit theo ngay.
+ * Bieu do cot chi phi theo ngay.
  *
  * SVG viet tay chu khong dung thu vien chart. Du lieu la mot chuoi mot chieu voi
  * duoi 400 diem; keo them mot thu vien chart vao bundle cho viec nay la doi mot
@@ -94,7 +94,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
             <th scope="col">{t('colDay')}</th>
             <th scope="col">{t('colRequests')}</th>
             <th scope="col">{t('colTokens')}</th>
-            <th scope="col">{t('colCredits')}</th>
+            <th scope="col">{t('colCost')}</th>
           </tr>
         </thead>
         <tbody>

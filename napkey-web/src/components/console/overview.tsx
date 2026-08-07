@@ -3,13 +3,26 @@
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ButtonLink } from '@/components/ui/button';
+import { ArrowRightIcon, CheckIcon } from '@/components/ui/icon';
 import { api, ApiError, rangeQuery } from '@/lib/api/client';
 import type { UsageDetailResponse, UsageSummaryResponse, WalletResponse } from '@/lib/api/types';
 import { activationState } from '@/lib/activation';
 import { billingRange, compact, count, money } from '@/lib/format';
 import { UsageChart } from './usage-chart';
 import { SpendMeter } from './spend-meter';
-import { Badge, ErrorNotice, Panel, PanelHeader, StatCard, Td, Th, TableScroll } from './ui';
+import {
+  Badge,
+  ErrorNotice,
+  LoadingStatus,
+  Panel,
+  PanelHeader,
+  SkeletonCards,
+  SkeletonPanel,
+  StatCard,
+  Td,
+  Th,
+  TableScroll,
+} from './ui';
 
 /**
  * Trang tong quan console.
@@ -63,9 +76,15 @@ export function Overview() {
   }, [t, reloadToken]);
 
   if (state.status === 'loading') {
+    // Khung xuong dung theo bo cuc that cua trang (meter, hang the, hai bang) de
+    // noi dung khong nhay cho khi so lieu ve.
     return (
-      <div role="status" className="py-24 text-center text-ui text-dim">
-        {t('loading')}
+      <div className="flex flex-col gap-6">
+        <LoadingStatus label={t('loading')} />
+        <SkeletonPanel rows={2} />
+        <SkeletonCards />
+        <SkeletonPanel rows={6} />
+        <SkeletonPanel rows={4} />
       </div>
     );
   }
@@ -115,7 +134,7 @@ export function Overview() {
                   return (
                     <li key={step} className="flex items-center gap-2 text-ui">
                       <span className={`flex size-6 items-center justify-center rounded-full border font-mono text-[11px] ${complete ? 'border-accent bg-accent text-bg' : current ? 'border-accent text-accent-light' : 'border-line text-dim'}`}>
-                        {complete ? '✓' : index + 1}
+                        {complete ? <CheckIcon className="size-3.5" /> : index + 1}
                       </span>
                       <span className={complete || current ? 'text-fg' : 'text-dim'}>{t(`activation.steps.${step}`)}</span>
                     </li>
@@ -125,7 +144,7 @@ export function Overview() {
             </div>
             <ButtonLink href={activationTarget} className="w-full lg:w-auto">
               {t(`activation.${activation.stage}.cta`)}
-              <span aria-hidden="true">→</span>
+              <ArrowRightIcon />
             </ButtonLink>
           </div>
         </section>
@@ -214,7 +233,6 @@ export function Overview() {
                 <Th align="right">{tu('colInput')}</Th>
                 <Th align="right">{tu('colOutput')}</Th>
                 <Th align="right">{tu('colCacheRead')}</Th>
-                <Th align="right">{tu('colCredits')}</Th>
                 <Th align="right">{tu('colCost')}</Th>
               </tr>
             </thead>
@@ -226,10 +244,7 @@ export function Overview() {
                   <Td align="right">{compact(row.tokens.input, locale)}</Td>
                   <Td align="right">{compact(row.tokens.output, locale)}</Td>
                   <Td align="right">{compact(row.tokens.cacheRead, locale)}</Td>
-                  <Td align="right" className="font-mono text-fg">
-                    {money(row.cost)}
-                  </Td>
-                  <Td align="right" className="text-accent-light">
+                  <Td align="right" className="font-mono text-accent-light">
                     {money(row.cost)}
                   </Td>
                 </tr>

@@ -151,6 +151,66 @@ export function SkeletonRows({ rows = 5, label }: { rows?: number; label: string
   );
 }
 
+/**
+ * Mot dong "dang tai" cho trinh doc man hinh.
+ *
+ * Tach rieng khoi khung xuong: khung xuong `aria-hidden`, cau nay thi khong. Mot
+ * trang chi co o xam thi nguoi dung trinh doc man hinh khong biet la dang tai hay
+ * la khong co gi.
+ */
+export function LoadingStatus({ label }: { label: string }) {
+  return (
+    <p role="status" className="sr-only">
+      {label}
+    </p>
+  );
+}
+
+/**
+ * Khung xuong hinh the so lieu.
+ *
+ * Dung `SkeletonRows` cho mot hang the la sai hinh: hang the cao va chia cot, con
+ * `SkeletonRows` ve cac dong ngang. Khung xuong sai hinh thi noi dung nhay cho khi
+ * du lieu ve, va cai nhay do gay cam giac cham hon la doi lau them.
+ *
+ * Khong co `role="status"` o day - dat `LoadingStatus` mot lan cho ca trang, khong
+ * de moi khoi tu bao mot lan.
+ */
+export function SkeletonCards({ cards = 4 }: { cards?: number }) {
+  return (
+    <div aria-hidden className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: cards }).map((_, i) => (
+        <div key={i} className={`${panelBase} p-5`}>
+          <div className="h-2.5 w-20 animate-pulse rounded-sm bg-white/5" />
+          <div className="mt-4 h-6 w-28 animate-pulse rounded-sm bg-white/[0.07]" />
+          <div className="mt-3 h-2.5 w-full animate-pulse rounded-sm bg-white/5" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Khung xuong hinh panel: mot dau de roi cac dong ben trong. */
+export function SkeletonPanel({ rows = 4 }: { rows?: number }) {
+  return (
+    <div aria-hidden className={panelBase}>
+      <div className="border-b border-line px-5 py-4">
+        <div className="h-3 w-40 animate-pulse rounded-sm bg-white/[0.07]" />
+        <div className="mt-2 h-2.5 w-64 max-w-full animate-pulse rounded-sm bg-white/5" />
+      </div>
+      <div className="divide-y divide-line">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 px-5 py-4">
+            <div className="h-3 w-1/4 animate-pulse rounded-sm bg-white/5" />
+            <div className="h-3 w-1/6 animate-pulse rounded-sm bg-white/5" />
+            <div className="ml-auto h-3 w-16 animate-pulse rounded-sm bg-white/5" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** Thong bao loi kem hanh dong thu lai - loi khong the la duong cung. */
 export function ErrorNotice({
   message,
