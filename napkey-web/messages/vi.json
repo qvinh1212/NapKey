@@ -511,7 +511,7 @@
       "retry": "Thử lại",
       "activation": {
         "badge": "Bắt đầu tại đây",
-        "balance": "Bạn có {credits} credit",
+        "balance": "Bạn có {amount}",
         "progressLabel": "Tiến trình kích hoạt tài khoản",
         "steps": {
           "account": "Tài khoản sẵn sàng",
@@ -529,19 +529,19 @@
           "cta": "Mở hướng dẫn kết nối"
         }
       },
-      "creditMeter": {
-        "title": "Credit đã dùng từ trước đến nay",
-        "unit": "credit",
-        "remaining": "Còn {credits} credit khả dụng",
-        "total": "Tổng cộng {credits} credit được theo dõi",
-        "settledCost": "Chi phí đã quyết toán: {amount}",
-        "held": "{credits} credit đang được giữ",
-        "topUp": "Nạp thêm credit",
-        "ariaLabel": "Mức sử dụng credit trọn đời",
-        "ariaValue": "Đã dùng {used} trên tổng {total} credit, tương đương {percent} phần trăm"
+      "spendMeter": {
+        "title": "Đã chi, toàn thời gian",
+        "remaining": "Còn dùng được {amount}",
+        "funded": "Số dư {amount}",
+        "held": "Đang giữ {amount} cho request đang chạy",
+        "noHold": "Không có khoản nào đang giữ",
+        "topUp": "Nạp thêm",
+        "ariaLabel": "Mức đã chi so với số tiền đã nạp",
+        "ariaValue": "Đã chi {used} trên {total}, {percent} phần trăm"
       },
       "stats": {
         "credits": "Credit đã dùng",
+        "spend30d": "Đã chi, 30 ngày",
         "cost30d": "Chi phí 30 ngày",
         "cost30dHint": "Tổng credit upstream ghi nhận trong 30 ngày gần nhất; tương ứng với chi phí đã quyết toán.",
         "requests30d": "Request 30 ngày",
@@ -609,6 +609,43 @@
       "colLatency": "Độ trễ",
       "colCredits": "Credit",
       "colCost": "Chi phí",
+    "colDetail": "Chi tiết",
+    "showDetail": "Xem",
+    "hideDetail": "Ẩn",
+    "quality": {
+      "unpriced": "không thu phí",
+      "estimated": "ước lượng"
+    },
+    "detail": {
+      "chargeTitle": "Hóa đơn request này",
+      "tokenCost": "Tiền token",
+      "requestFee": "Phí mỗi request",
+      "total": "Tổng đã trừ",
+      "feeNote": "Phí mỗi request là chi phí cố định cho mỗi lượt gọi upstream, không phụ thuộc request lớn hay nhỏ.",
+      "tokensTitle": "Token đã dùng",
+      "tokens": {
+        "input": "Input",
+        "output": "Output",
+        "cacheRead": "Cache đọc",
+        "cacheWrite": "Cache ghi",
+        "total": "Tổng"
+      },
+      "estimatedNote": "Số output token là ước lượng vì upstream không báo về con số đo được.",
+      "traceTitle": "Thông tin đối soát",
+      "trace": {
+        "requestId": "Mã request",
+        "model": "Model",
+        "time": "Thời điểm",
+        "latency": "Độ trễ",
+        "key": "API key",
+        "keyDeleted": "Key đã xoá",
+        "rate": "Đơn giá áp dụng",
+        "rateValue": "Bản giá #{id}",
+        "noRate": "Không có trên sổ"
+      },
+      "unpricedNote": "Request này được phục vụ khi model chưa có giá trên sổ, nên bạn không bị trừ đồng nào.",
+      "disputeNote": "Mọi con số ở trên được đóng băng lúc quyết toán. Đổi giá sau này không làm thay đổi hóa đơn đã ghi."
+    },
       "status": {
         "success": "Thành công",
         "error": "Lỗi",
@@ -815,6 +852,16 @@
       "promotionalExpiry": "Hết hạn vào {date}. Credit khuyến mãi được sử dụng trước.",
       "promotionalEmpty": "Không có credit khuyến mãi đang hoạt động.",
       "balanceHint": "Tổng tiền đã ghi có trước các khoản đang giữ.",
+      "balanceCard": {
+        "availableLabel": "Có thể dùng ngay",
+        "availableHint": "Số dư trừ phần đang giữ cho các request đang chạy.",
+        "balanceLabel": "Số dư ví",
+        "balanceHint": "Tổng tiền còn lại trong ví.",
+        "heldLabel": "Đang giữ",
+        "heldHint": "Giữ tạm khi request bắt đầu, hoàn lại phần không dùng khi xong.",
+        "promotional": "Trong số dư có tiền tặng dùng thử.",
+        "promotionalWithExpiry": "Trong số dư có tiền tặng dùng thử, hạn đến {date}."
+      },
       "available": "Có thể sử dụng",
       "availableHint": "Sẵn sàng thanh toán cho request API.",
       "held": "Đang tạm giữ",

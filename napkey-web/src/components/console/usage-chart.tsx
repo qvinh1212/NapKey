@@ -3,7 +3,7 @@
 import { useId, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { UsageDayBucket } from '@/lib/api/types';
-import { count, creditAmount, dayLabel } from '@/lib/format';
+import { count, dayLabel, money } from '@/lib/format';
 import { usageBarPercent } from '@/lib/usage-chart-layout';
 
 /**
@@ -32,7 +32,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
     );
   }
 
-  const maxMicros = Math.max(...daily.map((d) => d.credits.micros), 1);
+  const maxMicros = Math.max(...daily.map((d) => d.cost.micros), 1);
   const activeDay = active === null ? null : daily[active];
 
   return (
@@ -43,7 +43,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
           <span className="tabular-nums text-muted">
             <span className="text-dim">{dayLabel(activeDay.day, locale)}</span>
             {'  '}
-            <span className="text-accent-light">{creditAmount(activeDay.credits, locale)}</span>
+            <span className="text-accent-light">{money(activeDay.cost)}</span>
             {'  '}
             <span className="text-dim">
               {t('chartRequests', { count: count(activeDay.requests, locale) })}
@@ -58,7 +58,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
         onMouseLeave={() => setActive(null)}
       >
         {daily.map((day, index) => {
-          const widthPct = usageBarPercent(day.credits.micros, maxMicros);
+          const widthPct = usageBarPercent(day.cost.micros, maxMicros);
           const isActive = active === index;
           return (
             <div
@@ -75,7 +75,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
                 />
               </span>
               <span className="col-span-2 text-right font-mono text-label tabular-nums text-muted sm:col-span-1">
-                {creditAmount(day.credits, locale)}
+                {money(day.cost)}
                 <span className="ml-2 hidden text-dim sm:inline">· {count(day.requests, locale)} req</span>
               </span>
             </div>
@@ -103,7 +103,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
               <th scope="row">{dayLabel(day.day, locale)}</th>
               <td>{count(day.requests, locale)}</td>
               <td>{count(day.tokens.total, locale)}</td>
-              <td>{creditAmount(day.credits, locale)}</td>
+              <td>{money(day.cost)}</td>
             </tr>
           ))}
         </tbody>

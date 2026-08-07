@@ -394,10 +394,20 @@ func (s *Server) handleListUsageRecords(w http.ResponseWriter, r *http.Request) 
 			"tokens":    tokensView(rec.Tokens),
 			"cost":      costView(rec.CostMicros),
 			"credits":   creditsView(rec.CreditsMicros),
-			"unpriced":  rec.Unpriced,
-			"estimated": rec.Estimated,
-			"status":    rec.Status,
-			"createdAt": rec.CreatedAt.UTC().Format(time.RFC3339),
+			// The flat fee and the token remainder are sent apart so the console can
+			// answer "why did this cost that". On a short request the fee is most of
+			// the charge, and a single total makes the price look arbitrary.
+			"requestFee": costView(rec.RequestFeeMicros),
+			"tokenCost":  costView(rec.CostMicros - rec.RequestFeeMicros),
+			"unpriced":   rec.Unpriced,
+			"estimated":  rec.Estimated,
+			"status":     rec.Status,
+			"createdAt":  rec.CreatedAt.UTC().Format(time.RFC3339),
+		}
+		// Absent on an unpriced row, which is the honest representation: there was no
+		// rate, so there is no rate to name.
+		if rec.RateID != nil {
+			row["rateId"] = *rec.RateID
 		}
 		if rec.APIKeyID != nil {
 			row["keyId"] = *rec.APIKeyID

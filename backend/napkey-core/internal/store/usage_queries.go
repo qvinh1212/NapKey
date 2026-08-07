@@ -203,11 +203,18 @@ type UsageRecord struct {
 	Tokens        pricing.Tokens
 	CostMicros    int64
 	CreditsMicros int64
-	Unpriced      bool
-	Estimated     bool
-	LatencyMS     *int
-	Status        string
-	CreatedAt     time.Time
+	// RequestFeeMicros is the flat part of CostMicros. Without it a customer cannot
+	// tell why a 300-token request cost 330 VND: 300 of that is the per-call fee and
+	// only 30 is tokens. Frozen at insert time like the rest of the charge.
+	RequestFeeMicros int64
+	// RateID is the model_prices row that produced this charge, so a disputed amount
+	// can be traced to the exact published rate rather than to today's price book.
+	RateID    *int64
+	Unpriced  bool
+	Estimated bool
+	LatencyMS *int
+	Status    string
+	CreatedAt time.Time
 }
 
 // ListUserUsage returns the ledger for a user, newest first.
@@ -237,7 +244,8 @@ func (s *Store) ListUserUsage(ctx context.Context, userID string, r UsageRange, 
 		SELECT r.id, r.request_id, r.api_key_id,
 		       coalesce(k.name, ''), coalesce(k.key_prefix, ''), coalesce(k.last_four, ''),
 		       r.model, r.input_tokens, r.output_tokens, r.cache_read_tokens, r.cache_write_tokens,
-		       r.cost_micros, r.credits_micros, r.unpriced, r.tokens_estimated, r.latency_ms, r.status, r.created_at
+		       r.cost_micros, r.credits_micros, r.request_fee_micros, r.priced_with,
+		       r.unpriced, r.tokens_estimated, r.latency_ms, r.status, r.created_at
 		FROM usage_records r
 		LEFT JOIN api_keys k ON k.id = r.api_key_id
 		WHERE r.user_id = $1 AND r.created_at >= $2 AND r.created_at < $3
@@ -257,7 +265,8 @@ func (s *Store) ListUserUsage(ctx context.Context, userID string, r UsageRange, 
 			&rec.KeyName, &rec.KeyPrefix, &rec.KeyLastFour,
 			&rec.Model, &rec.Tokens.Input, &rec.Tokens.Output,
 			&rec.Tokens.CacheRead, &rec.Tokens.CacheWrite,
-			&rec.CostMicros, &rec.CreditsMicros, &rec.Unpriced, &rec.Estimated,
+			&rec.CostMicros, &rec.CreditsMicros, &rec.RequestFeeMicros, &rec.RateID,
+			&rec.Unpriced, &rec.Estimated,
 			&rec.LatencyMS, &rec.Status, &rec.CreatedAt); err != nil {
 			return nil, 0, fmt.Errorf("store: scanning a usage record: %w", err)
 		}

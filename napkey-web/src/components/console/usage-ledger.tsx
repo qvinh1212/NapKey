@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api/client';
 import type { KeyListResponse, UsageDetailResponse, UsageRecordsResponse } from '@/lib/api/types';
-import { billingRange, compact, count, creditAmount, dateTime, latency } from '@/lib/format';
+import { billingRange, compact, count, dateTime, latency, money } from '@/lib/format';
 import { usagePageQueries } from '@/lib/usage-query';
 import { UsageChart } from './usage-chart';
 import { usageRecordView } from '@/lib/usage-record-view';
+import { UsageRecordDetail, UsageQualityBadge } from './usage-record-detail';
 import {
   Badge,
   EmptyState,
@@ -47,6 +48,7 @@ export function UsageLedger() {
   const [days, setDays] = useState<Preset>(30);
   const [keyId, setKeyId] = useState('');
   const [offset, setOffset] = useState(0);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [state, setState] = useState<State>({ status: 'loading' });
   const [keys, setKeys] = useState<KeyListResponse['keys']>([]);
 
@@ -109,8 +111,8 @@ export function UsageLedger() {
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              label={t('stats.credits')}
-              value={creditAmount(state.detail.totals.credits, locale)}
+              label={t('stats.spend')}
+              value={money(state.detail.totals.cost)}
               hint={t('stats.rangeHint', { days })}
               tone="accent"
             />
@@ -167,6 +169,7 @@ export function UsageLedger() {
                       // Doi khoang thoi gian phai ve trang dau: giu offset cu se
                       // hien mot trang trong khi khoang moi it du lieu hon.
                       setOffset(0);
+                      setExpandedId(null);
                     }}
                     className={
                       'rounded-full px-3 py-1 font-mono text-label transition-colors duration-150 ' +
@@ -187,6 +190,7 @@ export function UsageLedger() {
                 onChange={(event) => {
                   setKeyId(event.target.value);
                   setOffset(0);
+                  setExpandedId(null);
                 }}
                 className="rounded-full border border-line bg-surface-hover px-3 py-1.5 text-ui text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
@@ -229,35 +233,62 @@ export function UsageLedger() {
                   <Th align="right">{t('colInput')}</Th>
                   <Th align="right">{t('colOutput')}</Th>
                   <Th align="right">{t('colCache')}</Th>
-                  <Th align="right">{t('colCredits')}</Th>
+                  <Th align="right">{t('colCost')}</Th>
                   <Th align="right">{t('colLatency')}</Th>
+                  <Th align="right">{t('colDetail')}</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {state.records.records.map((record) => {
                   const view = usageRecordView(record);
+                  const open = expandedId === record.id;
                   return (
-                    <tr key={record.id} className="transition-colors hover:bg-surface-hover">
-                    <Td className="whitespace-nowrap font-mono text-label text-dim">
-                      {dateTime(record.createdAt, locale)}
-                    </Td>
-                    <Td className="font-mono text-muted">
-                      <span className="whitespace-nowrap">{record.model}</span>
-                    </Td>
-                    <Td><Badge tone="info">{view.type}</Badge></Td>
-                    <Td><Badge tone={view.statusTone}>{t(`status.${view.status}`)}</Badge></Td>
-                    <Td align="right">{count(record.tokens.input, locale)}</Td>
-                    <Td align="right">{count(record.tokens.output, locale)}</Td>
-                    <Td align="right" className="text-dim">
-                      {count(view.cacheTokens, locale)}
-                    </Td>
-                    <Td align="right" className="font-mono text-fg">
-                      {creditAmount(record.credits, locale)}
-                    </Td>
-                    <Td align="right" className="text-dim">
-                      {latency(record.latencyMs, locale)}
-                    </Td>
-                    </tr>
+                    <Fragment key={record.id}>
+                      <tr className="transition-colors hover:bg-surface-hover">
+                        <Td className="whitespace-nowrap font-mono text-label text-dim">
+                          {dateTime(record.createdAt, locale)}
+                        </Td>
+                        <Td className="font-mono text-muted">
+                          <span className="whitespace-nowrap">{record.model}</span>
+                        </Td>
+                        <Td>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <Badge tone="info">{view.type}</Badge>
+                            <UsageQualityBadge record={record} />
+                          </div>
+                        </Td>
+                        <Td><Badge tone={view.statusTone}>{t(`status.${view.status}`)}</Badge></Td>
+                        <Td align="right">{count(record.tokens.input, locale)}</Td>
+                        <Td align="right">{count(record.tokens.output, locale)}</Td>
+                        <Td align="right" className="text-dim">
+                          {count(view.cacheTokens, locale)}
+                        </Td>
+                        <Td align="right" className="font-mono text-fg">
+                          {money(record.cost)}
+                        </Td>
+                        <Td align="right" className="text-dim">
+                          {latency(record.latencyMs, locale)}
+                        </Td>
+                        <Td align="right">
+                          <button
+                            type="button"
+                            aria-expanded={open}
+                            aria-controls={`usage-detail-${record.id}`}
+                            onClick={() => setExpandedId(open ? null : record.id)}
+                            className="rounded-full border border-line px-3 py-1 font-mono text-label text-muted transition-colors hover:bg-white/10 hover:text-fg"
+                          >
+                            {open ? t('hideDetail') : t('showDetail')}
+                          </button>
+                        </Td>
+                      </tr>
+                      {open ? (
+                        <tr id={`usage-detail-${record.id}`}>
+                          <td colSpan={10} className="p-0">
+                            <UsageRecordDetail record={record} />
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
                   );
                 })}
               </tbody>
@@ -275,7 +306,10 @@ export function UsageLedger() {
                 <button
                   type="button"
                   disabled={!hasPrev}
-                  onClick={() => setOffset((v) => Math.max(v - PAGE_SIZE, 0))}
+                  onClick={() => {
+                    setOffset((v) => Math.max(v - PAGE_SIZE, 0));
+                    setExpandedId(null);
+                  }}
                   className="rounded-full border border-line bg-surface-hover px-4 py-1.5 text-ui text-muted transition-colors hover:bg-white/10 hover:text-fg disabled:pointer-events-none disabled:opacity-40"
                 >
                   {t('prev')}
@@ -283,7 +317,10 @@ export function UsageLedger() {
                 <button
                   type="button"
                   disabled={!hasNext}
-                  onClick={() => setOffset((v) => v + PAGE_SIZE)}
+                  onClick={() => {
+                    setOffset((v) => v + PAGE_SIZE);
+                    setExpandedId(null);
+                  }}
                   className="rounded-full border border-line bg-surface-hover px-4 py-1.5 text-ui text-muted transition-colors hover:bg-white/10 hover:text-fg disabled:pointer-events-none disabled:opacity-40"
                 >
                   {t('next')}

@@ -499,7 +499,7 @@
       "retry": "Try again",
       "activation": {
         "badge": "Start here",
-        "balance": "You have {credits} credits",
+        "balance": "You have {amount}",
         "progressLabel": "Account activation progress",
         "steps": {
           "account": "Account ready",
@@ -517,19 +517,19 @@
           "cta": "Open setup guide"
         }
       },
-      "creditMeter": {
-        "title": "Credits used, all time",
-        "unit": "{count, plural, one {credit} other {credits}}",
-        "remaining": "{credits, plural, one {# credit available} other {# credits available}}",
-        "total": "{credits, plural, one {# credit tracked in total} other {# credits tracked in total}}",
-        "settledCost": "Settled usage cost: {amount}",
-        "held": "{credits, plural, one {# credit currently reserved} other {# credits currently reserved}}",
-        "topUp": "Top up credits",
-        "ariaLabel": "Lifetime credit usage",
-        "ariaValue": "{used} of {total} credits used, {percent} percent"
+      "spendMeter": {
+        "title": "Spent, all time",
+        "remaining": "{amount} available",
+        "funded": "{amount} balance",
+        "held": "{amount} reserved for requests in flight",
+        "noHold": "Nothing currently reserved",
+        "topUp": "Top up",
+        "ariaLabel": "Spend against the funded amount",
+        "ariaValue": "{used} of {total} spent, {percent} percent"
       },
       "stats": {
         "credits": "Credits used",
+        "spend30d": "Spent, 30 days",
         "cost30d": "Cost, 30 days",
         "cost30dHint": "Upstream-reported credits in the last 30 days, corresponding to settled cost.",
         "requests30d": "Requests, 30 days",
@@ -597,6 +597,43 @@
       "colLatency": "Latency",
       "colCredits": "Credits",
       "colCost": "Cost",
+    "colDetail": "Detail",
+    "showDetail": "View",
+    "hideDetail": "Hide",
+    "quality": {
+      "unpriced": "not charged",
+      "estimated": "estimated"
+    },
+    "detail": {
+      "chargeTitle": "What this request cost",
+      "tokenCost": "Token cost",
+      "requestFee": "Per-request fee",
+      "total": "Total charged",
+      "feeNote": "The per-request fee covers the fixed cost of each upstream call and does not shrink with the request.",
+      "tokensTitle": "Tokens used",
+      "tokens": {
+        "input": "Input",
+        "output": "Output",
+        "cacheRead": "Cache read",
+        "cacheWrite": "Cache write",
+        "total": "Total"
+      },
+      "estimatedNote": "The output token count is estimated because the upstream did not report a measured figure.",
+      "traceTitle": "Reconciliation details",
+      "trace": {
+        "requestId": "Request ID",
+        "model": "Model",
+        "time": "Time",
+        "latency": "Latency",
+        "key": "API key",
+        "keyDeleted": "Key deleted",
+        "rate": "Rate applied",
+        "rateValue": "Price row #{id}",
+        "noRate": "No rate on file"
+      },
+      "unpricedNote": "This request was served while the model had no price on file, so you were not charged.",
+      "disputeNote": "Every figure above was frozen at settlement. A later price change does not alter a recorded charge."
+    },
       "status": {
         "success": "Success",
         "error": "Error",
@@ -803,6 +840,16 @@
       "promotionalExpiry": "Expires on {date}. Promotional credits are spent first.",
       "promotionalEmpty": "No active promotional credit.",
       "balanceHint": "Total credited balance before active holds.",
+      "balanceCard": {
+        "availableLabel": "Available to spend",
+        "availableHint": "Your balance minus anything reserved for requests in flight.",
+        "balanceLabel": "Wallet balance",
+        "balanceHint": "Total money remaining in the wallet.",
+        "heldLabel": "Reserved",
+        "heldHint": "Held when a request starts; the unused part is returned when it finishes.",
+        "promotional": "Your balance includes trial credit.",
+        "promotionalWithExpiry": "Your balance includes trial credit, valid until {date}."
+      },
       "available": "Available",
       "availableHint": "Ready to spend on API requests.",
       "held": "Reserved",

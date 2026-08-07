@@ -6,9 +6,9 @@ import { ButtonLink } from '@/components/ui/button';
 import { api, ApiError, rangeQuery } from '@/lib/api/client';
 import type { UsageDetailResponse, UsageSummaryResponse, WalletResponse } from '@/lib/api/types';
 import { activationState } from '@/lib/activation';
-import { billingRange, compact, count, creditAmount, money } from '@/lib/format';
+import { billingRange, compact, count, money } from '@/lib/format';
 import { UsageChart } from './usage-chart';
-import { CreditUsageMeter } from './credit-usage-meter';
+import { SpendMeter } from './spend-meter';
 import { Badge, ErrorNotice, Panel, PanelHeader, StatCard, Td, Th, TableScroll } from './ui';
 
 /**
@@ -98,7 +98,7 @@ export function Overview() {
                 <Badge tone="accent">{t('activation.badge')}</Badge>
                 {wallet ? (
                   <span className="font-mono text-label tracking-[0.08em] text-accent-light uppercase">
-                    {t('activation.balance', { credits: creditAmount(wallet.credits.available, locale) })}
+                    {t('activation.balance', { amount: money(wallet.available) })}
                   </span>
                 ) : null}
               </div>
@@ -131,18 +131,12 @@ export function Overview() {
         </section>
       ) : null}
 
-      {wallet ? (
-        <CreditUsageMeter
-          usedCredits={summary.usage.credits.credits}
-          usedAmount={summary.usage.totalCost}
-          wallet={wallet}
-        />
-      ) : null}
+      {wallet ? <SpendMeter usedAmount={summary.usage.totalCost} wallet={wallet} /> : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label={t('stats.credits')}
-          value={creditAmount(last30Days.credits, locale)}
+          label={t('stats.spend30d')}
+          value={money(last30Days.cost)}
           hint={t('stats.cost30dHint')}
           tone="accent"
         />
@@ -233,7 +227,7 @@ export function Overview() {
                   <Td align="right">{compact(row.tokens.output, locale)}</Td>
                   <Td align="right">{compact(row.tokens.cacheRead, locale)}</Td>
                   <Td align="right" className="font-mono text-fg">
-                    {creditAmount(row.credits, locale)}
+                    {money(row.cost)}
                   </Td>
                   <Td align="right" className="text-accent-light">
                     {money(row.cost)}

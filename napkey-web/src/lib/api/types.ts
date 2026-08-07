@@ -215,7 +215,19 @@ export type UsageRecord = {
   model: string;
   tokens: TokenBreakdown;
   cost: Money;
+  /**
+   * Zero on every request the 9Router upstream serves, which is all of them since
+   * 2026-08-05. It speaks the OpenAI protocol and reports no credit meter, so
+   * settlement prices from tokens and this field stays 0. Show `cost`; a console that
+   * leads with credits shows a customer 0 for a request they paid 330 VND for.
+   */
   credits: Credits;
+  /** The flat per-call part of `cost`. On a short request it is most of the charge. */
+  requestFee: Money;
+  /** `cost` less `requestFee`, so the two components add up in front of the customer. */
+  tokenCost: Money;
+  /** The model_prices row that produced this charge. Absent when `unpriced`. */
+  rateId?: number;
   /** Phuc vu roi nhung khong co gia - tinh 0 dong. */
   unpriced: boolean;
   /** Output token la uoc luong, khong phai do tu upstream. */
