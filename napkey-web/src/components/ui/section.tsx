@@ -7,16 +7,37 @@ type SectionProps = {
   subtitle?: string;
   children: ReactNode;
   className?: string;
+  /**
+   * Bo khoang cach tren de khoi nay doc lien voi khoi ngay truoc.
+   *
+   * Trang chu tung co 10 khoi lien tiep cung mot nhip 8rem, khien nguoi doc mat
+   * moc dinh huong. `joined` cho phep ghep hai khoi lien quan (gia + thanh toan,
+   * tin cay + tuong thich) thanh mot don vi thi giac ma van giu id rieng, vi
+   * thanh dieu huong tro truc tiep vao #billing va #compatibility.
+   */
+  joined?: boolean;
 };
 
-export function Section({ id, eyebrow, title, subtitle, children, className = '' }: SectionProps) {
+export function Section({
+  id,
+  eyebrow,
+  title,
+  subtitle,
+  children,
+  className = '',
+  joined = false,
+}: SectionProps) {
   const headingId = id ? `${id}-heading` : undefined;
 
   return (
-    <section id={id} aria-labelledby={headingId} className={`section-y ${className}`}>
+    <section
+      id={id}
+      aria-labelledby={headingId}
+      className={`${joined ? 'section-y-joined' : 'section-y'} ${className}`}
+    >
       <div className="container-page">
         {(eyebrow ?? title ?? subtitle) ? (
-          <header className="mb-10 max-w-3xl sm:mb-16">
+          <header className={`max-w-3xl ${joined ? 'mb-8 sm:mb-10' : 'mb-10 sm:mb-16'}`}>
             {eyebrow ? (
               <p className="mb-4 font-mono text-label tracking-[0.18em] text-accent uppercase">
                 {eyebrow}

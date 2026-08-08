@@ -46,6 +46,22 @@
     },
     "statusLink": "Kiểm tra liveness gateway"
   },
+  "signals": {
+    "title": "Tình trạng hệ thống",
+    "gatewayLabel": "Gateway",
+    "modelsLabel": "Model đang phục vụ",
+    "modelsValue": "{count} model",
+    "modelsUnknown": "Đang cập nhật",
+    "rateLabel": "Đơn giá",
+    "rateValue": "{perMillion} / 1M token + {perRequest} / request",
+    "states": {
+      "operational": "Hoạt động bình thường",
+      "degraded": "Suy giảm một phần",
+      "outage": "Đang gián đoạn",
+      "unknown": "Chưa xác định"
+    },
+    "link": "Xem trang tình trạng chi tiết"
+  },
   "value": {
     "eyebrow": "Vì sao chọn NapKey",
     "title": "Hạ tầng lo phần khó, bạn chỉ gọi API",
@@ -259,6 +275,24 @@
       "largeContext": "Đọc file lớn, context dài",
       "perRequest": "mỗi request",
       "buys": "10.000 VNĐ mua được ~{count} lượt"
+    },
+    "calculator": {
+      "eyebrow": "Máy tính chi phí",
+      "title": "Mỗi tháng bạn trả bao nhiêu",
+      "volumeLabel": "Số request mỗi ngày",
+      "volumeValue": "{count} request/ngày",
+      "shapeLabel": "Loại request bạn gửi",
+      "shapes": {
+        "chat": "Chat ngắn",
+        "agentStep": "Bước coding agent",
+        "largeContext": "Context dài"
+      },
+      "resultLabel": "Ước tính mỗi tháng",
+      "perMonth": "VNĐ/tháng",
+      "perDayLabel": "Mỗi ngày",
+      "topUpLabel": "Nạp {amount} dùng được",
+      "topUpValue": "~{count} ngày",
+      "note": "Ước tính theo đơn giá công khai và số đo request thực tế. Số tiền thật phụ thuộc độ dài prompt và output của từng lượt gọi."
     },
     "packages": {
       "starter": "Bắt đầu và thử nghiệm",

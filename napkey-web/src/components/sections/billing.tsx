@@ -9,7 +9,7 @@ export function Billing() {
   const t = useTranslations('billing');
 
   return (
-    <Section id="billing" eyebrow={t('eyebrow')} title={t('title')}>
+    <Section id="billing" eyebrow={t('eyebrow')} title={t('title')} joined>
       <ol className="grid gap-6 md:grid-cols-3">
         {steps.map((key, index) => (
           <li key={key}>
@@ -21,7 +21,7 @@ export function Billing() {
                 {index + 1}
               </p>
               <h3 className="mb-3 text-2xl tracking-[-0.02em]">{t(`steps.${key}.title`)}</h3>
-              <p className="text-ui leading-relaxed text-muted">{t(`steps.${key}.body`)}</p>
+              <p className="text-prose text-muted">{t(`steps.${key}.body`)}</p>
             </Card>
           </li>
         ))}
@@ -33,7 +33,7 @@ export function Billing() {
           {faqItems.map((key) => (
             <div key={key} className="grid gap-3 px-6 py-6 md:grid-cols-[18rem_1fr] md:gap-8">
               <dt className="text-base text-fg">{t(`faq.items.${key}.q`)}</dt>
-              <dd className="text-ui leading-relaxed text-muted">{t(`faq.items.${key}.a`)}</dd>
+              <dd className="text-prose text-muted">{t(`faq.items.${key}.a`)}</dd>
             </div>
           ))}
         </dl>

@@ -32,11 +32,20 @@ export function normalizePublicStatus(value: unknown): PublicStatus {
   };
 }
 
-export async function readPublicStatus(): Promise<PublicStatus> {
+/**
+ * `revalidateSeconds` cho phep trang chu doc status ma khong bi keo sang dynamic
+ * rendering. Trang /status van dung mac dinh (no-store) vi no phai chinh xac tai
+ * thoi diem mo; mot dai tin hieu tren landing page thi cu sau 60 giay la du.
+ */
+export async function readPublicStatus(
+  options: { revalidateSeconds?: number } = {},
+): Promise<PublicStatus> {
   const coreURL = (process.env.NAPKEY_CORE_URL ?? 'http://127.0.0.1:8081').replace(/\/+$/, '');
   try {
     const response = await fetch(`${coreURL}/v1/status`, {
-      cache: 'no-store',
+      ...(typeof options.revalidateSeconds === 'number'
+        ? { next: { revalidate: options.revalidateSeconds } }
+        : { cache: 'no-store' as const }),
       signal: AbortSignal.timeout(2000),
     });
     if (!response.ok) return normalizePublicStatus(null);

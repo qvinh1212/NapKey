@@ -23,7 +23,9 @@ export function FinalCta() {
               {t('body')}
             </p>
             <div className="mt-8 flex justify-center sm:mt-10">
-              <ButtonLink href="#pricing" className="w-full sm:w-auto">{t('button')}</ButtonLink>
+              <ButtonLink href="/signup" className="w-full sm:w-auto">
+                {t('button')}
+              </ButtonLink>
             </div>
           </div>
         </div>

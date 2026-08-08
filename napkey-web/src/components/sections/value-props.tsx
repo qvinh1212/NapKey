@@ -20,7 +20,7 @@ export function ValueProps() {
                 {String(index + 1).padStart(2, '0')}
               </p>
               <h3 className="mb-3 text-2xl tracking-[-0.02em]">{t(`cards.${key}.title`)}</h3>
-              <p className="text-ui leading-relaxed text-muted">{t(`cards.${key}.body`)}</p>
+              <p className="text-prose text-muted">{t(`cards.${key}.body`)}</p>
             </Card>
           </li>
         ))}

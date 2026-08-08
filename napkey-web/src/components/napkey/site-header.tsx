@@ -23,8 +23,20 @@ export function SiteHeader() {
   const session = useSession();
   const authAction = publicAuthAction(session.status);
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileNavRef = useRef<HTMLElement>(null);
+
+  // Header fixed khong co nen rieng; khi cuoc qua card sang, chu nav chong
+  // len noi dung. Bat nen mo dan ngay khi roi khoi dinh trang.
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 8);
+    }
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Chan scroll khi menu mobile dang mo.
   useEffect(() => {
@@ -35,9 +47,34 @@ export function SiteHeader() {
       mobileNavRef.current?.querySelector<HTMLElement>('a, button')?.focus();
     }
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key !== 'Escape' || !open) return;
-      setOpen(false);
-      menuButtonRef.current?.focus();
+      if (!open) return;
+
+      if (event.key === 'Escape') {
+        setOpen(false);
+        menuButtonRef.current?.focus();
+        return;
+      }
+
+      // Giu tab trong panel; khong co trap, tab se roi xuong noi dung bi che.
+      if (event.key !== 'Tab') return;
+      const panel = mobileNavRef.current;
+      if (!panel) return;
+      const focusable = Array.from(
+        panel.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'),
+      ).filter((node) => node.offsetParent !== null);
+      if (focusable.length === 0) return;
+
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+      const active = document.activeElement;
+
+      if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && (active === first || !panel.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      }
     }
     function onDesktop(event: MediaQueryListEvent) {
       if (event.matches) setOpen(false);
@@ -52,7 +89,14 @@ export function SiteHeader() {
   }, [open]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 pt-4 sm:pt-6">
+    <header
+      className={
+        'fixed inset-x-0 top-0 z-50 pt-4 transition-colors duration-200 ease-[var(--ease-smooth)] sm:pt-6 ' +
+        (scrolled || open
+          ? 'border-b border-line bg-black/80 pb-4 backdrop-blur-md sm:pb-4'
+          : 'border-b border-transparent pb-0')
+      }
+    >
       <div className="container-page">
         <div className="flex items-center justify-between gap-3 sm:gap-6">
           <Link

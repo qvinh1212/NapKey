@@ -49,8 +49,10 @@ export function ButtonLink({
   const cls = `${shared} ${variants[variant]} ${className}`;
 
   if (isExternal) {
+    // Anchor trong trang (#...) khong roi tab nen khong can rel.
+    const rel = href.startsWith('http') ? (rest.rel ?? 'noopener noreferrer') : rest.rel;
     return (
-      <a href={href} className={cls} {...rest}>
+      <a href={href} className={cls} {...rest} rel={rel}>
         {children}
       </a>
     );

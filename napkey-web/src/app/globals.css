@@ -13,7 +13,7 @@
 
   --color-fg: #ffffff;
   --color-muted: #a3a3a3;
-  --color-dim: #525252;
+  --color-dim: #767676;
   --color-subtle: #a1a1aa;
 
   --color-accent: #10b981;
@@ -162,7 +162,7 @@
 }
 
 @utility text-gradient-fade {
-  background-image: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.62) 100%);
+  background-image: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.78) 100%);
   background-clip: text;
   color: transparent;
 }
@@ -199,5 +199,59 @@
 @media (prefers-reduced-motion: reduce) {
   .ecosystem-signal {
     display: none;
+  }
+}
+
+/*
+ * Tieng Viet co dau thanh phia tren va duoi chu; tracking am manh cua
+ * ban reference lam dau dinh vao nhau o cap chu hero. Noi ra cho locale vi.
+ */
+html[lang='vi'] h1 {
+  letter-spacing: -0.03em;
+}
+
+/*
+ * Cap chu 13px (--text-ui) sinh ra cho console day du lieu. Trang marketing
+ * doc o khoang cach xa hon nen dung 15px tro len.
+ */
+@utility text-prose {
+  font-size: 0.9375rem;
+  line-height: 1.65;
+
+  @media (min-width: 40rem) {
+    font-size: 1rem;
+  }
+}
+
+/*
+ * Khoi ghep: giu nhip duoi nhung bo nhip tren de doc lien voi khoi truoc.
+ */
+@utility section-y-joined {
+  padding-block: 0 5rem;
+
+  @media (min-width: 48rem) {
+    padding-block: 0 8rem;
+  }
+}
+
+/*
+ * Header fixed cao khoang 5rem; khong co scroll-margin thi nhay toi #pricing se
+ * dat tieu de khoi ngay duoi header va bi che.
+ */
+section[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/*
+ * Chieu cao danh cho thanh uu dai sticky. Dat o :root de component chi phai
+ * gan mot ten bien, khong phai do DOM.
+ */
+:root {
+  --launch-offer-height: 9.5rem;
+}
+
+@media (min-width: 40rem) {
+  :root {
+    --launch-offer-height: 5.5rem;
   }
 }

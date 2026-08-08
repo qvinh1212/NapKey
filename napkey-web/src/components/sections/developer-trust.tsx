@@ -16,7 +16,7 @@ export function DeveloperTrust() {
             <blockquote className="mt-5 text-2xl leading-snug tracking-[-0.02em] text-fg sm:text-3xl">
               {t('manifest')}
             </blockquote>
-            <p className="mt-5 text-ui leading-relaxed text-muted">{t('manifestBody')}</p>
+            <p className="mt-5 text-prose text-muted">{t('manifestBody')}</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/trust" className="rounded-full bg-fg px-5 py-2.5 text-ui font-medium text-bg transition-colors hover:bg-white/90">
                 {t('readTrust')}
@@ -34,7 +34,7 @@ export function DeveloperTrust() {
                   <span aria-hidden className="font-mono text-label text-dim">0{index + 1}</span>
                   <span className="text-sm font-medium text-fg">{t(`proofs.${proof}.title`)}</span>
                 </dt>
-                <dd className="text-ui leading-relaxed text-muted">{t(`proofs.${proof}.body`)}</dd>
+                <dd className="text-prose text-muted">{t(`proofs.${proof}.body`)}</dd>
               </div>
             ))}
           </dl>

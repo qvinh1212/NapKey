@@ -103,7 +103,7 @@ export function EcosystemMap() {
               </span>
             </div>
             <h3 className="mt-5 text-2xl">NapKey</h3>
-            <p className="mt-2 max-w-48 text-ui leading-relaxed text-muted">{t('hubBody')}</p>
+            <p className="mt-2 max-w-48 text-prose text-muted">{t('hubBody')}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2 font-mono text-micro tracking-[0.08em] text-dim uppercase">
               <span className="rounded-full border border-line px-2.5 py-1">Anthropic</span>
               <span className="rounded-full border border-line px-2.5 py-1">OpenAI</span>

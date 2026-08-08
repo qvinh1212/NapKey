@@ -8,6 +8,7 @@ import {
   requestsFromVnd,
   requestShapes,
 } from '@/lib/pricing';
+import { CostCalculator } from '@/components/sections/cost-calculator';
 
 export function PricingTable() {
   const t = useTranslations('pricing');
@@ -31,7 +32,7 @@ export function PricingTable() {
                 {t('popular')}
               </span>
             ) : null}
-            <p className="text-ui text-muted">{t(`shapes.${shape.key}`)}</p>
+            <p className="text-prose text-muted">{t(`shapes.${shape.key}`)}</p>
             <p className="mt-5 font-mono text-4xl text-fg tabular-nums">
               {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
                 maximumFractionDigits: 0,
@@ -42,13 +43,15 @@ export function PricingTable() {
             <p className="mt-3 font-mono text-lg text-accent-light">
               {t('shapes.buys', { count: requestsFromVnd(MIN_TOPUP_VND, shape) })}
             </p>
-            <p className="mt-5 border-t border-line/70 pt-4 text-ui leading-relaxed text-dim">
+            <p className="mt-5 border-t border-line/70 pt-4 text-prose text-dim">
               {t('packageNote')}
             </p>
           </article>
         ))}
       </div>
-      <p className="mt-3 text-ui leading-relaxed text-dim">{t('shapes.note')}</p>
+      <p className="mt-3 text-prose text-dim">{t('shapes.note')}</p>
+
+      <CostCalculator />
 
       <div className="relative mt-6 overflow-hidden rounded-xl border border-accent/40 bg-accent-soft p-5 sm:p-7">
         <div aria-hidden="true" className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-accent/15 blur-3xl" />
@@ -56,7 +59,7 @@ export function PricingTable() {
           <div>
             <p className="font-mono text-micro uppercase tracking-[0.14em] text-accent-light">{t('offer.eyebrow')}</p>
             <h3 className="mt-2 font-display text-2xl font-bold text-fg sm:text-3xl">{t('offer.title')}</h3>
-            <p className="mt-2 text-ui leading-relaxed text-muted">{t('offer.body')}</p>
+            <p className="mt-2 text-prose text-muted">{t('offer.body')}</p>
           </div>
           <div className="rounded-xl border border-accent/30 bg-bg/60 px-5 py-4 font-mono text-lg text-fg md:text-right">
             {t('offer.example')}
@@ -69,7 +72,7 @@ export function PricingTable() {
           <p className="font-mono text-micro uppercase tracking-[0.14em] text-dim">{t('rateLabel')}</p>
           <p className="mt-2 font-mono text-xl leading-snug text-fg">{t('rateValue')}</p>
         </div>
-        <div className="space-y-2 text-ui leading-relaxed text-muted">
+        <div className="space-y-2 text-prose text-muted">
           <p>{t('measurement')}</p>
           <p>{t('feeNote')}</p>
           <p className="text-dim">{t('footnote')}</p>

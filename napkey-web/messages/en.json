@@ -46,6 +46,22 @@
     },
     "statusLink": "Check gateway liveness"
   },
+  "signals": {
+    "title": "System status",
+    "gatewayLabel": "Gateway",
+    "modelsLabel": "Models serving",
+    "modelsValue": "{count} models",
+    "modelsUnknown": "Updating",
+    "rateLabel": "Rate",
+    "rateValue": "{perMillion} / 1M tokens + {perRequest} / request",
+    "states": {
+      "operational": "All systems normal",
+      "degraded": "Partially degraded",
+      "outage": "Disrupted",
+      "unknown": "Unknown"
+    },
+    "link": "See the full status page"
+  },
   "value": {
     "eyebrow": "Why NapKey",
     "title": "We handle the hard part, you just call the API",
@@ -259,6 +275,24 @@
       "largeContext": "Reading a large file, long context",
       "perRequest": "per request",
       "buys": "10,000 VND buys ~{count}"
+    },
+    "calculator": {
+      "eyebrow": "Cost calculator",
+      "title": "What you pay per month",
+      "volumeLabel": "Requests per day",
+      "volumeValue": "{count} requests/day",
+      "shapeLabel": "The kind of request you send",
+      "shapes": {
+        "chat": "Short chat",
+        "agentStep": "Coding-agent step",
+        "largeContext": "Long context"
+      },
+      "resultLabel": "Estimated per month",
+      "perMonth": "VND/month",
+      "perDayLabel": "Per day",
+      "topUpLabel": "A {amount} top-up lasts",
+      "topUpValue": "~{count} days",
+      "note": "Estimated from the published rate and measured request shapes. Your actual bill depends on the prompt and output length of each call."
     },
     "packages": {
       "starter": "Start and experiment",
