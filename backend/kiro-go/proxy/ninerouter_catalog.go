@@ -18,6 +18,7 @@ package proxy
 // promise a capability the request silently loses.
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -181,24 +182,100 @@ func publicModelsFromUpstream(upstreamIDs []string, prefix string) []string {
 // served over this endpoint.
 //
 // The catalog is taken from the upstream, so anything the pool lists is offered for
-// sale. Two ids do not survive contact with a request, verified against the live
-// upstream on 2026-08-06:
+// sale. These ids do not survive contact with a request, verified against the live
+// upstream:
 //
 //	claude-sonnet-4.8  published, but a completion returns no usable response
 //	gpt-image-2        an image model; /v1/chat/completions cannot serve it
+//	claude-fable-5     published, but the pool key is not entitled to it
 //
-// Advertising either one costs the customer a real request: it is authenticated and
-// held against their wallet before the upstream refuses it. Dropping them from the
-// list is why they also have no price row in migration 0020 -- an id NapKey cannot
-// serve should not be priced, and should not be offered.
+// claude-fable-5 was measured against the NapKey/ pool on 2026-08-09: fifteen probes
+// returned Cloudflare 524 or closed the stream without usage, never a completion,
+// while claude-sonnet-5 answered in nine seconds on the same key. The entitlement is
+// missing upstream, so the id is published but unbuyable.
+//
+// Unlike the other two it does carry price rows, from migrations 0018 and 0019. Those
+// stay: closing a price period would reprice traffic that already settled against it.
+// Withdrawing an id from sale is a catalog decision, not a pricing one.
+//
+// Advertising any of them costs the customer a real request, so hiding them from
+// /v1/models is only half the fix -- nineRouterRefusesModel is what stops a client
+// that already knows the id from paying for a refusal.
 //
 // Matched case-insensitively, as the ids arrive in mixed case from clients.
 func nineRouterUnservable(publicModel string) bool {
 	switch strings.ToLower(strings.TrimSpace(publicModel)) {
-	case "claude-sonnet-4.8", "claude-sonnet-4-8", "gpt-image-2":
+	case "claude-sonnet-4.8", "claude-sonnet-4-8", "gpt-image-2", "claude-fable-5":
 		return true
 	}
 	return false
+}
+
+// nineRouterRefusesModel reports whether a request for this model must be refused
+// before it reaches the wallet.
+//
+// nineRouterUnservable hides an id from the catalog, which only helps a client that
+// discovers models. A client with the id hardcoded still sends the request, and the
+// wallet hold in reserveBilling happens before any handler looks at the model, so the
+// customer pays a hold for a request the upstream will never answer. The hold is
+// released when the handler fails, but a 524 costs them the round trip and shows up
+// as a failed request they were charged for.
+//
+// Refusing here keeps the money path honest: no hold, no upstream call, and a 404
+// that names the model instead of a gateway timeout that does not.
+func nineRouterRefusesModel(publicModel string) bool {
+	return nineRouterUnservable(nineRouterPublicModel(publicModel))
+}
+
+// refuseUnservableNineRouterModel answers the request itself and reports true when
+// the client asked for a model this upstream cannot serve.
+//
+// It runs before reserveBilling, so the body has not been consumed yet. Reading it
+// here means putting it back: the billing estimator and the handler both read the
+// same body afterwards, and a drained reader would turn a refusal into a parse error
+// on the next request that is perfectly fine.
+//
+// A malformed body is not this function's problem -- it returns false and lets the
+// normal path produce the normal parse error.
+func (h *Handler) refuseUnservableNineRouterModel(w http.ResponseWriter, r *http.Request, anthropic bool) bool {
+	if r == nil || r.Body == nil || !nineRouterConfigured() {
+		return false
+	}
+	raw, err := io.ReadAll(r.Body)
+	r.Body = io.NopCloser(bytes.NewReader(raw))
+	if err != nil {
+		return false
+	}
+	var request struct {
+		Model string `json:"model"`
+	}
+	if err := json.Unmarshal(raw, &request); err != nil {
+		return false
+	}
+	if !nineRouterRefusesModel(request.Model) {
+		return false
+	}
+	message := "model " + strings.TrimSpace(request.Model) +
+		" is not available on this upstream; it is published by the pool but the " +
+		"account is not entitled to it. No credit was held for this request."
+	if anthropic {
+		h.sendClaudeError(w, http.StatusNotFound, "not_found_error", message)
+	} else {
+		h.sendOpenAIError(w, http.StatusNotFound, "invalid_request_error", message)
+	}
+	return true
+}
+
+// nineRouterPublicModel strips the pool prefix if a client sends the upstream id
+// verbatim, so the refusal covers both "claude-fable-5" and "NapKey/claude-fable-5".
+func nineRouterPublicModel(model string) string {
+	trimmed := strings.TrimSpace(model)
+	prefix := nineRouterModelPrefix()
+	if prefix != "" && len(trimmed) > len(prefix) &&
+		strings.EqualFold(trimmed[:len(prefix)], prefix) {
+		return trimmed[len(prefix):]
+	}
+	return trimmed
 }
 
 // nineRouterModelList renders the /v1/models payload for this upstream.
@@ -233,7 +310,6 @@ func nineRouterModelList(ids []string) []map[string]interface{} {
 // the live list.
 func nineRouterFallbackModels() []string {
 	return []string{
-		"claude-fable-5",
 		"claude-haiku-4-5",
 		"claude-haiku-4.5",
 		"claude-opus-4-6",

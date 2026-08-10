@@ -501,6 +501,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if !h.enforceRateLimit(w, ar, true) {
 			return
 		}
+		// Refused before the wallet hold, not after. reserveBillingForClaude holds
+		// funds against the request, and a model the upstream will never answer would
+		// otherwise cost the customer that hold plus a gateway timeout.
+		if h.refuseUnservableNineRouterModel(w, ar, true) {
+			return
+		}
 		ar, lease := h.reserveBillingForClaude(w, ar)
 		if ar == nil {
 			return
@@ -523,6 +529,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !h.enforceRateLimit(w, ar, false) {
+			return
+		}
+		// Same refusal as /v1/messages, for the same reason: the hold below happens
+		// before handleNineRouterChat ever reads the model.
+		if h.refuseUnservableNineRouterModel(w, ar, false) {
 			return
 		}
 		ar, lease := h.reserveBillingForOpenAI(w, ar)

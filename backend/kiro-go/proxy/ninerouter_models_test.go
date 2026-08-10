@@ -16,7 +16,6 @@ func TestUpstreamModelAppliesPoolPrefix(t *testing.T) {
 	for _, tc := range []struct{ in, want string }{
 		{"claude-sonnet-5", "Kiro/claude-sonnet-5"},
 		{"claude-opus-5", "Kiro/claude-opus-5"},
-		{"claude-fable-5", "Kiro/claude-fable-5"},
 		{"claude-opus-4.7", "Kiro/claude-opus-4.7"},
 		{"claude-opus-4.8", "Kiro/claude-opus-4.8"},
 	} {

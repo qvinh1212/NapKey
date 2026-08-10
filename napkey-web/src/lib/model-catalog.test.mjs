@@ -51,7 +51,7 @@ test('returns a stable fallback when the payload is malformed or empty', () => {
 // first request a new customer sends is the worst place to discover that.
 test('the default model is one of the priced models on sale', () => {
   assert.ok(
-    ['claude-sonnet-5', 'claude-opus-5', 'claude-fable-5', 'claude-opus-4.7', 'claude-opus-4.8'].includes(defaultModel),
+    ['claude-sonnet-5', 'claude-opus-5', 'claude-opus-4.7', 'claude-opus-4.8'].includes(defaultModel),
     `${defaultModel} has no row in the seeded price book`,
   );
 });

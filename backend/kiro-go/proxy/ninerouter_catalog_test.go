@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -69,11 +70,108 @@ func TestPublicModelsDropsUnservableModels(t *testing.T) {
 		"Viberouter/claude-sonnet-5",
 		"Viberouter/claude-sonnet-4.8",
 		"Viberouter/gpt-image-2",
+		"Viberouter/claude-fable-5",
 	}, "Viberouter/")
 
 	want := []string{"claude-sonnet-5"}
 	if len(got) != len(want) || got[0] != want[0] {
 		t.Fatalf("got %v, want %v", got, want)
+	}
+}
+
+// claude-fable-5 is published by the pool and priced by migrations 0018 and 0019, so
+// nothing except this check keeps it off the menu. Measured 2026-08-09: every probe
+// returned 524 or a stream with no usage, on a key that served claude-sonnet-5 fine.
+func TestFableIsWithdrawnFromSale(t *testing.T) {
+	for _, id := range []string{"claude-fable-5", "CLAUDE-FABLE-5", " claude-fable-5 "} {
+		if !nineRouterUnservable(id) {
+			t.Errorf("nineRouterUnservable(%q) = false, want true", id)
+		}
+		if !nineRouterRefusesModel(id) {
+			t.Errorf("nineRouterRefusesModel(%q) = false, want true", id)
+		}
+	}
+	if nineRouterUnservable("claude-sonnet-5") {
+		t.Error("claude-sonnet-5 must stay on sale")
+	}
+}
+
+// A client that hardcoded the namespaced id must be refused too, otherwise the
+// prefixed form slips past the check and pays for a 524.
+func TestRefusalCoversThePrefixedForm(t *testing.T) {
+	t.Setenv("NINEROUTER_MODEL_PREFIX", "NapKey/")
+	for _, id := range []string{"NapKey/claude-fable-5", "napkey/claude-fable-5"} {
+		if !nineRouterRefusesModel(id) {
+			t.Errorf("nineRouterRefusesModel(%q) = false, want true", id)
+		}
+	}
+	if nineRouterRefusesModel("NapKey/claude-sonnet-5") {
+		t.Error("prefixed sonnet must stay on sale")
+	}
+}
+
+// The refusal has to happen with the body intact. It runs before reserveBilling, which
+// reads the same body to estimate the hold; a drained reader would break every request
+// that is perfectly serviceable.
+func TestRefusalRestoresTheRequestBody(t *testing.T) {
+	t.Setenv("NINEROUTER_BASE_URL", "https://example.invalid/v1")
+	t.Setenv("NINEROUTER_API_KEY", "test-key")
+	t.Setenv("NINEROUTER_MODEL_PREFIX", "NapKey/")
+
+	h := &Handler{}
+	body := `{"model":"claude-sonnet-5","messages":[{"role":"user","content":"hi"}]}`
+	r := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(body))
+	w := httptest.NewRecorder()
+
+	if h.refuseUnservableNineRouterModel(w, r, false) {
+		t.Fatal("a servable model must not be refused")
+	}
+	got, err := io.ReadAll(r.Body)
+	if err != nil {
+		t.Fatalf("reading the restored body: %v", err)
+	}
+	if string(got) != body {
+		t.Fatalf("body not restored: got %q", string(got))
+	}
+}
+
+// The refusal must be a 404 that names the model, not a 502 from the upstream, and it
+// must say no credit was held so a support ticket does not have to ask.
+func TestRefusalAnswers404WithoutCallingUpstream(t *testing.T) {
+	t.Setenv("NINEROUTER_BASE_URL", "https://example.invalid/v1")
+	t.Setenv("NINEROUTER_API_KEY", "test-key")
+	t.Setenv("NINEROUTER_MODEL_PREFIX", "NapKey/")
+
+	h := &Handler{}
+	r := httptest.NewRequest(http.MethodPost, "/v1/chat/completions",
+		strings.NewReader(`{"model":"claude-fable-5","messages":[]}`))
+	w := httptest.NewRecorder()
+
+	if !h.refuseUnservableNineRouterModel(w, r, false) {
+		t.Fatal("claude-fable-5 must be refused")
+	}
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", w.Code)
+	}
+	if body := w.Body.String(); !strings.Contains(body, "claude-fable-5") ||
+		!strings.Contains(body, "No credit was held") {
+		t.Fatalf("unhelpful refusal: %s", body)
+	}
+}
+
+// A body this function cannot parse is not its problem: it must decline to answer and
+// let the normal path produce the normal parse error.
+func TestRefusalIgnoresMalformedBodies(t *testing.T) {
+	t.Setenv("NINEROUTER_BASE_URL", "https://example.invalid/v1")
+	t.Setenv("NINEROUTER_API_KEY", "test-key")
+
+	h := &Handler{}
+	r := httptest.NewRequest(http.MethodPost, "/v1/chat/completions",
+		strings.NewReader(`{not json`))
+	w := httptest.NewRecorder()
+
+	if h.refuseUnservableNineRouterModel(w, r, false) {
+		t.Fatal("a malformed body must not be answered here")
 	}
 }
 
