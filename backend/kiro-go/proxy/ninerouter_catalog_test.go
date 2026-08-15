@@ -45,11 +45,13 @@ func TestPublicModelsStripsThePoolPrefix(t *testing.T) {
 	}
 }
 
-// With prefixing disabled the namespace is flat, so everything is already public.
-func TestPublicModelsPassesThroughWhenPrefixingIsOff(t *testing.T) {
+// With prefixing disabled the namespace is flat, but the served-set intersection still
+// applies: an unpriced id ("gpt-5") is dropped even on a flat deployment, while a priced
+// one passes through.
+func TestPublicModelsStillIntersectsServedSetWhenPrefixingIsOff(t *testing.T) {
 	got := publicModelsFromUpstream([]string{"claude-sonnet-5", "gpt-5"}, "")
-	if len(got) != 2 {
-		t.Fatalf("got %v, want both ids", got)
+	if len(got) != 1 || got[0] != "claude-sonnet-5" {
+		t.Fatalf("got %v, want [claude-sonnet-5]", got)
 	}
 }
 
@@ -62,9 +64,68 @@ func TestPublicModelsDropsNestedNamespaces(t *testing.T) {
 	}
 }
 
-// Duplicates and blanks must not reach the response.
-// An id the pool publishes but cannot serve must not be advertised: the customer pays
-// for the discovery with an authenticated request that the upstream then refuses.
+// The live pool publishes ids NapKey does not price: thinking variants, a dash spelling
+// of two ids, and models from pools that are not priced here. After migration 0021 none
+// of those has an open price period, so advertising any of them would bill the request
+// at the '*' top tier instead of a chosen rate. The served-set intersection must drop
+// all of them while keeping the seven priced models.
+func TestPublicModelsKeepsOnlyTheServedSet(t *testing.T) {
+	got := publicModelsFromUpstream([]string{
+		"Viberouter/claude-opus-4-7",
+		"Viberouter/claude-opus-4.7",
+		"Viberouter/claude-opus-4-8",
+		"Viberouter/claude-opus-4.8",
+		"Viberouter/claude-opus-4.7-thinking",
+		"Viberouter/claude-opus-4.8-thinking",
+		"Viberouter/claude-opus-5",
+		"Viberouter/claude-opus-5-thinking",
+		"Viberouter/claude-sonnet-5",
+		"Viberouter/claude-sonnet-5-thinking",
+		"Viberouter/gpt-5.6-luna",
+		"Viberouter/gpt-5.6-luna-thinking",
+		"Viberouter/gpt-5.6-sol",
+		"Viberouter/gpt-5.6-sol-thinking",
+		"Viberouter/gpt-5.6-terra",
+		"Viberouter/gpt-5.6-terra-thinking",
+		"Viberouter/deepseek-v4-pro",
+	}, "Viberouter/")
+
+	want := []string{
+		"claude-opus-4.7",
+		"claude-opus-4.8",
+		"claude-opus-5",
+		"claude-sonnet-5",
+		"gpt-5.6-luna",
+		"gpt-5.6-sol",
+		"gpt-5.6-terra",
+	}
+	if len(got) != len(want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("got %v, want %v", got, want)
+		}
+	}
+}
+
+// The fallback catalog and the served set must name exactly the same models, and none of
+// them may be unservable. A mismatch between the two is how an unpriced id reaches the
+// menu when the upstream cannot be reached.
+func TestFallbackCatalogMatchesTheServedSet(t *testing.T) {
+	fallback := nineRouterFallbackModels()
+	if len(fallback) != len(nineRouterServedModels) {
+		t.Fatalf("fallback lists %d models, the served set has %d", len(fallback), len(nineRouterServedModels))
+	}
+	for _, model := range fallback {
+		if !nineRouterServed(model) {
+			t.Errorf("fallback catalog advertises %q, which is not in the served set", model)
+		}
+		if nineRouterUnservable(model) {
+			t.Errorf("fallback catalog advertises unservable model %q", model)
+		}
+	}
+}
 func TestPublicModelsDropsUnservableModels(t *testing.T) {
 	got := publicModelsFromUpstream([]string{
 		"Viberouter/claude-sonnet-5",
@@ -107,6 +168,33 @@ func TestRefusalCoversThePrefixedForm(t *testing.T) {
 	}
 	if nineRouterRefusesModel("NapKey/claude-sonnet-5") {
 		t.Error("prefixed sonnet must stay on sale")
+	}
+}
+
+// The three groups the pool publishes but NapKey does not sell must be refused before
+// the wallet hold, not merely hidden from the catalog. A client that hardcoded one of
+// them would otherwise settle at the '*' top tier: the dash spelling at 3.3x the dot
+// rate, a thinking variant at a capability the request silently loses, and an unpriced
+// model at the most expensive named tier.
+func TestRefusalCoversUnsoldIds(t *testing.T) {
+	for _, id := range []string{
+		"claude-opus-4-7", "claude-opus-4-8",
+		"claude-sonnet-5-thinking", "claude-opus-5-thinking", "gpt-5.6-sol-thinking",
+		"deepseek-v4-pro",
+	} {
+		if !nineRouterUnservable(id) {
+			t.Errorf("nineRouterUnservable(%q) = false, want true", id)
+		}
+		if !nineRouterRefusesModel(id) {
+			t.Errorf("nineRouterRefusesModel(%q) = false, want true", id)
+		}
+	}
+	// Truly unknown ids are the '*' fallback's job, not a refusal.
+	if nineRouterUnservable("auto") {
+		t.Error("auto must not be refused; the '*' fallback prices it")
+	}
+	if nineRouterRefusesModel("claude-opus-4.7") {
+		t.Error("the dot form must stay on sale")
 	}
 }
 
@@ -186,6 +274,7 @@ func TestFallbackCatalogExcludesUnservableModels(t *testing.T) {
 	}
 }
 
+// Duplicates and blanks must not reach the response.
 func TestPublicModelsDeduplicates(t *testing.T) {
 	got := publicModelsFromUpstream([]string{
 		"Kiro/claude-sonnet-5",

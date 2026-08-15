@@ -9,13 +9,16 @@ package proxy
 // the hardcoded Anthropic list. That list is not what this upstream serves, so
 // clients were being told to ask for models that answer 404 once namespaced.
 //
-// So the catalog is read from the upstream instead, filtered to the pool NapKey
-// sells from, and mapped back to the public ids customers actually send.
+// So the catalog is read from the upstream, filtered to the pool NapKey sells from,
+// and intersected with the exact set of models NapKey prices (nineRouterServedModels),
+// then mapped back to the public ids customers actually send.
 //
-// Thinking variants are deliberately absent. The suffix is a NapKey convention that
-// the Anthropic path strips before forwarding, and extended thinking has no OpenAI
-// equivalent so it is dropped on this upstream. Advertising "-thinking" here would
-// promise a capability the request silently loses.
+// The intersection is what keeps the advertised list honest. The pool publishes far more
+// than NapKey offers -- thinking variants, a dash spelling of two ids, and models from
+// pools that are not priced here -- and every id outside the served set has no open price
+// period after migration 0021, so it would hold and settle at the '*' top tier instead of
+// a rate anyone chose. Filtering on the pool prefix alone let those through; filtering on
+// the served set does not.
 
 import (
 	"bytes"
@@ -136,12 +139,16 @@ func fetchNineRouterModels(ctx context.Context) ([]string, error) {
 
 // publicModelsFromUpstream maps upstream ids back to the ids customers send.
 //
-// Only the configured pool is kept. 9Router fronts several provider pools and the
-// others are not on sale here, so listing them would invite a request that is
-// authenticated, billed and then refused by the upstream.
+// Two filters apply, in order. First, only the configured pool is kept: 9Router fronts
+// several provider pools and the others are not on sale here, so listing them would
+// invite a request that is authenticated, billed and then refused by the upstream.
+// Second, the result is intersected with nineRouterServedModels, because the pool lists
+// ids NapKey does not price (thinking variants, dash spellings, other pools' models) and
+// any of those would settle at the '*' fallback rate instead of a chosen one.
 //
-// With prefixing disabled the namespace is flat and every id is already public, so
-// the whole list passes through.
+// With prefixing disabled the namespace is flat and every id is already public, but the
+// served-set intersection still applies, so an unpriced id is never advertised even on a
+// flat deployment.
 func publicModelsFromUpstream(upstreamIDs []string, prefix string) []string {
 	seen := make(map[string]bool, len(upstreamIDs))
 	out := make([]string, 0, len(upstreamIDs))
@@ -164,6 +171,13 @@ func publicModelsFromUpstream(upstreamIDs []string, prefix string) []string {
 			continue
 		}
 		if nineRouterUnservable(public) {
+			continue
+		}
+		// Only models NapKey actually sells and prices may be advertised. The pool lists
+		// thinking variants, a dash spelling of two ids, and other pools' models; none of
+		// those have an open price period after migration 0021, so advertising any of them
+		// would bill the request at the '*' top tier rather than a chosen rate.
+		if !nineRouterServed(public) {
 			continue
 		}
 		key := strings.ToLower(public)
@@ -210,18 +224,39 @@ func publicModelsFromUpstream(upstreamIDs []string, prefix string) []string {
 // settle traffic at the '*' fallback rate instead of a price anyone chose. Offering
 // what you have not priced is exactly the accident the price book exists to prevent.
 //
+// The same reasoning caught three more groups the live pool publishes but NapKey does
+// not sell, added to this check on 2026-08-15:
+//
+//	claude-opus-4-7, claude-opus-4-8  dash spellings of priced models; only the dot
+//	                                  form carries a period after 0021, so the dash form
+//	                                  settles the same traffic at '*', 3.3x the dot rate
+//	*-thinking                        a NapKey convention the Anthropic path strips; on
+//	                                  this upstream thinking has no equivalent, so the
+//	                                  suffix promises a capability the request loses
+//	deepseek-v4-pro                   a model NapKey has never priced or measured
+//
+// Truly unknown ids ("auto" included) are deliberately NOT refused: the '*' fallback
+// row in the price book is the designed answer for them, never cheaper than the top
+// named tier.
+//
 // Advertising any of them costs the customer a real request, so hiding them from
 // /v1/models is only half the fix -- nineRouterRefusesModel is what stops a client
 // that already knows the id from paying for a refusal.
 //
 // Matched case-insensitively, as the ids arrive in mixed case from clients.
 func nineRouterUnservable(publicModel string) bool {
-	switch strings.ToLower(strings.TrimSpace(publicModel)) {
+	id := strings.ToLower(strings.TrimSpace(publicModel))
+	if strings.HasSuffix(id, "-thinking") {
+		return true
+	}
+	switch id {
 	case "claude-sonnet-4.8", "claude-sonnet-4-8", "gpt-image-2", "claude-fable-5",
 		"claude-haiku-4.5", "claude-haiku-4-5",
 		"claude-sonnet-4.6", "claude-sonnet-4-6",
 		"claude-sonnet-4.7",
-		"claude-opus-4.6", "claude-opus-4-6":
+		"claude-opus-4.6", "claude-opus-4-6",
+		"claude-opus-4-7", "claude-opus-4-8",
+		"deepseek-v4-pro":
 		return true
 	}
 	return false
@@ -307,6 +342,37 @@ func nineRouterModelList(ids []string) []map[string]interface{} {
 	return models
 }
 
+// nineRouterServedModels is the exact set of public ids NapKey sells on this upstream.
+//
+// This is the single source of truth for what may be advertised and billed. The
+// upstream pool publishes far more than NapKey offers -- thinking variants, a dash
+// spelling of two ids, and models from pools that are not priced here -- and every id
+// outside this set has no open price period after migration 0021, so it would hold and
+// settle at the '*' top tier (10,000 VND/1M) instead of a rate anyone chose. Selling
+// an unpriced id is the accident the price book exists to prevent, so the catalog is
+// intersected with this list rather than trusting whatever the pool lists.
+//
+// The seven entries match MODEL_TIERS in napkey-web and the eight named rows of
+// migration 0021 minus claude-fable-5, which is priced only to anchor the fallback but
+// withdrawn from sale because the pool key is not entitled to it upstream.
+var nineRouterServedModels = map[string]bool{
+	"claude-sonnet-5": true,
+	"gpt-5.6-luna":    true,
+	"claude-opus-4.7": true,
+	"claude-opus-4.8": true,
+	"gpt-5.6-terra":   true,
+	"claude-opus-5":   true,
+	"gpt-5.6-sol":     true,
+}
+
+// nineRouterServed reports whether a public id is one of the models NapKey sells.
+//
+// Matched case-insensitively and trimmed, because ids arrive from clients and from the
+// upstream in mixed case and with stray whitespace.
+func nineRouterServed(publicModel string) bool {
+	return nineRouterServedModels[strings.ToLower(strings.TrimSpace(publicModel))]
+}
+
 // nineRouterFallbackModels is the list used when the upstream cannot be reached.
 //
 // These are the models NapKey sells on this upstream, and they are the same ids the
@@ -327,15 +393,13 @@ func nineRouterModelList(ids []string) []map[string]interface{} {
 // the live list.
 func nineRouterFallbackModels() []string {
 	return []string{
-		"claude-opus-4-7",
-		"claude-opus-4.7",
-		"claude-opus-4-8",
-		"claude-opus-4.8",
-		"claude-opus-5",
 		"claude-sonnet-5",
 		"gpt-5.6-luna",
-		"gpt-5.6-sol",
+		"claude-opus-4.7",
+		"claude-opus-4.8",
 		"gpt-5.6-terra",
+		"claude-opus-5",
+		"gpt-5.6-sol",
 	}
 }
 
