@@ -2,7 +2,6 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { readPublicStatus } from '@/lib/public-status';
 import { readModelCatalog } from '@/lib/model-catalog';
-import { VND_PER_MILLION_TOKENS, VND_PER_REQUEST } from '@/lib/pricing';
 import { ArrowUpRightIcon } from '@/components/ui/icon';
 
 const dotForStatus = {
@@ -70,13 +69,10 @@ export async function LiveSignals() {
 
           <div className="border-t border-line py-6 sm:border-t-0 sm:border-l sm:pl-8">
             <dt className="font-mono text-label tracking-[0.16em] text-dim uppercase">
-              {t('rateLabel')}
+              {t('tieredLabel')}
             </dt>
             <dd className="mt-3 font-mono text-lg text-fg tabular-nums">
-              {t('rateValue', {
-                perMillion: VND_PER_MILLION_TOKENS.toLocaleString('vi-VN'),
-                perRequest: VND_PER_REQUEST.toLocaleString('vi-VN'),
-              })}
+              {t('tieredValue')}
             </dd>
           </div>
         </dl>

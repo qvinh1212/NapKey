@@ -52,8 +52,8 @@
     "modelsLabel": "Model đang phục vụ",
     "modelsValue": "{count} model",
     "modelsUnknown": "Đang cập nhật",
-    "rateLabel": "Đơn giá",
-    "rateValue": "{perMillion} / 1M token + {perRequest} / request",
+    "tieredLabel": "Bảng giá",
+    "tieredValue": "Phân bậc theo model",
     "states": {
       "operational": "Hoạt động bình thường",
       "degraded": "Suy giảm một phần",
@@ -259,50 +259,21 @@
   "pricing": {
     "eyebrow": "Bảng giá",
     "title": "Trả theo mức dùng, không gói cước",
-    "subtitle": "12.000 VNĐ cho mỗi triệu token, cộng 300 VNĐ mỗi request. Một mức giá duy nhất cho mọi model, không phân biệt input, output hay cache token.",
-    "popular": "Phổ biến",
+    "subtitle": "Giá token phân bậc theo model. Phí cố định mỗi request giữ nguyên. Bạn tính bằng credit — bảng dưới chỉ liệt kê model và hệ số.",
+    "models": {
+      "colModel": "Model",
+      "colTier": "Hệ số",
+      "tierValue": "{ratio}x",
+      "note": "Mỗi request đều ghi lại model, số token input/output và chi phí thực tế. Giá có thể đổi khi tỷ giá upstream thay đổi; usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
+    },
+    "feeLabel": "Phí mỗi request",
+    "feeValue": "{perRequest} VNĐ / request",
     "offer": {
       "eyebrow": "Ưu đãi ra mắt",
       "title": "Tặng 20.000 VNĐ để trải nghiệm ngay",
       "body": "Nạp từ 10.000 VNĐ, không phí tháng, tiền đã nạp không hết hạn.",
       "example": "Đủ cho khoảng 58 lượt chat ngắn"
     },
-    "shapes": {
-      "title": "Một request tốn bao nhiêu",
-      "note": "Số đo thực tế trên hệ thống ngày 06/08/2026, đã bao gồm phần prompt mà upstream tự chèn.",
-      "chat": "Chat một câu hỏi ngắn",
-      "agentStep": "Một bước của coding agent",
-      "largeContext": "Đọc file lớn, context dài",
-      "perRequest": "mỗi request",
-      "buys": "10.000 VNĐ mua được ~{count} lượt"
-    },
-    "calculator": {
-      "eyebrow": "Máy tính chi phí",
-      "title": "Mỗi tháng bạn trả bao nhiêu",
-      "volumeLabel": "Số request mỗi ngày",
-      "volumeValue": "{count} request/ngày",
-      "shapeLabel": "Loại request bạn gửi",
-      "shapes": {
-        "chat": "Chat ngắn",
-        "agentStep": "Bước coding agent",
-        "largeContext": "Context dài"
-      },
-      "resultLabel": "Ước tính mỗi tháng",
-      "perMonth": "VNĐ/tháng",
-      "perDayLabel": "Mỗi ngày",
-      "topUpLabel": "Nạp {amount} dùng được",
-      "topUpValue": "~{count} ngày",
-      "note": "Ước tính theo đơn giá công khai và số đo request thực tế. Số tiền thật phụ thuộc độ dài prompt và output của từng lượt gọi."
-    },
-    "packages": {
-      "starter": "Bắt đầu và thử nghiệm",
-      "builder": "Dùng thường xuyên",
-      "scale": "Khối lượng lớn",
-      "pro": "Dùng chuyên nghiệp"
-    },
-    "packageNote": "Không phí tháng, không khóa gói. Số lượt là ước tính theo loại request bạn gửi.",
-    "rateLabel": "Đơn giá công khai",
-    "rateValue": "12.000 VNĐ / 1 triệu token + 300 VNĐ / request",
     "measurement": "Mỗi request đều được ghi lại: model, số token input và output, đơn giá áp dụng và số tiền đã trừ. Bạn đối soát được từng dòng trên dashboard.",
     "feeNote": "Phí 300 VNĐ mỗi request là chi phí cố định cho mỗi lượt gọi upstream, không phụ thuộc request lớn hay nhỏ. Với request ngắn, phần này chiếm phần lớn hóa đơn.",
     "footnote": "Tiền trong ví NapKey không hết hạn theo chính sách hiện tại. Usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
@@ -441,7 +412,7 @@
       "title": "Credit và tính phí",
       "description": "NapKey là ví trả trước. Mỗi request thành công được ghi vào Usage cùng model, token tham chiếu và số credit đã quyết toán.",
       "cards": {
-        "price": { "value": "12.000 ₫ / 1 triệu token", "title": "Giá bán lẻ", "body": "Cộng 300 ₫ mỗi request, trừ theo usage thực tế gateway ghi nhận." },
+        "price": { "value": "Phân bậc theo model", "title": "Giá bán lẻ", "body": "Token rate khác nhau theo từng model, cộng 300 ₫ mỗi request. Trừ theo usage thực tế gateway ghi nhận." },
         "minimum": { "value": "10.000 ₫", "title": "Nạp tối thiểu", "body": "Có thể tăng số tiền theo bước 1.000 VNĐ. Tiền đã nạp không hết hạn." },
         "trial": { "value": "20.000 VNĐ", "title": "Trải nghiệm", "body": "Tặng một lần cho tài khoản đủ điều kiện và có hạn sử dụng 7 ngày." },
         "policy": { "value": "Không phí tháng", "title": "Chính sách đơn giản", "body": "Tặng một lần 20.000 VNĐ dùng thử; tiền đã nạp không hết hạn." }
@@ -880,7 +851,7 @@
       "loadFailed": "Không tải được ví của bạn.",
       "createFailed": "Không tạo được lệnh nạp tiền.",
       "balance": "Số dư ví",
-      "creditRate": "12.000 VNĐ mỗi triệu token, cộng 300 VNĐ mỗi request. Tiền đã nạp không hết hạn.",
+      "creditRate": "Giá token phân bậc theo model, cộng 300 VNĐ mỗi request. Tiền đã nạp không hết hạn.",
       "promotional": "Credit khuyến mãi",
       "promotionalExpiry": "Hết hạn vào {date}. Credit khuyến mãi được sử dụng trước.",
       "promotionalEmpty": "Không có credit khuyến mãi đang hoạt động.",

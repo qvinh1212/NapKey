@@ -198,6 +198,18 @@ func publicModelsFromUpstream(upstreamIDs []string, prefix string) []string {
 // stay: closing a price period would reprice traffic that already settled against it.
 // Withdrawing an id from sale is a catalog decision, not a pricing one.
 //
+// Seven more ids were dropped from sale on 2026-08-15, when migration 0021 replaced
+// the flat price book with a tiered one covering eight models:
+//
+//	claude-haiku-4.5, claude-haiku-4-5   retired with the repricing
+//	claude-sonnet-4.6, claude-sonnet-4-6 retired with the repricing
+//	claude-sonnet-4.7                    retired with the repricing
+//	claude-opus-4.6, claude-opus-4-6     retired with the repricing
+//
+// Their open price periods were closed in the same change, so advertising them would
+// settle traffic at the '*' fallback rate instead of a price anyone chose. Offering
+// what you have not priced is exactly the accident the price book exists to prevent.
+//
 // Advertising any of them costs the customer a real request, so hiding them from
 // /v1/models is only half the fix -- nineRouterRefusesModel is what stops a client
 // that already knows the id from paying for a refusal.
@@ -205,7 +217,11 @@ func publicModelsFromUpstream(upstreamIDs []string, prefix string) []string {
 // Matched case-insensitively, as the ids arrive in mixed case from clients.
 func nineRouterUnservable(publicModel string) bool {
 	switch strings.ToLower(strings.TrimSpace(publicModel)) {
-	case "claude-sonnet-4.8", "claude-sonnet-4-8", "gpt-image-2", "claude-fable-5":
+	case "claude-sonnet-4.8", "claude-sonnet-4-8", "gpt-image-2", "claude-fable-5",
+		"claude-haiku-4.5", "claude-haiku-4-5",
+		"claude-sonnet-4.6", "claude-sonnet-4-6",
+		"claude-sonnet-4.7",
+		"claude-opus-4.6", "claude-opus-4-6":
 		return true
 	}
 	return false
@@ -294,15 +310,16 @@ func nineRouterModelList(ids []string) []map[string]interface{} {
 // nineRouterFallbackModels is the list used when the upstream cannot be reached.
 //
 // These are the models NapKey sells on this upstream, and they are the same ids the
-// control plane has price rows for (migrations 0018, 0019 and 0020). Keeping the two
-// lists aligned is what stops a client being pointed at a model that would fall
-// through to the '*' fallback rate instead of its own price.
+// control plane has price rows for (migrations 0018, 0019, 0020 and 0021). Keeping
+// the two lists aligned is what stops a client being pointed at a model that would
+// fall through to the '*' fallback rate instead of its own price.
 //
 // That alignment only ever governed this fallback, never the live path: the upstream
-// list wins whenever it can be read, and it published eleven ids this list did not,
-// every one of them settling at the '*' rate until 0020 priced them. The lists match
-// again now, but the guarantee is worth stating precisely -- it is the price book,
-// not this slice, that has to cover whatever the pool serves.
+// list wins whenever it can be read. The list was trimmed on 2026-08-15 when
+// migration 0021 repriced the catalog; haiku, sonnet-4.6/4.7 and opus-4.6 were
+// retired then, and claude-fable-5 was withdrawn in the same change because the
+// pool key is not entitled to it. Both are excluded here for the same reason
+// nineRouterUnservable drops them from the live list.
 //
 // It is a fallback, not the source of truth: the upstream list wins whenever it can
 // be read, so adding a model there does not require editing this. Ids that cannot be
@@ -310,19 +327,15 @@ func nineRouterModelList(ids []string) []map[string]interface{} {
 // the live list.
 func nineRouterFallbackModels() []string {
 	return []string{
-		"claude-haiku-4-5",
-		"claude-haiku-4.5",
-		"claude-opus-4-6",
-		"claude-opus-4.6",
 		"claude-opus-4-7",
 		"claude-opus-4.7",
 		"claude-opus-4-8",
 		"claude-opus-4.8",
 		"claude-opus-5",
-		"claude-sonnet-4-6",
-		"claude-sonnet-4.6",
-		"claude-sonnet-4.7",
 		"claude-sonnet-5",
+		"gpt-5.6-luna",
+		"gpt-5.6-sol",
+		"gpt-5.6-terra",
 	}
 }
 
