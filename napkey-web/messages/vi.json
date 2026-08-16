@@ -266,17 +266,12 @@
       "tierValue": "{ratio}x",
       "note": "Mỗi request đều ghi lại model, số token input/output và chi phí thực tế. Giá có thể đổi khi tỷ giá upstream thay đổi; usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
     },
-    "feeLabel": "Phí mỗi request",
-    "feeValue": "{perRequest} VNĐ / request",
     "offer": {
       "eyebrow": "Ưu đãi ra mắt",
       "title": "Tặng 20.000 VNĐ để trải nghiệm ngay",
       "body": "Nạp từ 10.000 VNĐ, không phí tháng, tiền đã nạp không hết hạn.",
       "example": "Đủ cho khoảng 58 lượt chat ngắn"
-    },
-    "measurement": "Mỗi request đều được ghi lại: model, số token input và output, đơn giá áp dụng và số tiền đã trừ. Bạn đối soát được từng dòng trên dashboard.",
-    "feeNote": "Phí 300 VNĐ mỗi request là chi phí cố định cho mỗi lượt gọi upstream, không phụ thuộc request lớn hay nhỏ. Với request ngắn, phần này chiếm phần lớn hóa đơn.",
-    "footnote": "Tiền trong ví NapKey không hết hạn theo chính sách hiện tại. Usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
+    }
   },
   "launchOffer": {
     "eyebrow": "NAPKEY CHÍNH THỨC RA MẮT",
