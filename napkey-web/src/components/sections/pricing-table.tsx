@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { Section } from '@/components/ui/section';
 import { ENRICHED_MODELS, type ModelCapability } from '@/lib/model-metadata';
 import { CopyButton } from '@/components/ui/copy-button';
-import { PricingCalculator } from './pricing-calculator';
 import { QuickConfigModal } from './quick-config-modal';
 
 type FilterType = 'all' | ModelCapability;
@@ -252,9 +251,6 @@ export function PricingTable() {
           </table>
         </div>
       )}
-
-      {/* Interactive Savings & Usage Calculator */}
-      <PricingCalculator />
     </Section>
   );
 }
