@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "NapKey — Cổng API Claude & LLM chuẩn Enterprise",
-    "description": "Nạp từ 10.000 ₫, lấy API key và chạy Claude Code, Cursor, Anthropic hoặc OpenAI SDK qua NapKey. Cổng API Claude & LLM chuẩn Enterprise, thanh toán linh hoạt bằng VNĐ.",
-    "ogAlt": "NapKey — Cổng API Claude & LLM chuẩn Enterprise thanh toán bằng VNĐ"
+    "title": "NapKey — Cổng API Claude & LLM thế hệ mới bằng Credit",
+    "description": "Nạp Credit từ 10.000 ₫ qua VietQR, lấy API key và chạy Claude Code, Cursor, Anthropic hoặc OpenAI SDK qua NapKey. Cổng API Claude & LLM chuẩn Enterprise, tính theo Credit linh hoạt.",
+    "ogAlt": "NapKey — Cổng API Claude & LLM thế hệ mới bằng Credit"
   },
   "nav": {
     "pricing": "Bảng giá",
@@ -25,8 +25,8 @@
   "hero": {
     "badge": "Cổng API Claude & LLM chuẩn Enterprise",
     "titleLine1": "Cổng API Claude & LLM,",
-    "titleLine2": "thanh toán linh hoạt bằng VNĐ.",
-    "subtitle": "Nạp từ 10.000 ₫, lấy API key và chạy ngay. Giữ nguyên Claude Code, Cursor, Anthropic hoặc OpenAI SDK — chỉ đổi endpoint, dùng bao nhiêu trả bấy nhiêu.",
+    "titleLine2": "tính theo Credit tiện lợi.",
+    "subtitle": "Nạp từ 10.000 ₫ (133 Credits), lấy API key và chạy ngay. Giữ nguyên Claude Code, Cursor, Anthropic hoặc OpenAI SDK — chỉ đổi endpoint, dùng bao nhiêu trừ bấy nhiêu.",
     "ctaPrimary": "Tạo API key",
     "ctaSecondary": "Xem cách kết nối",
     "note": "Không gói tháng. Không phí duy trì. Mỗi request được ghi lại theo model, token và chi phí thực tế.",
@@ -36,9 +36,9 @@
     "terminalSubtitle": "Giữ nguyên workflow, thay gateway",
     "terminalReady": "Sẵn sàng",
     "metrics": {
-      "topUp": { "value": "10K ₫", "label": "Nạp tối thiểu" },
+      "topUp": { "value": "10K ₫", "label": "Nạp tối thiểu (133 CR)" },
       "protocols": { "value": "2", "label": "Giao thức API" },
-      "monthlyFee": { "value": "0 ₫", "label": "Phí duy trì" }
+      "monthlyFee": { "value": "0 CR", "label": "Phí duy trì" }
     },
     "worksWith": "Hoạt động cùng",
     "tools": {
@@ -428,8 +428,8 @@
     }
   },
   "cta": {
-    "title": "Sẵn sàng thử?",
-    "body": "Nạp 10.000 ₫, lấy key, đổi endpoint. Nếu không vừa ý thì bạn chỉ mất đúng số đó.",
+    "title": "Sẵn sàng trải nghiệm?",
+    "body": "Nạp từ 10.000 ₫ (133 Credits), lấy key và đổi endpoint. Dùng bao nhiêu trừ bấy nhiêu Credit.",
     "button": "Bắt đầu"
   },
   "footer": {
