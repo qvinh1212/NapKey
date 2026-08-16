@@ -7,6 +7,7 @@ import { MODEL_TIERS } from '@/lib/pricing';
 import { ENRICHED_MODELS, type ModelCapability } from '@/lib/model-metadata';
 import { CopyButton } from '@/components/ui/copy-button';
 import { PricingCalculator } from './pricing-calculator';
+import { QuickConfigModal } from './quick-config-modal';
 
 type FilterType = 'all' | ModelCapability;
 type ViewMode = 'cards' | 'table';
@@ -15,6 +16,7 @@ export function PricingTable() {
   const t = useTranslations('pricing');
   const [filter, setFilter] = useState<FilterType>('all');
   const [view, setView] = useState<ViewMode>('cards');
+  const [configTarget, setConfigTarget] = useState<{ id: string; name: string } | null>(null);
 
   const filteredModels = ENRICHED_MODELS.filter((model) => {
     if (filter === 'all') return true;
@@ -23,6 +25,14 @@ export function PricingTable() {
 
   return (
     <Section id="pricing" eyebrow={t('eyebrow')} title={t('title')} subtitle={t('subtitle')}>
+      {/* Quick Config Modal */}
+      <QuickConfigModal
+        open={Boolean(configTarget)}
+        onClose={() => setConfigTarget(null)}
+        modelId={configTarget?.id ?? ''}
+        modelName={configTarget?.name ?? ''}
+      />
+
       {/* Controls Bar: Capability Filter Pills + View Switcher */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Capability Filters */}
@@ -124,13 +134,24 @@ export function PricingTable() {
                 </div>
               </div>
 
-              {/* Price Footer */}
+              {/* Price & Quick Setup Footer */}
               <div className="mt-5 border-t border-line/60 pt-3">
-                <div className="font-mono text-ui font-bold text-accent-light">
-                  {t('models.ratePerMillion', { rate: model.pricePerMillion.toLocaleString('vi-VN') })}
-                </div>
-                <div className="font-mono text-micro text-dim mt-0.5">
-                  Context: {model.contextWindow}
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <div className="font-mono text-ui font-bold text-accent-light">
+                      {t('models.ratePerMillion', { rate: model.pricePerMillion.toLocaleString('vi-VN') })}
+                    </div>
+                    <div className="font-mono text-micro text-dim mt-0.5">
+                      Context: {model.contextWindow}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setConfigTarget({ id: model.id, name: model.name })}
+                    className="shrink-0 rounded-full border border-line bg-surface-hover px-2.5 py-1 font-mono text-micro text-muted hover:border-accent/40 hover:bg-accent-soft hover:text-accent-light transition-all"
+                  >
+                    ⚡ {t('quickConfig.button')}
+                  </button>
                 </div>
               </div>
             </div>
@@ -157,6 +178,9 @@ export function PricingTable() {
                 <th className="px-6 py-4 text-right font-mono text-label tracking-[0.14em] text-accent-light uppercase">
                   {t('models.rateHeader')}
                 </th>
+                <th className="px-6 py-4 text-right font-mono text-label tracking-[0.14em] text-dim uppercase">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -179,6 +203,15 @@ export function PricingTable() {
                   </td>
                   <td className="px-6 py-4 text-right font-mono text-ui font-semibold tabular-nums text-accent-light">
                     {t('models.ratePerMillion', { rate: model.pricePerMillion.toLocaleString('vi-VN') })}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      type="button"
+                      onClick={() => setConfigTarget({ id: model.id, name: model.name })}
+                      className="rounded-full border border-line bg-surface-hover px-3 py-1 font-mono text-micro text-muted hover:border-accent/40 hover:bg-accent-soft hover:text-accent-light transition-all"
+                    >
+                      ⚡ {t('quickConfig.button')}
+                    </button>
                   </td>
                 </tr>
               ))}

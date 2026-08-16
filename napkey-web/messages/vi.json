@@ -284,6 +284,12 @@
       },
       "note": "Mỗi request đều ghi lại model, số token input/output và chi phí thực tế. Giá có thể đổi khi tỷ giá upstream thay đổi; usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
     },
+    "quickConfig": {
+      "title": "Cấu hình nhanh: {model}",
+      "button": "Cấu hình",
+      "hint": "Chỉ cần thay API key của bạn và chạy ngay.",
+      "done": "Xong"
+    },
     "offer": {
       "eyebrow": "Ưu đãi ra mắt",
       "title": "Tặng 20.000 VNĐ để trải nghiệm ngay",

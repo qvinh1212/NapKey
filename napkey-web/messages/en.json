@@ -286,6 +286,12 @@
       },
       "note": "Every request records the model, input/output token counts, and the actual cost. Rates may change when upstream pricing shifts; settled usage always keeps the rate that was effective when it was recorded."
     },
+    "quickConfig": {
+      "title": "Quick Setup: {model}",
+      "button": "Quick Setup",
+      "hint": "Just replace with your API key and run immediately.",
+      "done": "Done"
+    },
     "offer": {
       "eyebrow": "Launch offer",
       "title": "Get 20,000 VND of credit to try it now",

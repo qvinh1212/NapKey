@@ -1,6 +1,6 @@
 import type { PublicModel } from './model-catalog';
 
-export type DeveloperTool = 'claudeCode' | 'anthropic' | 'openai' | 'curl' | 'powershell';
+export type DeveloperTool = 'claudeCode' | 'cursor' | 'anthropic' | 'openai' | 'curl' | 'powershell';
 
 export type DeveloperSnippet = { lang: string; code: string };
 
@@ -22,6 +22,13 @@ export function developerSnippet(tool: DeveloperTool, model: string, apiBaseUrl:
 export ANTHROPIC_AUTH_TOKEN="$NAPKEY_API_KEY"
 
 claude --model "${model}"`,
+    },
+    cursor: {
+      lang: 'bash',
+      code: `# Cursor Settings -> Models -> Add Custom Model:
+# Model Name: ${model}
+# Base URL:   ${base}/v1
+# API Key:    $NAPKEY_API_KEY`,
     },
     anthropic: {
       lang: 'python',
