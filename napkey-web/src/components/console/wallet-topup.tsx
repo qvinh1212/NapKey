@@ -6,6 +6,7 @@ import { api, ApiError } from '@/lib/api/client';
 import type { TopupHistoryResponse, TopupOrderResponse, WalletResponse } from '@/lib/api/types';
 import { WalletBalance } from './wallet-balance';
 import { Badge, Panel, PanelHeader } from './ui';
+import { CopyButton } from '@/components/ui/copy-button';
 import { creditAmount } from '@/lib/format';
 import { creditsFromVnd, formatVnd, microcreditsFromVnd, MIN_TOPUP_VND, TOPUP_PRESETS, TOPUP_STEP_VND } from '@/lib/pricing';
 
@@ -98,7 +99,28 @@ export function WalletTopup() {
           <PanelHeader title={t('transferTitle')} description={t('transferDescription')} action={<Badge tone={order.status === 'paid' ? 'accent' : order.status === 'underpaid' ? 'warn' : 'info'}>{t(`status.${order.status}`)}</Badge>} />
           <div className="grid gap-6 p-5 md:grid-cols-[minmax(0,1fr)_280px]">
             <dl className="divide-y divide-line rounded-lg border border-line">
-              {([{ label: t('provider'), value: 'PayOS' }, { label: t('amount'), value: order.expectedAmount.formatted }, { label: t('credits'), value: creditAmount(order.expectedCredits, locale) }, { label: t('memo'), value: order.memoCode }]).map(({ label, value }) => <div key={label} className="flex items-center justify-between gap-4 px-4 py-3"><dt className="text-ui text-dim">{label}</dt><dd className="text-right font-mono text-ui text-fg">{value}</dd></div>)}
+              {([
+                { label: t('provider'), value: 'PayOS', copyable: false },
+                { label: t('amount'), value: order.expectedAmount.formatted, raw: String(order.expectedAmount.vnd), copyable: true },
+                { label: t('credits'), value: creditAmount(order.expectedCredits, locale), copyable: false },
+                { label: t('memo'), value: order.memoCode, raw: order.memoCode, copyable: true, highlight: true },
+              ]).map(({ label, value, raw, copyable, highlight }) => (
+                <div key={label} className="flex items-center justify-between gap-4 px-4 py-3">
+                  <dt className="text-ui text-dim">{label}</dt>
+                  <dd className="flex items-center gap-2 text-right font-mono text-ui text-fg">
+                    <span className={highlight ? 'font-semibold text-accent-light' : ''}>{value}</span>
+                    {copyable ? (
+                      <CopyButton
+                        value={raw || value}
+                        variant="icon"
+                        showTooltip
+                        copiedLabel={t('copied') || 'Copied!'}
+                        className="size-6 text-muted hover:text-fg"
+                      />
+                    ) : null}
+                  </dd>
+                </div>
+              ))}
             </dl>
             <div className="flex flex-col justify-center rounded-lg border border-line bg-surface-hover p-5 text-center">
               {order.status === 'paid' ? null : <a href={order.payment.checkoutUrl} target="_blank" rel="noreferrer" className="rounded-full bg-fg px-6 py-3 text-ui font-medium text-bg">{t('openCheckout')}</a>}
@@ -123,7 +145,18 @@ export function WalletTopup() {
                 {history.map((item) => (
                   <tr key={item.id}>
                     <td className="px-5 py-3 text-muted">{new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.createdAt))}</td>
-                    <td className="px-5 py-3 font-mono text-fg">{item.memoCode}</td>
+                    <td className="px-5 py-3 font-mono text-fg">
+                      <span className="inline-flex items-center gap-1.5">
+                        {item.memoCode}
+                        <CopyButton
+                          value={item.memoCode}
+                          variant="icon"
+                          showTooltip
+                          copiedLabel={t('copied') || 'Copied!'}
+                          className="size-5 border-none bg-transparent hover:bg-white/10"
+                        />
+                      </span>
+                    </td>
                     <td className="px-5 py-3 font-mono text-fg">{item.expectedAmount.formatted}</td>
                     <td className="px-5 py-3 font-mono text-fg">{creditAmount(item.expectedCredits, locale)}</td>
                     <td className="px-5 py-3"><Badge tone={item.status === 'paid' ? 'accent' : item.status === 'underpaid' ? 'warn' : 'info'}>{t(`status.${item.status}`)}</Badge></td>

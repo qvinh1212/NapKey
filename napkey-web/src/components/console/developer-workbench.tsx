@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { developerSnippet, diagnoseApiFailure, normalizeDeveloperModel, type DeveloperTool } from '@/lib/developer-tools';
 import type { ModelCatalog } from '@/lib/model-catalog';
 import { Badge, Panel, PanelHeader } from './ui';
+import { CopyButton } from '@/components/ui/copy-button';
 
 const tools: DeveloperTool[] = ['claudeCode', 'anthropic', 'openai', 'curl', 'powershell'];
 const failureStatuses = [400, 401, 402, 429, 503] as const;
@@ -14,18 +15,7 @@ export function DeveloperWorkbench({ catalog, apiBaseUrl }: { catalog: ModelCata
   const t = useTranslations('console.developer');
   const [tool, setTool] = useState<DeveloperTool>('claudeCode');
   const [model, setModel] = useState(() => normalizeDeveloperModel('auto', catalog.models));
-  const [copied, setCopied] = useState<'snippet' | 'endpoint' | null>(null);
   const snippet = useMemo(() => developerSnippet(tool, model, apiBaseUrl), [apiBaseUrl, model, tool]);
-
-  async function copy(value: string, target: 'snippet' | 'endpoint') {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(target);
-      window.setTimeout(() => setCopied((current) => current === target ? null : current), 1800);
-    } catch {
-      setCopied(null);
-    }
-  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,12 +52,25 @@ export function DeveloperWorkbench({ catalog, apiBaseUrl }: { catalog: ModelCata
           <div className="min-w-0 bg-surface p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div><p className="font-mono text-label tracking-[0.12em] text-dim uppercase">{t('snippetLabel')}</p><p className="mt-1 text-ui text-dim">{t('snippetHint')}</p></div>
-              <button type="button" onClick={() => void copy(snippet.code, 'snippet')} className="rounded-full border border-line px-4 py-1.5 text-ui text-muted hover:bg-white/5 hover:text-fg">{copied === 'snippet' ? t('copied') : t('copy')}</button>
+              <CopyButton
+                value={snippet.code}
+                label={t('copy')}
+                copiedLabel={t('copied')}
+                variant="pill"
+                showTooltip
+              />
             </div>
             <pre className="mt-4 max-h-[30rem] overflow-auto rounded-md border border-line bg-black/50 p-4 font-mono text-xs leading-relaxed text-muted"><code>{snippet.code}</code></pre>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line px-4 py-3">
               <code className="min-w-0 truncate font-mono text-ui text-accent-light">{apiBaseUrl}</code>
-              <button type="button" onClick={() => void copy(apiBaseUrl, 'endpoint')} className="shrink-0 text-ui text-muted hover:text-fg">{copied === 'endpoint' ? t('copied') : t('copyEndpoint')}</button>
+              <CopyButton
+                value={apiBaseUrl}
+                label={t('copyEndpoint')}
+                copiedLabel={t('copied')}
+                variant="ghost"
+                showTooltip
+                className="shrink-0"
+              />
             </div>
           </div>
         </div>

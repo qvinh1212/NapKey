@@ -80,3 +80,14 @@ export function CloseIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** Bieu tuong sao chep hai lop giay chong len nhau. */
+export function CopyIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="5.5" y="5.5" width="7.5" height="7.5" rx="1.5" />
+      <path d="M10.5 3.5H4a1.5 1.5 0 0 0-1.5 1.5v6.5" />
+    </Icon>
+  );
+}
+

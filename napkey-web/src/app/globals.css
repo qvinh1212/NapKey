@@ -49,6 +49,8 @@
 
   --animate-rise: rise 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-pulse-dot: pulse-dot 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-copy-spring: copy-spring 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-tooltip-spring: tooltip-spring 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 @keyframes rise {
@@ -69,6 +71,36 @@
   }
   50% {
     opacity: 0.35;
+  }
+}
+
+@keyframes copy-spring {
+  0% {
+    opacity: 0;
+    transform: scale(0.75) translateY(2px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.18) translateY(-1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes tooltip-spring {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 

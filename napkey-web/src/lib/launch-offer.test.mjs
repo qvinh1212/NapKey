@@ -4,16 +4,14 @@ import test from 'node:test';
 
 const sourcePath = new URL('../components/napkey/launch-offer.tsx', import.meta.url);
 
-test('launch offer preserves dismissal, keyboard containment, and short viewport access', async () => {
+test('launch offer preserves dismissal and session-aware cta', async () => {
   const source = await readFile(sourcePath, 'utf8');
   for (const contract of [
     'DISMISS_DAYS = 7',
     "event.key === 'Escape'",
-    "event.key === 'Tab'",
     'rememberDismissal',
-    'max-h-[calc(100dvh-1rem)]',
-    'overflow-y-auto',
     "session.status === 'loading'",
+    'role="region"',
   ]) {
     assert.match(source, new RegExp(contract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }

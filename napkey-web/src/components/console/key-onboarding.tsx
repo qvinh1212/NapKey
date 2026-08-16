@@ -9,6 +9,7 @@ import { isValidOnboardingResponse, onboardingSnippet, parseOnboardingResponse, 
 import { defaultModel } from '@/lib/model-catalog';
 import { site } from '@/lib/site';
 import { ArrowRightIcon, CheckIcon } from '@/components/ui/icon';
+import { CopyButton } from '@/components/ui/copy-button';
 import { Badge, Panel, PanelHeader } from './ui';
 
 type TestState =
@@ -27,7 +28,6 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
   const t = useTranslations('console.keys.onboarding');
   const [tool, setTool] = useState<OnboardingTool>('claudeCode');
   const [saved, setSaved] = useState(false);
-  const [copied, setCopied] = useState<'key' | 'snippet' | null>(null);
   const [test, setTest] = useState<TestState>({ status: 'idle' });
   const [syncState, setSyncState] = useState<KeySyncState>(created.details.syncState);
   const snippet = useMemo(
@@ -55,14 +55,6 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
     };
   }, [created.details.id, syncState]);
 
-  async function copy(value: string, target: 'key' | 'snippet') {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(target);
-    } catch {
-      setCopied(null);
-    }
-  }
 
   async function findCost(requestId: string) {
     if (!requestId) return undefined;
@@ -141,9 +133,17 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
           <code className="mt-3 block max-w-full overflow-x-auto rounded-md border border-accent/30 bg-black/40 px-4 py-3 font-mono text-ui whitespace-nowrap text-accent-light">
             {created.key}
           </code>
-          <button type="button" onClick={() => void copy(created.key, 'key')} className="mt-3 rounded-full bg-fg px-4 py-2 text-ui font-medium text-bg hover:bg-white/90">
-            {copied === 'key' ? t('copied') : t('copyKey')}
-          </button>
+          <div className="mt-3 flex items-center gap-3">
+            <CopyButton
+              value={created.key}
+              label={t('copyKey')}
+              copiedLabel={t('copied')}
+              variant="pill"
+              showTooltip
+              onCopy={() => setSaved(true)}
+              className="bg-fg text-bg hover:bg-white/90"
+            />
+          </div>
           <label className="mt-4 flex cursor-pointer items-start gap-3 text-ui text-muted">
             <input type="checkbox" checked={saved} onChange={(event) => setSaved(event.target.checked)} className="mt-0.5 size-4 accent-[var(--color-accent)]" />
             <span>{t('savedConfirm')}</span>
@@ -163,9 +163,13 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
           <div className="mt-3 min-w-0 max-w-full overflow-hidden rounded-md border border-line bg-black/40">
             <div className="flex items-center justify-between border-b border-line px-4 py-2">
               <span className="font-mono text-label text-dim">{snippet.lang}</span>
-              <button type="button" onClick={() => void copy(snippet.code, 'snippet')} className="text-ui text-muted hover:text-fg">
-                {copied === 'snippet' ? t('copied') : t('copyConfig')}
-              </button>
+              <CopyButton
+                value={snippet.code}
+                label={t('copyConfig')}
+                copiedLabel={t('copied')}
+                variant="ghost"
+                showTooltip
+              />
             </div>
             <pre className="max-h-72 max-w-full overflow-auto p-4 font-mono text-xs leading-relaxed text-muted"><code>{snippet.code}</code></pre>
           </div>

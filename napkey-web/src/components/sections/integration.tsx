@@ -1,39 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Section } from '@/components/ui/section';
 import { snippets, type Snippet } from '@/lib/snippets';
 import { ArrowRightIcon } from '@/components/ui/icon';
+import { CopyButton } from '@/components/ui/copy-button';
 
 export function Integration() {
   const t = useTranslations('integrate');
   const [active, setActive] = useState<Snippet['key']>('claudeCode');
-  const [copied, setCopied] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
 
   const current = snippets.find((s) => s.key === active) ?? snippets[0]!;
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(current.code);
-      setCopied(true);
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard bi tu choi (khong phai HTTPS, hoac user chan quyen).
-      // Code van hien tren man hinh nen nguoi dung chon tay duoc.
-      setCopied(false);
-    }
-  }
 
   return (
     <Section id="integrate" eyebrow={t('eyebrow')} title={t('title')} subtitle={t('subtitle')}>
@@ -51,10 +30,7 @@ export function Integration() {
                   aria-selected={isActive}
                   aria-controls={`panel-${snippet.key}`}
                   tabIndex={isActive ? 0 : -1}
-                  onClick={() => {
-                    setActive(snippet.key);
-                    setCopied(false);
-                  }}
+                  onClick={() => setActive(snippet.key)}
                   className={
                     'shrink-0 rounded-full border px-3.5 py-1.5 text-ui whitespace-nowrap transition-colors duration-150 ' +
                     'ease-[var(--ease-smooth)] ' +
@@ -69,15 +45,15 @@ export function Integration() {
             })}
           </div>
 
-          <button
-            type="button"
-            onClick={copy}
-            aria-label={t('copyAria', { name: t(`tabs.${active}`) })}
-            className="inline-flex min-h-11 items-center justify-center gap-2 self-end rounded-full border border-line px-4 py-1.5 font-mono text-label tracking-[0.08em] text-muted uppercase transition-colors duration-150 hover:text-fg sm:min-h-0"
-          >
-            <span aria-hidden>{copied ? '\u2713' : '\u29c9'}</span>
-            {copied ? t('copied') : t('copy')}
-          </button>
+          <CopyButton
+            value={current.code}
+            label={t('copy')}
+            copiedLabel={t('copied')}
+            variant="pill"
+            showTooltip
+            ariaLabel={t('copyAria', { name: t(`tabs.${active}`) })}
+            className="self-end sm:min-h-0"
+          />
         </div>
 
         {snippets.map((snippet) => (
@@ -94,10 +70,6 @@ export function Integration() {
           </div>
         ))}
       </div>
-
-      <p aria-live="polite" className="sr-only">
-        {copied ? t('copied') : ''}
-      </p>
 
       <Link href="/docs" className="mt-6 inline-flex text-ui text-accent-light hover:underline">
         {t('docsLink')}

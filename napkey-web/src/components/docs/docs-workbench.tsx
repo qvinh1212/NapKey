@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { developerSnippet, normalizeDeveloperModel, type DeveloperTool } from '@/lib/developer-tools';
 import type { PublicModel } from '@/lib/model-catalog';
+import { CopyButton } from '@/components/ui/copy-button';
 
 const tools: DeveloperTool[] = ['claudeCode', 'anthropic', 'openai', 'curl', 'powershell'];
 
@@ -11,18 +12,7 @@ export function DocsWorkbench({ models, apiBaseUrl }: { models: PublicModel[]; a
   const t = useTranslations('docsPage.quickstart');
   const [tool, setTool] = useState<DeveloperTool>('claudeCode');
   const [model, setModel] = useState(() => normalizeDeveloperModel('auto', models));
-  const [copied, setCopied] = useState(false);
   const snippet = useMemo(() => developerSnippet(tool, model, apiBaseUrl), [apiBaseUrl, model, tool]);
-
-  async function copySnippet() {
-    try {
-      await navigator.clipboard.writeText(snippet.code);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setCopied(false);
-    }
-  }
 
   return (
     <div className="overflow-hidden rounded-lg border border-line bg-surface">
@@ -47,7 +37,7 @@ export function DocsWorkbench({ models, apiBaseUrl }: { models: PublicModel[]; a
                 key={item}
                 type="button"
                 aria-pressed={tool === item}
-                onClick={() => { setTool(item); setCopied(false); }}
+                onClick={() => setTool(item)}
                 className={`rounded-full border px-3 py-1.5 text-ui transition-colors ${tool === item ? 'border-accent/50 bg-accent-soft text-accent-light' : 'border-line text-muted hover:text-fg'}`}
               >
                 {t(`tools.${item}`)}
@@ -68,14 +58,18 @@ export function DocsWorkbench({ models, apiBaseUrl }: { models: PublicModel[]; a
               <p className="font-mono text-label tracking-[0.12em] text-accent uppercase">{t('codeLabel')}</p>
               <p className="mt-1 text-ui text-dim">{t('codeHint')}</p>
             </div>
-            <button type="button" onClick={() => void copySnippet()} className="rounded-full border border-line px-4 py-2 text-ui text-muted hover:bg-white/5 hover:text-fg">
-              {copied ? t('copied') : t('copy')}
-            </button>
+            <CopyButton
+              value={snippet.code}
+              label={t('copy')}
+              copiedLabel={t('copied')}
+              variant="pill"
+              showTooltip
+              className="py-2"
+            />
           </div>
           <pre className="mt-4 max-h-[32rem] max-w-full overflow-auto rounded-md border border-line bg-black p-4 font-mono text-xs leading-relaxed text-zinc-300 sm:p-5">
             <code>{snippet.code}</code>
           </pre>
-          <p aria-live="polite" className="sr-only">{copied ? t('copied') : ''}</p>
         </div>
       </div>
     </div>
