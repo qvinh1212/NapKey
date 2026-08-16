@@ -10,7 +10,6 @@ export interface ModelMetadata {
   pricePerMillion: number;
   capabilities: readonly ModelCapability[];
   tags: readonly string[];
-  contextWindow: string;
   recommendedFor: string;
 }
 
@@ -22,8 +21,7 @@ export const ENRICHED_MODELS: readonly ModelMetadata[] = [
     ratio: 0.5,
     pricePerMillion: MODEL_PRICES['claude-sonnet-5'] ?? 1_500,
     capabilities: ['coding', 'fast'],
-    tags: ['200K Context', 'Coding Supercharged', '85+ tps'],
-    contextWindow: '200K tokens',
+    tags: ['Coding Supercharged', '85+ tok/s', 'Khuyên dùng'],
     recommendedFor: 'Tối ưu cho Claude Code, Cursor, refactoring và lập trình hàng ngày.',
   },
   {
@@ -33,8 +31,7 @@ export const ENRICHED_MODELS: readonly ModelMetadata[] = [
     ratio: 0.5,
     pricePerMillion: MODEL_PRICES['gpt-5.6-luna'] ?? 1_500,
     capabilities: ['fast', 'coding'],
-    tags: ['128K Context', 'Siêu tốc', '120+ tps'],
-    contextWindow: '128K tokens',
+    tags: ['Siêu tốc', '120+ tok/s', 'Tiết kiệm'],
     recommendedFor: 'Tác vụ phản hồi nhanh, chatbot, tóm tắt và xử lý dữ liệu song song.',
   },
   {
@@ -44,8 +41,7 @@ export const ENRICHED_MODELS: readonly ModelMetadata[] = [
     ratio: 1.0,
     pricePerMillion: MODEL_PRICES['claude-opus-4.7'] ?? 3_000,
     capabilities: ['coding', 'thinking'],
-    tags: ['200K Context', 'Deep Reasoning', 'Tool Use'],
-    contextWindow: '200K tokens',
+    tags: ['Deep Reasoning', 'Tool Use', 'Code Generation'],
     recommendedFor: 'Giải quyết logic phức tạp, kiến trúc hệ thống và debug sâu.',
   },
   {
@@ -55,8 +51,7 @@ export const ENRICHED_MODELS: readonly ModelMetadata[] = [
     ratio: 1.0,
     pricePerMillion: MODEL_PRICES['claude-opus-4.8'] ?? 3_000,
     capabilities: ['coding', 'thinking'],
-    tags: ['200K Context', 'Thinking Mode', 'Agentic Loop'],
-    contextWindow: '200K tokens',
+    tags: ['Thinking Mode', 'Agentic Loop', 'Tự động hóa'],
     recommendedFor: 'Các workflow agent tự động dài hơi và suy luận nhiều bước.',
   },
   {
@@ -66,8 +61,7 @@ export const ENRICHED_MODELS: readonly ModelMetadata[] = [
     ratio: 1.2,
     pricePerMillion: MODEL_PRICES['gpt-5.6-terra'] ?? 3_600,
     capabilities: ['coding', 'thinking'],
-    tags: ['256K Context', 'High Precision'],
-    contextWindow: '256K tokens',
+    tags: ['High Precision', 'Complex Data', 'Structured Output'],
     recommendedFor: 'Xử lý file tài liệu lớn và trích xuất logic chuẩn xác.',
   },
   {
@@ -77,8 +71,7 @@ export const ENRICHED_MODELS: readonly ModelMetadata[] = [
     ratio: 1.5,
     pricePerMillion: MODEL_PRICES['claude-opus-5'] ?? 4_500,
     capabilities: ['thinking', 'coding'],
-    tags: ['200K Context', 'Extended Reasoning'],
-    contextWindow: '200K tokens',
+    tags: ['Extended Reasoning', 'Toán học & Thuật toán', 'Logic cao cấp'],
     recommendedFor: 'Suy luận chuyên gia, toán học và bài toán thuật toán nâng cao.',
   },
   {
@@ -88,8 +81,7 @@ export const ENRICHED_MODELS: readonly ModelMetadata[] = [
     ratio: 2.0,
     pricePerMillion: MODEL_PRICES['gpt-5.6-sol'] ?? 6_000,
     capabilities: ['thinking'],
-    tags: ['384K Context', 'Expert Tier'],
-    contextWindow: '384K tokens',
+    tags: ['Expert Tier', 'Multi-step Synthesis', 'Nghiên cứu'],
     recommendedFor: 'Tổng hợp phân tích đa nguồn với độ chi tiết tối đa.',
   },
   {
@@ -99,8 +91,7 @@ export const ENRICHED_MODELS: readonly ModelMetadata[] = [
     ratio: 3.3,
     pricePerMillion: MODEL_PRICES['claude-fable-5'] ?? 10_000,
     capabilities: ['thinking'],
-    tags: ['Flagship Reasoning', 'Anchor Tier'],
-    contextWindow: '200K tokens',
+    tags: ['Flagship Reasoning', 'Anchor Tier', 'Đầu bảng'],
     recommendedFor: 'Mô hình nghiên cứu đầu bảng với năng lực suy diễn đỉnh cao.',
   },
 ] as const;

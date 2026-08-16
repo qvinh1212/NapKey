@@ -141,9 +141,6 @@ export function PricingTable() {
                     <div className="font-mono text-ui font-bold text-accent-light">
                       {t('models.ratePerMillion', { rate: model.pricePerMillion.toLocaleString('vi-VN') })}
                     </div>
-                    <div className="font-mono text-micro text-dim mt-0.5">
-                      Context: {model.contextWindow}
-                    </div>
                   </div>
                   <button
                     type="button"
@@ -168,9 +165,6 @@ export function PricingTable() {
                 </th>
                 <th className="px-6 py-4 font-mono text-label tracking-[0.14em] text-dim uppercase">
                   Protocol
-                </th>
-                <th className="px-6 py-4 font-mono text-label tracking-[0.14em] text-dim uppercase">
-                  Context
                 </th>
                 <th className="px-6 py-4 text-right font-mono text-label tracking-[0.14em] text-dim uppercase">
                   {t('models.colTier')}
@@ -197,7 +191,6 @@ export function PricingTable() {
                     </div>
                   </td>
                   <td className="px-6 py-4 font-mono text-label text-muted">{model.family}</td>
-                  <td className="px-6 py-4 font-mono text-label text-dim">{model.contextWindow}</td>
                   <td className="px-6 py-4 text-right font-mono text-ui tabular-nums text-muted">
                     {t('models.tierValue', { ratio: model.ratio })}
                   </td>
