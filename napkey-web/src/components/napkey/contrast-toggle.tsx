@@ -56,7 +56,7 @@ export function ContrastToggle({ className = '' }: { className?: string }) {
       title={isHigh ? t('contrastHigh') : t('contrastOled')}
       aria-label={t('contrastMode')}
       aria-pressed={isHigh}
-      className={`group inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-hover px-2.5 py-1 font-mono text-label transition-colors duration-150 ease-[var(--ease-smooth)] hover:border-line hover:bg-white/10 hover:text-fg ${
+      className={`group inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-line bg-surface-2 px-2.5 py-1 font-mono text-label transition-colors duration-150 ease-[var(--ease-smooth)] hover:bg-surface-2 hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
         isHigh ? 'border-accent/40 bg-accent-soft text-accent-light' : 'text-dim hover:text-muted'
       } ${className}`}
     >

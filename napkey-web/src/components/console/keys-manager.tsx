@@ -171,7 +171,7 @@ export function KeysManager() {
               disabled={revealed !== null}
               onChange={(event) => setName(event.target.value)}
               placeholder={t('namePlaceholder')}
-              className="w-full rounded-md border border-line bg-surface-hover px-4 py-2.5 text-ui text-fg placeholder:text-dim focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="w-full rounded-[10px] border border-line bg-terminal px-3.5 py-2.5 text-ui text-fg placeholder:text-dim outline-none focus:border-accent"
             />
           </div>
           <button

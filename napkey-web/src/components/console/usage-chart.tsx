@@ -95,11 +95,11 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
                 <span className="font-mono text-label text-dim">{dayLabel(day.day, locale)}</span>
                 
                 {/* Horizontal Segmented Bar */}
-                <span className="relative flex h-2.5 overflow-hidden rounded-full bg-white/[0.07]">
+                <span className="relative flex h-1.5 overflow-hidden rounded-full bg-surface-2">
                   <span
                     style={{ width: `${widthPct}%` }}
                     className={`flex h-full overflow-hidden rounded-full transition-all duration-200 ease-[var(--ease-smooth)] ${
-                      isActive ? 'shadow-[0_0_16px_rgba(52,211,153,0.35)] ring-1 ring-white/20' : ''
+                      isActive ? 'shadow-[0_0_16px_rgba(0,134,255,0.35)] ring-1 ring-white/20' : ''
                     }`}
                   >
                     {totalTokens > 0 ? (
@@ -202,7 +202,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
                         <span>{t('colTokens')}: {count(totalTokens, locale)}</span>
                         <span>{inputRatio.toFixed(0)}% In / {outputRatio.toFixed(0)}% Out</span>
                       </div>
-                      <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                      <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
                         <div style={{ width: `${inputRatio}%` }} className="bg-accent" />
                         <div style={{ width: `${outputRatio}%` }} className="bg-info" />
                         {cacheRatio > 0 ? <div style={{ width: `${cacheRatio}%` }} className="bg-zinc-400" /> : null}

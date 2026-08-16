@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/button';
+import { CloseIcon, MenuIcon } from '@/components/ui/icon';
 import { useSession } from '@/components/console/session-provider';
 import { publicAuthAction } from '@/lib/session-ui';
 import { Logo } from './logo';
@@ -94,7 +95,7 @@ export function SiteHeader() {
       className={
         'fixed inset-x-0 top-0 z-50 pt-4 transition-colors duration-200 ease-[var(--ease-smooth)] sm:pt-6 ' +
         (scrolled || open
-          ? 'border-b border-line bg-black/80 pb-4 backdrop-blur-md sm:pb-4'
+          ? 'border-b border-line bg-bg/90 pb-4 backdrop-blur-md sm:pb-4'
           : 'border-b border-transparent pb-0')
       }
     >
@@ -112,7 +113,7 @@ export function SiteHeader() {
               <Link
                 key={key}
                 href={href}
-                className="rounded-full px-4 py-2 text-ui text-subtle transition-colors duration-150 ease-[var(--ease-smooth)] hover:bg-surface-hover hover:text-fg"
+                className="rounded-lg px-4 py-2 text-ui text-subtle transition-colors duration-150 ease-[var(--ease-smooth)] hover:bg-surface-2 hover:text-fg"
               >
                 {t(key)}
               </Link>
@@ -125,7 +126,7 @@ export function SiteHeader() {
             {authAction ? (
               <Link
                 href={authAction.href}
-                className="hidden rounded-full px-4 py-2 text-ui text-subtle transition-colors duration-150 ease-[var(--ease-smooth)] hover:bg-surface-hover hover:text-fg sm:inline-flex"
+                className="hidden rounded-lg px-4 py-2 text-ui text-subtle transition-colors duration-150 ease-[var(--ease-smooth)] hover:bg-surface-2 hover:text-fg sm:inline-flex"
               >
                 {t(authAction.labelKey)}
               </Link>
@@ -142,11 +143,9 @@ export function SiteHeader() {
               aria-controls="mobile-nav"
               aria-label={open ? t('closeMenu') : t('openMenu')}
               onClick={() => setOpen((v) => !v)}
-              className="inline-flex size-11 items-center justify-center rounded-full border border-line bg-black/80 text-muted backdrop-blur lg:hidden"
+              className="inline-flex size-11 items-center justify-center rounded-lg border border-line bg-bg/90 text-muted backdrop-blur transition-colors duration-150 hover:bg-surface-2 hover:text-fg lg:hidden"
             >
-              <span aria-hidden className="text-base leading-none">
-                {open ? '\u2715' : '\u2261'}
-              </span>
+              {open ? <CloseIcon className="size-5" /> : <MenuIcon className="size-5" />}
             </button>
           </div>
         </div>
@@ -156,7 +155,7 @@ export function SiteHeader() {
             ref={mobileNavRef}
             id="mobile-nav"
             aria-label="Mobile"
-            className="mt-3 flex max-h-[calc(100dvh-5.5rem)] flex-col gap-1 overflow-y-auto rounded-xl border border-line bg-black/95 p-4 shadow-2xl backdrop-blur lg:hidden"
+            className="mt-3 flex max-h-[calc(100dvh-5.5rem)] flex-col gap-1 overflow-y-auto rounded-xl border border-line bg-bg/95 p-4 shadow-2xl backdrop-blur lg:hidden"
           >
             <div className="mb-2 flex items-center justify-between border-b border-line pb-3 sm:hidden">
               <span className="text-label text-dim">{t('contrastMode')}</span>
@@ -167,7 +166,7 @@ export function SiteHeader() {
                 key={key}
                 href={href}
                 onClick={() => setOpen(false)}
-                className="rounded-md px-3 py-3 text-base text-muted transition-colors hover:bg-surface-hover hover:text-fg"
+                className="rounded-md px-3 py-3 text-base text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-fg"
               >
                 {t(key)}
               </Link>
@@ -176,7 +175,7 @@ export function SiteHeader() {
               <Link
                 href={authAction.href}
                 onClick={() => setOpen(false)}
-                className="rounded-md px-3 py-3 text-base text-muted transition-colors hover:bg-surface-hover hover:text-fg"
+                className="rounded-md px-3 py-3 text-base text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-fg"
               >
                 {t(authAction.labelKey)}
               </Link>

@@ -88,12 +88,13 @@ export function LaunchOffer() {
       onKeyDown={(event) => {
         if (event.key === 'Escape') dismiss();
       }}
-      className="fixed inset-x-0 bottom-0 z-100 border-t border-accent/30 bg-black/92 backdrop-blur-md motion-safe:animate-in motion-safe:slide-in-from-bottom-4"
+      className="fixed inset-x-0 bottom-0 z-100 border-t border-accent bg-surface-3/95 backdrop-blur-md motion-safe:animate-in motion-safe:slide-in-from-bottom-4"
     >
       <div className="container-page relative">
         <div className="flex flex-col gap-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:gap-6 sm:py-3.5">
           <div className="min-w-0 flex-1 pr-10 sm:pr-0">
-            <p className="font-mono text-micro tracking-[0.16em] text-accent-light uppercase">
+            <p className="inline-flex items-center gap-2 rounded-full border border-accent/35 bg-accent-soft px-3.5 py-1.5 font-mono text-label font-semibold tracking-[0.08em] text-accent-light uppercase">
+              <span aria-hidden className="size-2 rounded-full bg-success shadow-[0_0_8px_rgba(52,211,153,0.55)]" />
               {t('eyebrow')}
             </p>
             <p className="mt-1.5 text-prose font-medium text-fg">{t('title')}</p>

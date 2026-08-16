@@ -57,7 +57,7 @@ export function QuickConfigModal({ open, onClose, modelId, modelName }: QuickCon
       />
 
       {/* Modal Container */}
-      <div className="relative z-10 max-h-[90vh] w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-black/95 shadow-2xl backdrop-blur-xl animate-[tooltip-spring_0.25s_cubic-bezier(0.34,1.56,0.64,1)_both]">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-surface-3/95 shadow-2xl backdrop-blur-xl animate-[tooltip-spring_0.25s_cubic-bezier(0.34,1.56,0.64,1)_both]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <div>
@@ -75,7 +75,7 @@ export function QuickConfigModal({ open, onClose, modelId, modelName }: QuickCon
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-full border border-line p-1.5 text-muted hover:bg-white/10 hover:text-fg"
+            className="rounded-full border border-line p-1.5 text-muted hover:bg-surface-2 hover:text-fg"
           >
             <CloseIcon className="size-4" />
           </button>
@@ -108,8 +108,8 @@ export function QuickConfigModal({ open, onClose, modelId, modelName }: QuickCon
 
         {/* Code Snippet Box */}
         <div className="p-6">
-          <div className="relative overflow-hidden rounded-xl border border-line bg-surface">
-            <div className="flex items-center justify-between border-b border-line px-4 py-2 bg-black/40">
+          <div className="relative overflow-hidden rounded-xl border border-line bg-terminal">
+            <div className="flex items-center justify-between border-b border-line px-4 py-2 bg-surface-3">
               <span className="font-mono text-micro text-dim uppercase tracking-wider">
                 {selectedTool === 'cursor' ? 'Cursor Configuration' : `${snippet.lang} snippet`}
               </span>
@@ -120,7 +120,7 @@ export function QuickConfigModal({ open, onClose, modelId, modelName }: QuickCon
                 className="text-micro"
               />
             </div>
-            <pre className="overflow-x-auto p-4 font-mono text-ui text-zinc-300 leading-relaxed [scrollbar-width:thin]">
+            <pre className="overflow-x-auto p-4 font-mono text-ui text-fg leading-relaxed [scrollbar-width:thin]">
               <code>{snippet.code}</code>
             </pre>
           </div>
@@ -132,7 +132,7 @@ export function QuickConfigModal({ open, onClose, modelId, modelName }: QuickCon
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-line px-5 py-1.5 text-label font-medium text-muted hover:bg-white/5 hover:text-fg"
+              className="rounded-full border border-line px-5 py-1.5 text-label font-medium text-muted hover:bg-surface-2 hover:text-fg"
             >
               {t('done')}
             </button>

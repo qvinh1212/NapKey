@@ -40,7 +40,7 @@ export function BusinessCockpit({ data }: { data: BusinessSummary }) {
             <div key={step.label} className="min-w-0">
               <div className="flex items-baseline justify-between gap-3"><p className="text-ui text-muted">{step.label}</p><span className="font-mono text-label text-dim">0{index + 1}</span></div>
               <p className="mt-2 text-2xl tabular-nums text-fg">{step.value}</p>
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5" aria-hidden><div className="h-full rounded-full bg-accent" style={{ width: `${Math.max(0, Math.min(step.rate, 100))}%` }} /></div>
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden><div className="h-full rounded-full bg-accent" style={{ width: `${Math.max(0, Math.min(step.rate, 100))}%` }} /></div>
               <p className="mt-2 font-mono text-label text-dim">{step.rate}% trên tài khoản mới</p>
             </div>
           ))}

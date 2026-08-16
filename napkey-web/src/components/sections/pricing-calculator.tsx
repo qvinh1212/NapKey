@@ -121,7 +121,7 @@ export function PricingCalculator() {
                 className="mt-1.5 w-full rounded-lg border border-line bg-surface-hover px-3 py-2 font-mono text-ui text-fg outline-none focus:border-accent"
               >
                 {MODEL_OPTIONS.map((m) => (
-                  <option key={m.id} value={m.id} className="bg-black text-fg">
+                  <option key={m.id} value={m.id} className="bg-surface-3 text-fg">
                     {m.label}
                   </option>
                 ))}
@@ -139,7 +139,7 @@ export function PricingCalculator() {
                 className="mt-1.5 w-full rounded-lg border border-line bg-surface-hover px-3 py-2 font-mono text-ui text-fg outline-none focus:border-accent"
               >
                 {requestShapes.map((s) => (
-                  <option key={s.key} value={s.key} className="bg-black text-fg">
+                  <option key={s.key} value={s.key} className="bg-surface-3 text-fg">
                     {t(`workloads.${s.key}`)}
                   </option>
                 ))}
@@ -149,7 +149,7 @@ export function PricingCalculator() {
         </div>
 
         {/* Right Column: Comparative Results */}
-        <div className="flex flex-col justify-between rounded-xl border border-accent/40 bg-accent-soft/30 p-5 sm:p-6 backdrop-blur-sm">
+        <div className="flex flex-col justify-between rounded-xl border border-accent bg-accent-soft/30 p-5 sm:p-6 backdrop-blur-sm">
           <div>
             <div className="flex items-center justify-between">
               <span className="font-mono text-label uppercase tracking-wider text-accent-light">
@@ -196,7 +196,7 @@ export function PricingCalculator() {
           <div className="mt-6 pt-2">
             <Link
               href="/signup"
-              className="block w-full rounded-full bg-fg py-2.5 text-center text-ui font-medium text-bg transition-opacity hover:opacity-90"
+              className="block w-full rounded-lg bg-fg py-2.5 text-center text-ui font-semibold text-bg transition-opacity hover:opacity-90"
             >
               Bắt đầu với 20.000 ₫ trải nghiệm
             </Link>

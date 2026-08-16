@@ -101,4 +101,15 @@ export function ContrastIcon(props: IconProps) {
   );
 }
 
+/** Ba gach ngang: mo menu mobile. Khong dung ky tu `≡` - do la toan tu, khong phai icon. */
+export function MenuIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M2.5 4.5h11" />
+      <path d="M2.5 8h11" />
+      <path d="M2.5 11.5h11" />
+    </Icon>
+  );
+}
+
 

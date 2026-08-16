@@ -25,7 +25,7 @@ export default async function StatusPage({ params }: { params: Promise<{ locale:
 
   return (
     <PublicDocument eyebrow={t('eyebrow')} title={t('title')} intro={t('intro')}>
-      <section className={`rounded-lg border p-6 sm:p-8 ${status.status === 'operational' ? 'border-accent/35 bg-accent-soft' : status.status === 'degraded' ? 'border-warn/35 bg-warn/5' : 'border-danger/35 bg-danger-soft'}`}>
+      <section className={`rounded-xl border p-6 sm:p-8 ${status.status === 'operational' ? 'border-accent/35 bg-accent-soft' : status.status === 'degraded' ? 'border-warn/35 bg-warn/5' : 'border-danger/35 bg-danger-soft'}`}>
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <p className={`font-mono text-label tracking-[0.14em] uppercase ${status.status === 'operational' ? 'text-accent-light' : status.status === 'degraded' ? 'text-warn' : 'text-danger'}`}>
@@ -34,13 +34,13 @@ export default async function StatusPage({ params }: { params: Promise<{ locale:
             <h2 className="mt-3 text-3xl tracking-[-0.02em]">{t('serviceTitle')}</h2>
             <p className="mt-2 text-ui text-muted">{t(`stateBodies.${status.status}`)}</p>
           </div>
-          <span aria-hidden className={`size-4 rounded-full ${status.status === 'operational' ? 'bg-accent shadow-[0_0_24px_rgba(16,185,129,0.8)]' : status.status === 'degraded' ? 'bg-warn' : 'bg-danger'}`} />
+          <span aria-hidden className={`size-2.5 rounded-full ${status.status === 'operational' ? 'bg-success shadow-[0_0_8px_rgba(52,211,153,0.55)]' : status.status === 'degraded' ? 'bg-warn' : 'bg-danger'}`} />
         </div>
-        <dl className="mt-8 grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-3">
+        <dl className="mt-8 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3">
           {status.components.map((component) => (
-            <div key={component.id} className="bg-black/60 p-4">
+            <div key={component.id} className="bg-surface-3 p-4">
               <dt className="font-mono text-label text-dim uppercase">{t(`components.${component.id}`)}</dt>
-              <dd className={`mt-2 font-mono text-ui ${component.status === 'operational' ? 'text-accent-light' : component.status === 'degraded' ? 'text-warn' : 'text-danger'}`}>{t(`states.${component.status}`)}</dd>
+              <dd className={`mt-2 font-mono text-ui ${component.status === 'operational' ? 'text-success' : component.status === 'degraded' ? 'text-warn' : 'text-danger'}`}>{t(`states.${component.status}`)}</dd>
             </div>
           ))}
         </dl>

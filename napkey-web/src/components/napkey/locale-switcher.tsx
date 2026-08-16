@@ -18,7 +18,7 @@ export function LocaleSwitcher() {
     <div
       role="group"
       aria-label={t('switchLanguage')}
-      className="inline-flex items-center rounded-full border border-line bg-surface-hover p-0.5"
+      className="inline-flex items-center rounded-full border border-line bg-surface-2 p-0.5"
     >
       {locales.map((code) => {
         const isActive = code === locale;
@@ -36,9 +36,9 @@ export function LocaleSwitcher() {
               });
             }}
             className={
-              'rounded-full px-3 py-1 font-mono text-label tracking-[0.08em] transition-colors ' +
+              'cursor-pointer rounded-full px-3 py-1 font-mono text-label tracking-[0.08em] transition-colors ' +
               'duration-150 ease-[var(--ease-smooth)] disabled:opacity-60 ' +
-              (isActive ? 'bg-white/10 text-fg' : 'text-dim hover:text-muted')
+              (isActive ? 'bg-accent-soft text-accent-light' : 'text-dim hover:text-muted')
             }
           >
             {labels[code]}

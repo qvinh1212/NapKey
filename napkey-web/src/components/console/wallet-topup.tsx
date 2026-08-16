@@ -103,10 +103,10 @@ export function WalletTopup() {
                     key={pkg.vnd}
                     type="button"
                     onClick={() => setAmount(pkg.vnd)}
-                    className={`relative rounded-xl border p-4 text-left transition-all ${
+                    className={`relative rounded-full border px-5 py-3.5 text-left transition-all ${
                       amount === pkg.vnd
-                        ? 'border-accent bg-accent-soft text-fg ring-1 ring-accent shadow-[0_0_20px_rgba(16,185,129,0.15)]'
-                        : 'border-line bg-surface hover:border-accent/40 hover:bg-surface-hover'
+                        ? 'border-accent bg-accent-soft text-accent-light'
+                        : 'border-line bg-surface-2 hover:border-accent/40 hover:bg-surface-hover'
                     }`}
                   >
                     {pkg.popular ? (
@@ -139,7 +139,7 @@ export function WalletTopup() {
                   step={TOPUP_STEP_VND}
                   value={amount}
                   onChange={(event) => setAmount(Number(event.target.value))}
-                  className="w-full rounded-lg border border-line bg-surface px-4 py-2.5 font-mono text-ui text-fg outline-none focus:border-accent"
+                  className="w-full rounded-[10px] border border-line bg-terminal px-3.5 py-2.5 font-mono text-ui text-fg outline-none focus:border-accent"
                 />
               </div>
               <p className="mt-2 font-mono text-label text-accent-light">
@@ -213,13 +213,13 @@ export function WalletTopup() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-ui">
               <thead className="border-b border-line text-dim">
-                <tr><th className="px-5 py-3 font-medium">{t('historyTime')}</th><th className="px-5 py-3 font-medium">{t('memo')}</th><th className="px-5 py-3 font-medium">{t('amount')}</th><th className="px-5 py-3 font-medium">{t('credits')}</th><th className="px-5 py-3 font-medium">{t('historyStatus')}</th></tr>
+                <tr><th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.06em]">{t('historyTime')}</th><th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.06em]">{t('memo')}</th><th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.06em]">{t('amount')}</th><th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.06em]">{t('credits')}</th><th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.06em]">{t('historyStatus')}</th></tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {history.map((item) => (
                   <tr key={item.id}>
-                    <td className="px-5 py-3 text-muted">{new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.createdAt))}</td>
-                    <td className="px-5 py-3 font-mono text-fg">
+                    <td className="px-4 py-3.5 text-muted">{new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.createdAt))}</td>
+                    <td className="px-4 py-3.5 font-mono text-fg">
                       <span className="inline-flex items-center gap-1.5">
                         {item.memoCode}
                         <CopyButton
@@ -231,9 +231,9 @@ export function WalletTopup() {
                         />
                       </span>
                     </td>
-                    <td className="px-5 py-3 font-mono text-fg">{item.expectedAmount.formatted}</td>
-                    <td className="px-5 py-3 font-mono text-fg">{creditAmount(item.expectedCredits, locale)}</td>
-                    <td className="px-5 py-3"><Badge tone={item.status === 'paid' ? 'accent' : item.status === 'underpaid' ? 'warn' : 'info'}>{t(`status.${item.status}`)}</Badge></td>
+                    <td className="px-4 py-3.5 font-mono text-fg">{item.expectedAmount.formatted}</td>
+                    <td className="px-4 py-3.5 font-mono text-fg">{creditAmount(item.expectedCredits, locale)}</td>
+                    <td className="px-4 py-3.5"><Badge tone={item.status === 'paid' ? 'accent' : item.status === 'underpaid' ? 'warn' : 'info'}>{t(`status.${item.status}`)}</Badge></td>
                   </tr>
                 ))}
               </tbody>

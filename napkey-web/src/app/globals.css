@@ -6,29 +6,41 @@
  */
 @theme {
   /* --- Mau --- */
-  --color-bg: #000000;
-  --color-surface: rgba(255, 255, 255, 0.02);
-  --color-surface-hover: rgba(255, 255, 255, 0.05);
-  --color-line: rgba(255, 255, 255, 0.1);
+  /* He token theo design-system/napkey/MASTER.md (cam hung tokenrouter.com):
+   * nen than chi (#121317) thay OLED den tuyet doi, brand xanh #0086ff.
+   * Ten token accent/surface giu nguyen de ~30+ lop utility Tailwind
+   * (text-accent, bg-accent-soft, ...) doi mau khong can sua component. */
+  --color-bg: #121317;
+  --color-surface: #15171a;
+  --color-surface-hover: #1e2126;
+  --color-surface-1: #15171a;
+  --color-surface-2: #1e2126;
+  --color-surface-3: #111214;
+  --color-terminal: #0d0e10;
+  --color-line: #262a31;
 
-  --color-fg: #ffffff;
-  --color-muted: #a3a3a3;
-  --color-dim: #767676;
-  --color-subtle: #a1a1aa;
+  --color-fg: #f5f7fa;
+  --color-muted: #a1a7b3;
+  --color-dim: #6b7280;
+  --color-subtle: #929aa7;
 
-  --color-accent: #10b981;
-  --color-accent-soft: rgba(16, 185, 129, 0.1);
-  --color-accent-light: #34d399;
+  --color-accent: #0086ff;
+  --color-accent-soft: rgba(0, 134, 255, 0.1);
+  --color-accent-light: #67b7ff;
 
+  --color-brand: #0086ff;
+  --color-brand-hover: #0075ed;
+
+  --color-success: #34d399;
   --color-danger: #ef233c;
   --color-danger-soft: rgba(239, 35, 60, 0.1);
 
   --color-info: #60a5fa;
   --color-warn: #facc15;
-  --color-purple: #c084fc;
+  --color-purple: #b18cff;
 
   /* --- Chu --- */
-  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
@@ -135,9 +147,9 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: -0.02em;
-    line-height: 1.1;
+    line-height: 1.12;
     text-wrap: balance;
   }
 
@@ -179,8 +191,12 @@
  */
 [data-contrast='high'],
 :root.high-contrast {
+  --color-bg: #0e0f12;
   --color-surface: rgba(255, 255, 255, 0.07);
   --color-surface-hover: rgba(255, 255, 255, 0.12);
+  --color-surface-1: rgba(255, 255, 255, 0.07);
+  --color-surface-2: rgba(255, 255, 255, 0.12);
+  --color-surface-3: #0b0c0e;
   --color-line: rgba(255, 255, 255, 0.22);
 
   --color-fg: #ffffff;
@@ -188,9 +204,14 @@
   --color-dim: #a1a1aa;
   --color-subtle: #e4e4e7;
 
-  --color-accent: #10b981;
-  --color-accent-soft: rgba(16, 185, 129, 0.2);
-  --color-accent-light: #6ee7b7;
+  --color-accent: #2b9bff;
+  --color-accent-soft: rgba(0, 134, 255, 0.2);
+  --color-accent-light: #9dcbff;
+
+  --color-brand: #2b9bff;
+  --color-brand-hover: #0086ff;
+
+  --color-success: #4ade80;
 
   --color-info: #93c5fd;
   --color-warn: #fde047;
@@ -204,7 +225,8 @@
     --color-muted: #d4d4d8;
     --color-dim: #a1a1aa;
     --color-subtle: #e4e4e7;
-    --color-accent-light: #6ee7b7;
+    --color-accent: #2b9bff;
+    --color-accent-light: #9dcbff;
   }
 }
 
@@ -243,8 +265,8 @@
 
 @utility hero-signal {
   background:
-    radial-gradient(circle at 78% 40%, rgba(16, 185, 129, 0.12), transparent 24rem),
-    radial-gradient(circle at 68% 56%, rgba(96, 165, 250, 0.055), transparent 19rem),
+    radial-gradient(circle at 78% 40%, rgba(0, 134, 255, 0.12), transparent 24rem),
+    radial-gradient(circle at 68% 56%, rgba(103, 183, 255, 0.055), transparent 19rem),
     linear-gradient(105deg, transparent 48%, rgba(255, 255, 255, 0.025) 49%, transparent 50%);
 }
 

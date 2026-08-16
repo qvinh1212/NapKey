@@ -9,7 +9,7 @@ import type { ReactNode } from 'react';
  */
 
 const panelBase =
-  'rounded-lg border border-line bg-surface transition-colors duration-300 ease-[var(--ease-smooth)]';
+  'rounded-xl border border-line bg-surface transition-colors duration-300 ease-[var(--ease-smooth)]';
 
 export function Panel({
   children,
@@ -67,14 +67,16 @@ export function StatCard({
     danger: 'text-danger',
   }[tone];
 
+  // The .stat cua master.css: radius 12px, padding 16-18px, label 11px uppercase,
+  // gia tri font-display 22px 700. Khong ke thua Panel (radius 16px cua .card).
   return (
-    <Panel className="p-5">
-      <p className="font-mono text-label tracking-[0.14em] text-dim uppercase">{label}</p>
-      <p className={`mt-3 font-display text-2xl tracking-[-0.02em] tabular-nums ${valueTone}`}>
+    <div className="flex min-w-0 flex-col gap-1 rounded-lg border border-line bg-surface px-[18px] py-4">
+      <p className="text-label tracking-[0.04em] text-dim uppercase">{label}</p>
+      <p className={`font-display text-[22px] font-bold leading-[1.2] tabular-nums ${valueTone}`}>
         {value}
       </p>
-      {hint ? <p className="mt-2 text-ui leading-snug text-dim">{hint}</p> : null}
-    </Panel>
+      {hint ? <p className="text-ui leading-snug text-dim">{hint}</p> : null}
+    </div>
   );
 }
 
@@ -100,7 +102,7 @@ export function Badge({
   return (
     <span
       title={title}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-label tracking-[0.06em] whitespace-nowrap ${badgeTones[tone]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${badgeTones[tone]}`}
     >
       {children}
     </span>
@@ -259,7 +261,7 @@ export function Th({
   return (
     <th
       scope="col"
-      className={`border-b border-line px-5 py-3 font-mono text-label font-normal tracking-[0.12em] text-dim uppercase ${
+      className={`border-b border-line px-4 py-3 text-xs font-semibold tracking-[0.06em] text-dim uppercase ${
         align === 'right' ? 'text-right' : 'text-left'
       }`}
     >
@@ -279,7 +281,7 @@ export function Td({
 }) {
   return (
     <td
-      className={`px-5 py-3.5 text-ui ${align === 'right' ? 'text-right tabular-nums' : ''} ${className}`}
+      className={`px-4 py-3.5 text-ui ${align === 'right' ? 'text-right tabular-nums' : ''} ${className}`}
     >
       {children}
     </td>

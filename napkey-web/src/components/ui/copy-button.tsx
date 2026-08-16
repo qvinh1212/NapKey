@@ -64,19 +64,19 @@ export function CopyButton({
     }
   }
 
-  const baseStyles = 'relative inline-flex items-center justify-center transition-all duration-200 focus-visible:outline-none';
+  const baseStyles = 'relative inline-flex cursor-pointer items-center justify-center transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 
   const variantStyles = {
-    pill: `gap-2 rounded-full border border-line px-4 py-1.5 font-mono text-label tracking-[0.08em] uppercase text-muted hover:border-line hover:bg-white/5 hover:text-fg ${
+    pill: `gap-2 rounded-full border border-line bg-surface-2 px-3.5 py-[7px] font-mono text-label tracking-[0.08em] uppercase text-muted hover:text-fg ${
       copied ? 'border-accent/40 bg-accent-soft text-accent-light hover:text-accent-light' : ''
     }`,
-    icon: `size-8 rounded-full border border-line bg-surface text-muted hover:border-line hover:bg-surface-hover hover:text-fg ${
+    icon: `size-8 rounded-full border border-line bg-surface text-muted hover:bg-surface-hover hover:text-fg ${
       copied ? 'border-accent/40 bg-accent-soft text-accent-light hover:text-accent-light' : ''
     }`,
     ghost: `gap-1.5 text-ui text-muted hover:text-fg ${
       copied ? 'text-accent-light hover:text-accent-light' : ''
     }`,
-    inline: `gap-1 rounded px-1.5 py-0.5 text-ui text-muted hover:bg-white/5 hover:text-fg ${
+    inline: `gap-1 rounded-md px-1.5 py-0.5 text-ui text-muted hover:bg-surface-2 hover:text-fg ${
       copied ? 'text-accent-light bg-accent-soft' : ''
     }`,
   }[variant];

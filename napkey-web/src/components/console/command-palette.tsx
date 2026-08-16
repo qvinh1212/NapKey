@@ -300,7 +300,7 @@ export function CommandPalette({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/15 bg-[#070908] shadow-[0_24px_80px_rgba(0,0,0,0.9)] animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-surface-3 shadow-[0_8px_24px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in-95 duration-150">
         <h2 id="command-palette-title" className="sr-only">
           {t('trigger')}
         </h2>

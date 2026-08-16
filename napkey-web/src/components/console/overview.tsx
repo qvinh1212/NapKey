@@ -106,7 +106,7 @@ export function Overview() {
   return (
     <div className="flex flex-col gap-6">
       {activation.stage !== 'activated' ? (
-        <section className="relative overflow-hidden rounded-2xl border border-accent/40 bg-[radial-gradient(circle_at_top_right,var(--color-accent-soft),transparent_55%),var(--color-surface)] p-6 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+        <section className="relative overflow-hidden rounded-2xl border border-accent/40 bg-[radial-gradient(circle_at_top_right,var(--color-accent-soft),transparent_55%),var(--color-surface)] p-6 sm:p-7 shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
           <div className="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <div>
               <div className="flex flex-wrap items-center gap-3">
@@ -122,7 +122,7 @@ export function Overview() {
               </div>
 
               {/* Visual Progress Bar */}
-              <div className="mt-3.5 h-1.5 w-full max-w-lg overflow-hidden rounded-full bg-white/10">
+              <div className="mt-3.5 h-1.5 w-full max-w-lg overflow-hidden rounded-full bg-surface-2">
                 <div
                   className="h-full bg-accent transition-all duration-500 ease-out"
                   style={{ width: `${progressPercent}%` }}

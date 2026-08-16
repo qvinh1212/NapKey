@@ -96,7 +96,7 @@ export function OperationsDashboard() {
 		</Panel>
         <Panel>
           <PanelHeader title="Toàn vẹn ví" description="Đối chiếu balance cache với ledger append-only" action={
-            session.permissions.includes('billing.reconcile') ? <button className="rounded-md border border-line px-3 py-2 text-ui hover:bg-surface-hover disabled:opacity-50" disabled={reconciling} onClick={() => void reconcile()}>{reconciling ? 'Đang đối chiếu...' : 'Đối chiếu ngay'}</button> : null
+            session.permissions.includes('billing.reconcile') ? <button className="rounded-[10px] border border-line px-3 py-2 text-ui hover:bg-surface-hover disabled:opacity-50" disabled={reconciling} onClick={() => void reconcile()}>{reconciling ? 'Đang đối chiếu...' : 'Đối chiếu ngay'}</button> : null
           } />
           <div className="grid grid-cols-2 gap-4 p-5 text-ui">
             <div><p className="text-dim">Ví lệch</p><p className="mt-1 text-xl tabular-nums">{data.wallets.driftCount}</p></div>

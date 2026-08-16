@@ -14,13 +14,13 @@ import '../globals.css';
 // Font self-host thay vi next/font/google: build khong con phu thuoc
 // mang toi fonts.googleapis.com, nen CI va Docker build khong hong khi
 // Google Fonts cham hoac bi chan.
-const manrope = localFont({
+const spaceGrotesk = localFont({
   src: [
-    { path: '../fonts/manrope-latin.woff2', weight: '600 700', style: 'normal' },
-    { path: '../fonts/manrope-latin-ext.woff2', weight: '600 700', style: 'normal' },
-    { path: '../fonts/manrope-vietnamese.woff2', weight: '600 700', style: 'normal' },
+    { path: '../fonts/space-grotesk-latin.woff2', weight: '400 700', style: 'normal' },
+    { path: '../fonts/space-grotesk-latin-ext.woff2', weight: '400 700', style: 'normal' },
+    { path: '../fonts/space-grotesk-vietnamese.woff2', weight: '400 700', style: 'normal' },
   ],
-  variable: '--font-manrope',
+  variable: '--font-space-grotesk',
   display: 'swap',
   fallback: ['ui-sans-serif', 'system-ui', 'sans-serif'],
 });
@@ -87,7 +87,7 @@ export default async function LocaleLayout({
   const t = await getTranslations({ locale, namespace: 'nav' });
 
   return (
-    <html lang={locale} className={`${manrope.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`${spaceGrotesk.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

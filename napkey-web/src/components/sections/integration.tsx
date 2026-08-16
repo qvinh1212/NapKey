@@ -16,7 +16,7 @@ export function Integration() {
 
   return (
     <Section id="integrate" eyebrow={t('eyebrow')} title={t('title')} subtitle={t('subtitle')}>
-      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="overflow-hidden rounded-xl border border-line bg-surface">
         <div className="flex flex-col gap-3 border-b border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div role="tablist" aria-label={t('eyebrow')} className="-mx-1 flex flex-nowrap gap-1 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">
             {snippets.map((snippet) => {
@@ -64,7 +64,7 @@ export function Integration() {
             aria-labelledby={`tab-${snippet.key}`}
             hidden={snippet.key !== active}
           >
-            <pre className="overflow-x-auto px-4 py-5 font-mono text-xs leading-relaxed text-zinc-300 sm:px-6 sm:py-6 sm:text-ui">
+            <pre className="overflow-x-auto border-t border-line bg-terminal px-4 py-5 font-mono text-ui leading-relaxed text-fg sm:px-6 sm:py-6">
               <code>{snippet.code}</code>
             </pre>
           </div>

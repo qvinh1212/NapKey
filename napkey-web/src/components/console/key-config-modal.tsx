@@ -110,7 +110,7 @@ export function KeyConfigModal({ apiKey, onClose }: KeyConfigModalProps) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-white/15 bg-[#070908] shadow-[0_24px_80px_rgba(0,0,0,0.9)] animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-line bg-surface-3 shadow-[0_8px_24px_rgba(0,0,0,0.35)] animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <div className="flex items-center gap-3">
@@ -165,7 +165,7 @@ export function KeyConfigModal({ apiKey, onClose }: KeyConfigModalProps) {
           </div>
 
           {/* Code Body */}
-          <pre className="overflow-x-auto rounded-b-xl border-x border-b border-line bg-black/80 p-4 font-mono text-[0.75rem] leading-6 text-zinc-300">
+          <pre className="overflow-x-auto rounded-b-xl border-x border-b border-line bg-terminal p-4 font-mono text-[0.75rem] leading-6 text-zinc-300">
             <code>{activeSnippet.code}</code>
           </pre>
 

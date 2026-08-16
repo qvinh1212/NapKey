@@ -130,7 +130,7 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
       <div className="grid min-w-0 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]">
         <div className="min-w-0 border-b border-line p-5 lg:border-r lg:border-b-0">
           <p className="font-mono text-label tracking-[0.12em] text-dim uppercase">01 / {t('saveLabel')}</p>
-          <code className="mt-3 block max-w-full overflow-x-auto rounded-md border border-accent/30 bg-black/40 px-4 py-3 font-mono text-ui whitespace-nowrap text-accent-light">
+          <code className="mt-3 block max-w-full overflow-x-auto rounded-lg border border-accent/30 bg-terminal px-4 py-3 font-mono text-ui whitespace-nowrap text-accent-light">
             {created.key}
           </code>
           <div className="mt-3 flex items-center gap-3">
@@ -160,7 +160,7 @@ export function KeyOnboarding({ created, onDone }: { created: CreateKeyResponse;
               </button>
             ))}
           </div>
-          <div className="mt-3 min-w-0 max-w-full overflow-hidden rounded-md border border-line bg-black/40">
+          <div className="mt-3 min-w-0 max-w-full overflow-hidden rounded-lg border border-line bg-terminal">
             <div className="flex items-center justify-between border-b border-line px-4 py-2">
               <span className="font-mono text-label text-dim">{snippet.lang}</span>
               <CopyButton

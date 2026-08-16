@@ -63,7 +63,7 @@ export function SpendMeter({
           total: money(wallet.balance),
           percent: roundedPercent,
         })}
-        className="mt-5 h-2.5 overflow-hidden rounded-full bg-white/10"
+        className="mt-5 h-1.5 overflow-hidden rounded-full bg-surface-2"
       >
         <div
           className={`h-full rounded-full transition-[width] duration-700 ease-[var(--ease-smooth)] ${barTone[meter.tone]}`}

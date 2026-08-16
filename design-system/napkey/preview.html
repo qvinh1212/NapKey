@@ -1,0 +1,1736 @@
+<title>NapKey — Preview thiết kế mới</title>
+<div class="preview-note"><span class="small" style="color:#67b7ff;font-weight:600">Bản preview thiết kế</span> <span class="small muted">— dựng theo design-system/napkey/MASTER.md, lấy cảm hứng từ tokenrouter.com. Dữ liệu giá, model và số liệu là dữ liệu thật của NapKey; giao diện chưa phải bản triển khai trong code.</span></div>
+<style>
+/* NapKey preview — master styles per design-system/napkey/MASTER.md */
+:root {
+  --nk-bg: #121317;
+  --nk-surface-1: #15171a;
+  --nk-surface-2: #1e2126;
+  --nk-surface-3: #111214;
+  --nk-terminal: #0d0e10;
+  --nk-line: #262a31;
+  --nk-fg: #f5f7fa;
+  --nk-muted: #a1a7b3;
+  --nk-dim: #6b7280;
+  --nk-brand: #0086ff;
+  --nk-brand-hover: #0075ed;
+  --nk-brand-light: #67b7ff;
+  --nk-success: #34d399;
+  --nk-danger: #ef233c;
+  --nk-warn: #facc15;
+  --nk-purple: #b18cff;
+  --font-display: 'Space Grotesk', 'Segoe UI Variable Display', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Source Code Pro', ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--nk-bg);
+  color: var(--nk-fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+strong { font-weight: 600; }
+p { margin: 0; }
+
+:focus-visible {
+  outline: 2px solid var(--nk-brand);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------- Layout ---------- */
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.wrap-sm { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+.sec { padding: 96px 0; }
+.sec-sm { padding: 56px 0; }
+
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.between { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+
+/* ---------- Typography ---------- */
+.h1, .h2, .h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.h1 { font-size: clamp(38px, 5vw + 8px, 62px); }
+.h2 { font-size: clamp(27px, 2.4vw + 8px, 38px); }
+.h3 { font-size: 19px; }
+
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--nk-brand);
+}
+.muted { color: var(--nk-muted); }
+.dim { color: var(--nk-dim); }
+.mono { font-family: var(--font-mono); }
+.small { font-size: 14px; }
+.tiny { font-size: 12px; }
+
+/* ---------- Pills, badges, chips ---------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--nk-line);
+  background: var(--nk-surface-2);
+  color: var(--nk-muted);
+  font-size: 13px;
+  line-height: 1.3;
+  cursor: default;
+  white-space: nowrap;
+}
+button.pill { cursor: pointer; }
+.pill.on {
+  background: rgba(0, 134, 255, 0.14);
+  border-color: rgba(0, 134, 255, 0.45);
+  color: var(--nk-brand-light);
+  font-weight: 600;
+}
+
+.pill-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(0, 134, 255, 0.12);
+  border: 1px solid rgba(0, 134, 255, 0.35);
+  color: var(--nk-brand-light);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.b-green { color: var(--nk-success); background: rgba(52, 211, 153, 0.1); border-color: rgba(52, 211, 153, 0.3); }
+.b-blue { color: var(--nk-brand-light); background: rgba(0, 134, 255, 0.12); border-color: rgba(0, 134, 255, 0.35); }
+.b-yellow { color: var(--nk-warn); background: rgba(250, 204, 21, 0.08); border-color: rgba(250, 204, 21, 0.28); }
+.b-purple { color: var(--nk-purple); background: rgba(177, 140, 255, 0.1); border-color: rgba(177, 140, 255, 0.3); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 8px;
+  background: var(--nk-surface-2);
+  border: 1px solid var(--nk-line);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #d6dae2;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--nk-dim);
+  display: inline-block;
+  flex: none;
+}
+.dot-ok { background: var(--nk-success); box-shadow: 0 0 8px rgba(52, 211, 153, 0.55); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn-brand { background: var(--nk-brand); color: #fff; }
+.btn-brand:hover { background: var(--nk-brand-hover); }
+.btn-ghost { background: transparent; border-color: var(--nk-line); color: var(--nk-fg); }
+.btn-ghost:hover { background: var(--nk-surface-2); }
+.btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 10px; }
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--nk-surface-1);
+  border: 1px solid var(--nk-line);
+  border-radius: 16px;
+  padding: 24px;
+}
+.card-flat {
+  background: var(--nk-surface-3);
+  border: 1px solid var(--nk-line);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* ---------- Tables ---------- */
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nk-dim);
+  border-bottom: 1px solid var(--nk-line);
+  white-space: nowrap;
+}
+.tbl td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #1b1e24;
+  vertical-align: middle;
+}
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tbody tr { transition: background 120ms ease; }
+.tbl tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+/* ---------- Code / inputs / misc ---------- */
+.urlbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--nk-terminal);
+  border: 1px solid var(--nk-line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+.code {
+  background: var(--nk-terminal);
+  border: 1px solid var(--nk-line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.65;
+  color: #d6dae2;
+  overflow-x: auto;
+  white-space: pre;
+}
+pre.code, .code pre {
+  margin: 0;
+  font-family: inherit;
+  white-space: pre;
+}
+
+.input {
+  width: 100%;
+  background: var(--nk-terminal);
+  border: 1px solid var(--nk-line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--nk-fg);
+  font-size: 14px;
+  font-family: var(--font-body);
+}
+.input:focus { border-color: var(--nk-brand); outline: none; }
+
+.divider { height: 1px; background: var(--nk-line); border: none; }
+
+.progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--nk-surface-2);
+  overflow: hidden;
+}
+.progress > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--nk-brand);
+}
+
+/* ---------- FAQ ---------- */
+.faq {
+  background: var(--nk-surface-1);
+  border: 1px solid var(--nk-line);
+  border-radius: 12px;
+  margin: 0 0 12px;
+}
+.faq summary {
+  padding: 16px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: '+';
+  float: right;
+  color: var(--nk-dim);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1;
+}
+.faq[open] summary::after { content: '–'; }
+.faq p { padding: 0 20px 16px; }
+
+/* ---------- Console shell ---------- */
+.shell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  background: var(--nk-bg);
+  border: 1px solid var(--nk-line);
+  border-radius: 20px;
+  overflow: hidden;
+  min-height: 640px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 16px;
+  background: var(--nk-surface-1);
+  border-right: 1px solid var(--nk-line);
+}
+.navitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: var(--nk-muted);
+  font-size: 14px;
+  transition: background 120ms ease, color 120ms ease;
+}
+.navitem:hover { color: var(--nk-fg); background: rgba(255, 255, 255, 0.03); }
+.navitem.on { background: var(--nk-surface-2); color: var(--nk-fg); font-weight: 600; }
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--nk-line);
+}
+
+.stat {
+  background: var(--nk-surface-1);
+  border: 1px solid var(--nk-line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.stat > :first-child {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--nk-dim);
+}
+.stat > :nth-child(2) {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--nk-fg);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Preview surface dividers ---------- */
+.surface-divider {
+  padding: 22px 24px;
+  background: var(--nk-terminal);
+  border-top: 1px solid var(--nk-line);
+  border-bottom: 1px solid var(--nk-line);
+  text-align: center;
+}
+.preview-note {
+  padding: 14px 24px;
+  background: rgba(0, 134, 255, 0.08);
+  border-bottom: 1px solid rgba(0, 134, 255, 0.3);
+  text-align: center;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .sec { padding: 64px 0; }
+  .sec-sm { padding: 40px 0; }
+  .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); }
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .side {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: none;
+    border-bottom: 1px solid var(--nk-line);
+    padding: 14px 16px;
+  }
+  .side > div[style*="margin-top:auto"], .side .mt-auto { margin-top: 0 !important; }
+  [style*="grid-template-columns:220px"] { grid-template-columns: minmax(0, 1fr) !important; }
+  aside[style*="position:sticky"] { position: static !important; }
+}
+@media (max-width: 600px) {
+  .grid4 { grid-template-columns: minmax(0, 1fr); }
+  .wrap, .wrap-sm { padding: 0 16px; }
+  .between { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+</style>
+<div class="surface-divider"><span class="eyebrow">Bề mặt 1 / 3 · Landing — Trang chủ napkey.io.vn</span></div>
+<div style="background:#121317;color:#f5f7fa;font-family:'Inter',sans-serif">
+
+  <!-- 1. Sticky header -->
+  <header style="position:sticky;top:0;z-index:50;background:rgba(18,19,23,0.88);backdrop-filter:blur(12px);border-bottom:1px solid #262a31">
+    <div class="wrap between" style="padding-top:14px;padding-bottom:14px;align-items:center;gap:20px">
+      <a href="#" class="row" style="gap:10px;text-decoration:none;align-items:center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0086ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="7.5" cy="16.5" r="4.5"></circle>
+          <path d="M10.7 13.3 21 3"></path>
+          <path d="M17.5 2.5H21.5V6.5"></path>
+          <path d="M14.5 6l3 3"></path>
+        </svg>
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;letter-spacing:-0.02em">NapKey</span>
+      </a>
+
+      <nav class="row" aria-label="Chính" style="gap:24px">
+        <a href="#" class="small muted" style="text-decoration:none">Bảng giá</a>
+        <a href="#" class="small muted" style="text-decoration:none">Tích hợp</a>
+        <a href="#" class="small muted" style="text-decoration:none">Cách tính tiền</a>
+        <a href="#" class="small muted" style="text-decoration:none">Tài liệu</a>
+        <a href="#" class="small muted" style="text-decoration:none">Độ tin cậy</a>
+      </nav>
+
+      <div class="row" style="align-items:center;gap:12px">
+        <div class="pill mono tiny" role="group" aria-label="Đổi ngôn ngữ" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px">
+          <span style="color:#f5f7fa;font-weight:600">VI</span>
+          <span class="dim">/</span>
+          <span class="dim">EN</span>
+        </div>
+        <a href="#" class="btn btn-ghost btn-sm" style="text-decoration:none">Vào Console</a>
+        <a href="#" class="btn btn-brand btn-sm" style="text-decoration:none">Tạo tài khoản</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. Hero -->
+  <section class="sec" aria-labelledby="hero-heading">
+    <div class="wrap grid2" style="align-items:center;gap:48px">
+
+      <div class="stack" style="gap:24px">
+        <span class="pill pill-brand" style="display:inline-flex;align-items:center;gap:8px;width:fit-content">
+          <span class="dot dot-ok" aria-hidden="true"></span>
+          Cổng API Claude &amp; LLM chuẩn Enterprise
+        </span>
+
+        <h1 id="hero-heading" class="h1" style="margin:0">
+          <span style="display:block">Cổng API Claude &amp; LLM,</span>
+          <span style="display:block;color:#67b7ff">thanh toán linh hoạt bằng VNĐ.</span>
+        </h1>
+
+        <p class="muted" style="font-size:18px;line-height:1.65;max-width:540px;margin:0">
+          Nạp từ 10.000 ₫, lấy API key và chạy ngay. Giữ nguyên Claude Code, Cursor, Anthropic hoặc OpenAI SDK — chỉ đổi endpoint, dùng bao nhiêu trả bấy nhiêu.
+        </p>
+
+        <div class="row" style="gap:12px">
+          <a href="#" class="btn btn-brand" style="text-decoration:none">Tạo API key</a>
+          <a href="#" class="btn btn-ghost" style="text-decoration:none">Xem cách kết nối</a>
+        </div>
+
+        <p class="small dim" style="max-width:480px;line-height:1.6;margin:0">
+          Không gói tháng. Không phí duy trì. Mỗi request được ghi lại theo model, token và chi phí thực tế.
+        </p>
+      </div>
+
+      <div class="stack" style="gap:12px">
+        <div class="urlbox">
+          <span class="mono" style="font-size:14px">https://api.napkey.io.vn</span>
+          <button type="button" aria-label="Sao chép endpoint" style="background:transparent;border:0;padding:4px;cursor:pointer;color:#a1a7b3;display:inline-flex;align-items:center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="card-flat" style="background:#0d0e10;padding:0;overflow:hidden">
+          <div class="between" style="padding:12px 16px;border-bottom:1px solid #262a31;align-items:center;gap:12px">
+            <div class="row" style="align-items:center;gap:12px">
+              <span class="row" aria-hidden="true" style="gap:6px">
+                <span style="width:10px;height:10px;border-radius:50%;background:#ff5f57;display:inline-block"></span>
+                <span style="width:10px;height:10px;border-radius:50%;background:#febc2e;display:inline-block"></span>
+                <span style="width:10px;height:10px;border-radius:50%;background:#28c840;display:inline-block"></span>
+              </span>
+              <span class="mono tiny muted">Thiết lập trong 30 giây</span>
+            </div>
+            <span class="badge b-green">Sẵn sàng</span>
+          </div>
+
+          <pre class="code" style="border:0;border-radius:0;margin:0;padding:20px;line-height:1.9"><code><span style="color:#6b7280">$ </span><span style="color:#f5f7fa">export ANTHROPIC_BASE_URL=</span><span style="color:#34d399">"https://api.napkey.io.vn"</span>
+<span style="color:#6b7280">$ </span><span style="color:#f5f7fa">export ANTHROPIC_AUTH_TOKEN=</span><span style="color:#67b7ff">"nk_live_..."</span>
+<span style="color:#6b7280">$ </span><span style="color:#f5f7fa">claude</span></code></pre>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 3. Metrics strip -->
+  <section class="divider" style="border-bottom:1px solid #262a31">
+    <div class="wrap grid3" style="padding-top:40px;padding-bottom:40px">
+      <div class="stack" style="gap:4px">
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:40px;font-weight:700;letter-spacing:-0.03em;line-height:1">10K ₫</span>
+        <span class="small muted">Nạp tối thiểu</span>
+      </div>
+      <div class="stack" style="gap:4px">
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:40px;font-weight:700;letter-spacing:-0.03em;line-height:1">2</span>
+        <span class="small muted">Giao thức API</span>
+      </div>
+      <div class="stack" style="gap:4px">
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:40px;font-weight:700;letter-spacing:-0.03em;line-height:1">0 ₫</span>
+        <span class="small muted">Phí duy trì</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Works with + status -->
+  <section class="divider">
+    <div class="wrap between" style="padding-top:24px;padding-bottom:24px;flex-wrap:wrap;gap:16px;align-items:center">
+      <span class="mono tiny muted" style="text-transform:uppercase;letter-spacing:.12em">Hoạt động cùng</span>
+
+      <div class="row" style="gap:24px;flex-wrap:wrap">
+        <span class="row small muted" style="gap:8px;align-items:center"><span class="dot dot-ok" aria-hidden="true"></span>Claude Code</span>
+        <span class="row small muted" style="gap:8px;align-items:center"><span class="dot dot-ok" aria-hidden="true"></span>Cursor</span>
+        <span class="row small muted" style="gap:8px;align-items:center"><span class="dot dot-ok" aria-hidden="true"></span>Anthropic SDK</span>
+        <span class="row small muted" style="gap:8px;align-items:center"><span class="dot dot-ok" aria-hidden="true"></span>OpenAI SDK</span>
+      </div>
+
+      <a href="#" class="row mono small muted" style="gap:8px;align-items:center;text-decoration:none">
+        <span class="dot dot-ok" aria-hidden="true"></span>
+        api.napkey.io.vn/health
+      </a>
+    </div>
+  </section>
+
+</div><section class="sec" id="models" aria-labelledby="models-heading">
+  <div class="wrap">
+    <div class="stack" style="margin-bottom: 40px; gap: 12px;">
+      <span class="eyebrow">Model access panel</span>
+      <h2 class="h2" id="models-heading">8 model, một key duy nhất</h2>
+      <p class="muted" style="max-width: 640px; margin: 0;">Giá token phân bậc theo model: hệ số càng cao, đơn giá mỗi triệu token càng lớn. Đổi model bằng một trường trong body, không phải đổi credential.</p>
+    </div>
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <div style="overflow-x: auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th scope="col">Model</th>
+              <th scope="col">Tier</th>
+              <th scope="col">Giá / 1M tokens</th>
+              <th scope="col" style="width: 56px;"><span class="dim">Copy ID</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">claude-sonnet-5</td>
+              <td><span class="badge b-green">Tiết kiệm</span> <span class="dim small">0.5x</span></td>
+              <td class="mono">1.500 VND</td>
+              <td><a href="#" class="btn btn-ghost btn-sm" aria-label="Sao chép model id claude-sonnet-5" style="padding: 6px 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a></td>
+            </tr>
+            <tr>
+              <td class="mono">gpt-5.6-luna</td>
+              <td><span class="badge b-green">Tiết kiệm</span> <span class="dim small">0.5x</span></td>
+              <td class="mono">1.500 VND</td>
+              <td><a href="#" class="btn btn-ghost btn-sm" aria-label="Sao chép model id gpt-5.6-luna" style="padding: 6px 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a></td>
+            </tr>
+            <tr>
+              <td class="mono">claude-opus-4.7</td>
+              <td><span class="badge b-blue">Chuẩn</span> <span class="dim small">1x</span></td>
+              <td class="mono">3.000 VND</td>
+              <td><a href="#" class="btn btn-ghost btn-sm" aria-label="Sao chép model id claude-opus-4.7" style="padding: 6px 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a></td>
+            </tr>
+            <tr>
+              <td class="mono">claude-opus-4.8</td>
+              <td><span class="badge b-blue">Chuẩn</span> <span class="dim small">1x</span></td>
+              <td class="mono">3.000 VND</td>
+              <td><a href="#" class="btn btn-ghost btn-sm" aria-label="Sao chép model id claude-opus-4.8" style="padding: 6px 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a></td>
+            </tr>
+            <tr>
+              <td class="mono">gpt-5.6-terra</td>
+              <td><span class="badge b-yellow">Nâng cao</span> <span class="dim small">1.2x</span></td>
+              <td class="mono">3.600 VND</td>
+              <td><a href="#" class="btn btn-ghost btn-sm" aria-label="Sao chép model id gpt-5.6-terra" style="padding: 6px 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a></td>
+            </tr>
+            <tr>
+              <td class="mono">claude-opus-5</td>
+              <td><span class="badge b-yellow">Nâng cao</span> <span class="dim small">1.5x</span></td>
+              <td class="mono">4.500 VND</td>
+              <td><a href="#" class="btn btn-ghost btn-sm" aria-label="Sao chép model id claude-opus-5" style="padding: 6px 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a></td>
+            </tr>
+            <tr>
+              <td class="mono">gpt-5.6-sol</td>
+              <td><span class="badge b-purple">Cao cấp</span> <span class="dim small">2x</span></td>
+              <td class="mono">6.000 VND</td>
+              <td><a href="#" class="btn btn-ghost btn-sm" aria-label="Sao chép model id gpt-5.6-sol" style="padding: 6px 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a></td>
+            </tr>
+            <tr>
+              <td class="mono">claude-fable-5</td>
+              <td><span class="badge b-purple">Cao cấp</span> <span class="dim small">3.3x</span></td>
+              <td class="mono">10.000 VND</td>
+              <td><a href="#" class="btn btn-ghost btn-sm" aria-label="Sao chép model id claude-fable-5" style="padding: 6px 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="tiny dim" style="margin-top: 16px;">Phí cố định 300 VND cho mỗi request, áp dụng mọi tier. Model id không nằm trong danh sách áp dụng giá fallback '*' 10.000 VND / 1M tokens.</p>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="value-heading">
+  <div class="wrap">
+    <div class="stack" style="margin-bottom: 40px; gap: 12px;">
+      <span class="eyebrow">Vì sao chọn NapKey</span>
+      <h2 class="h2" id="value-heading">Hạ tầng lo phần khó, bạn chỉ gọi API</h2>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <span class="pill-brand pill" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; margin-bottom: 16px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+        </span>
+        <h3 class="h3" style="margin: 0 0 8px;">Streaming dài phút không đứt</h3>
+        <p class="muted small" style="margin: 0;">Lớp proxy giữ kết nối SSE xuyên suốt phiên làm việc dài. Không buffer lại, không cắt giữa dòng.</p>
+      </div>
+      <div class="card">
+        <span class="pill-brand pill" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; margin-bottom: 16px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><path d="M6 9v3a3 3 0 0 0 3 3h6"></path><path d="M18 15v-3a3 3 0 0 0-3-3H9"></path></svg>
+        </span>
+        <h3 class="h3" style="margin: 0 0 8px;">Pool tài khoản tự dự phòng</h3>
+        <p class="muted small" style="margin: 0;">Request được chia vòng tròn qua nhiều tài khoản upstream. Một tài khoản lỗi thì chuyển tiếp, bạn không thấy gì.</p>
+      </div>
+      <div class="card">
+        <span class="pill-brand pill" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; margin-bottom: 16px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"></circle><path d="m21 2-9.6 9.6"></path><path d="m15.5 7.5 3 3L22 7l-3-3"></path></svg>
+        </span>
+        <h3 class="h3" style="margin: 0 0 8px;">Một key, mọi model</h3>
+        <p class="muted small" style="margin: 0;">Opus, Sonnet, Haiku cùng một key. Đổi model bằng một trường trong body, không phải đổi credential.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="compat-heading">
+  <div class="wrap">
+    <div class="grid2" style="align-items: start;">
+      <div class="stack" style="gap: 16px;">
+        <span class="eyebrow">Cam kết tương thích</span>
+        <h2 class="h2" id="compat-heading">Giữ nguyên client. Luôn có đường lui.</h2>
+        <p class="muted" style="margin: 0;">NapKey cạnh tranh bằng cách giảm chi phí chuyển đổi, không tạo SDK độc quyền. Dùng request shape Anthropic và OpenAI quen thuộc, kiểm tra catalog đang hoạt động và rời đi bằng cách khôi phục endpoint.</p>
+        <div class="card-flat">
+          <span class="tiny dim" style="text-transform: uppercase; letter-spacing: .04em;">Thiết kế để di chuyển</span>
+          <p class="small" style="margin: 8px 0 0;">Tích hợp của bạn phải sống lâu hơn nhà cung cấp gateway.</p>
+        </div>
+        <p class="muted small" style="margin: 0;">Compatibility Center ghi rõ phần nào được nhận trực tiếp, phần nào NapKey chuyển đổi và hành vi nào vẫn có thể khác upstream.</p>
+        <div class="stack" style="gap: 12px; margin-top: 8px;">
+          <div class="row" style="align-items: baseline;">
+            <span class="dot dot-ok" aria-hidden="true"></span>
+            <strong style="font-weight: 600;">Anthropic Messages</strong>
+            <span class="muted small">Messages, streaming, tool use và đếm token qua request shape quen thuộc.</span>
+          </div>
+          <div class="row" style="align-items: baseline;">
+            <span class="dot dot-ok" aria-hidden="true"></span>
+            <strong style="font-weight: 600;">OpenAI Chat</strong>
+            <span class="muted small">Request Chat Completions được chuyển đổi trên cùng data plane NapKey.</span>
+          </div>
+          <div class="row" style="align-items: baseline;">
+            <span class="dot dot-ok" aria-hidden="true"></span>
+            <strong style="font-weight: 600;">Responses API</strong>
+            <span class="muted small">Hỗ trợ lời gọi kiểu Responses với ranh giới lưu trữ được công bố rõ.</span>
+          </div>
+        </div>
+      </div>
+      <div class="stack" style="gap: 16px;">
+        <pre class="code" style="margin: 0; overflow-x: auto;"><code>curl https://api.napkey.io.vn/v1/messages \
+  -H "content-type: application/json" \
+  -H "x-api-key: nk_live_..." \
+  -H "anthropic-version: 2023-06-01" \
+  -d '{
+    "model": "claude-sonnet-5",
+    "max_tokens": 1024,
+    "messages": [
+      { "role": "user", "content": "Xin chào NapKey" }
+    ]
+  }'</code></pre>
+        <div class="row">
+          <span class="pill small">Anthropic SDK</span>
+          <span class="pill small">OpenAI SDK</span>
+          <span class="pill small">Claude Code</span>
+          <span class="pill small">Cursor</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section><section id="pricing" class="sec">
+  <div class="wrap">
+    <span class="eyebrow">Bảng giá</span>
+    <h2 class="h2" style="margin:12px 0 8px">Trả theo mức dùng, không gói cước</h2>
+    <p class="muted" style="max-width:640px">Giá token phân bậc theo model. Phí cố định mỗi request giữ nguyên. Bảng dưới quy đổi trực tiếp ra VNĐ để bạn ước lượng chi phí trước khi nạp.</p>
+
+    <div class="card" style="padding:0;overflow:hidden;margin-top:32px">
+      <div style="overflow-x:auto">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Hệ số</th>
+              <th>VND / 1M token</th>
+              <th>VND / 1K token (tham chiếu)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">claude-sonnet-5</td>
+              <td><span class="badge b-green">0.5x</span></td>
+              <td class="mono">1.500</td>
+              <td class="mono dim">1,5</td>
+            </tr>
+            <tr>
+              <td class="mono">gpt-5.6-luna</td>
+              <td><span class="badge b-green">0.5x</span></td>
+              <td class="mono">1.500</td>
+              <td class="mono dim">1,5</td>
+            </tr>
+            <tr>
+              <td class="mono">claude-opus-4.7</td>
+              <td><span class="badge b-blue">1x</span></td>
+              <td class="mono">3.000</td>
+              <td class="mono dim">3</td>
+            </tr>
+            <tr>
+              <td class="mono">claude-opus-4.8</td>
+              <td><span class="badge b-blue">1x</span></td>
+              <td class="mono">3.000</td>
+              <td class="mono dim">3</td>
+            </tr>
+            <tr>
+              <td class="mono">gpt-5.6-terra</td>
+              <td><span class="badge b-yellow">1.2x</span></td>
+              <td class="mono">3.600</td>
+              <td class="mono dim">3,6</td>
+            </tr>
+            <tr>
+              <td class="mono">claude-opus-5</td>
+              <td><span class="badge b-yellow">1.5x</span></td>
+              <td class="mono">4.500</td>
+              <td class="mono dim">4,5</td>
+            </tr>
+            <tr>
+              <td class="mono">gpt-5.6-sol</td>
+              <td><span class="badge b-purple">2x</span></td>
+              <td class="mono">6.000</td>
+              <td class="mono dim">6</td>
+            </tr>
+            <tr>
+              <td class="mono">claude-fable-5</td>
+              <td><span class="badge b-purple">3.3x</span></td>
+              <td class="mono">10.000</td>
+              <td class="mono dim">10</td>
+            </tr>
+            <tr>
+              <td class="mono dim">* Model khác</td>
+              <td><span class="badge b-purple">*</span></td>
+              <td class="mono dim">10.000</td>
+              <td class="mono dim">10</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="small dim" style="margin-top:12px">Ngoài giá token, mỗi request cộng phí cố định 300 VND — công bố trọn, không khoản ẩn. Giá có thể đổi khi tỷ giá upstream thay đổi; usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận.</p>
+  </div>
+</section>
+
+<section class="sec-sm">
+  <div class="wrap">
+    <span class="eyebrow">Cách tính tiền</span>
+    <h2 class="h2" style="margin:12px 0 8px">Hình cầu thực tế</h2>
+    <p class="muted" style="max-width:640px">Ba request shape đo trực tiếp từ upstream (đã gồm ~2.600 token phụ trội mỗi request), tính với claude-sonnet-5 theo công thức: 300 VND phí + token &times; đơn giá / 1M.</p>
+    <div class="grid3" style="margin-top:32px">
+      <div class="card">
+        <span class="badge b-green">Chat &amp; edit nhỏ</span>
+        <h3 class="h3" style="margin-top:16px">Lượt chat ngắn</h3>
+        <p class="small muted">2.600 token vào &middot; 1.100 token ra</p>
+        <div class="card-flat" style="margin-top:16px">
+          <span class="tiny dim mono">300 + 3.700 &times; 1.500 / 1M</span>
+        </div>
+        <p class="mono" style="font-size:24px;margin-top:16px">&#8776;306 <span class="small muted">VND/req</span></p>
+      </div>
+      <div class="card">
+        <span class="badge b-blue">Claude Code / Agent</span>
+        <h3 class="h3" style="margin-top:16px">Một bước agent</h3>
+        <p class="small muted">4.100 token vào &middot; 1.400 token ra</p>
+        <div class="card-flat" style="margin-top:16px">
+          <span class="tiny dim mono">300 + 5.500 &times; 1.500 / 1M</span>
+        </div>
+        <p class="mono" style="font-size:24px;margin-top:16px">&#8776;308 <span class="small muted">VND/req</span></p>
+      </div>
+      <div class="card">
+        <span class="badge b-purple">Context sâu</span>
+        <h3 class="h3" style="margin-top:16px">Đọc file lớn</h3>
+        <p class="small muted">52.600 token vào &middot; 1.400 token ra</p>
+        <div class="card-flat" style="margin-top:16px">
+          <span class="tiny dim mono">300 + 54.000 &times; 1.500 / 1M</span>
+        </div>
+        <p class="mono" style="font-size:24px;margin-top:16px">&#8776;381 <span class="small muted">VND/req</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="credits" class="sec-sm">
+  <div class="wrap">
+    <span class="eyebrow">Gói credit</span>
+    <h2 class="h2" style="margin:12px 0 8px">Nạp một lần, dùng đến hết</h2>
+    <p class="muted" style="max-width:640px">Không phí tháng, không phí duy trì, tiền đã nạp không hết hạn. Chọn gói hoặc nạp số tiền tuỳ ý từ 10.000 VND, bước tăng 1.000 VND.</p>
+    <div class="grid4" style="margin-top:32px">
+      <div class="card">
+        <h3 class="h3">Starter</h3>
+        <p class="mono" style="font-size:28px;margin-top:12px">250 <span class="small muted">credit</span></p>
+        <p class="small muted" style="margin-top:4px">100.000 VND</p>
+        <div class="divider" style="margin:20px 0"></div>
+        <a href="#" class="btn btn-ghost btn-sm" style="width:100%;text-align:center">Nạp gói này</a>
+      </div>
+      <div class="card">
+        <h3 class="h3">Builder</h3>
+        <p class="mono" style="font-size:28px;margin-top:12px">500 <span class="small muted">credit</span></p>
+        <p class="small muted" style="margin-top:4px">200.000 VND</p>
+        <div class="divider" style="margin:20px 0"></div>
+        <a href="#" class="btn btn-ghost btn-sm" style="width:100%;text-align:center">Nạp gói này</a>
+      </div>
+      <div class="card" style="border-color:#0086ff">
+        <div class="between" style="align-items:center">
+          <h3 class="h3">Scale</h3>
+          <span class="badge b-blue">Phổ biến</span>
+        </div>
+        <p class="mono" style="font-size:28px;margin-top:12px">1.000 <span class="small muted">credit</span></p>
+        <p class="small muted" style="margin-top:4px">400.000 VND</p>
+        <div class="divider" style="margin:20px 0"></div>
+        <a href="#" class="btn btn-brand btn-sm" style="width:100%;text-align:center">Nạp gói này</a>
+      </div>
+      <div class="card">
+        <h3 class="h3">Pro</h3>
+        <p class="mono" style="font-size:28px;margin-top:12px">2.000 <span class="small muted">credit</span></p>
+        <p class="small muted" style="margin-top:4px">800.000 VND</p>
+        <div class="divider" style="margin:20px 0"></div>
+        <a href="#" class="btn btn-ghost btn-sm" style="width:100%;text-align:center">Nạp gói này</a>
+      </div>
+    </div>
+    <div class="row" style="margin-top:24px">
+      <span class="tiny dim mono" style="text-transform:uppercase;letter-spacing:.08em">Nạp nhanh</span>
+      <span class="chip">10.000</span>
+      <span class="chip">20.000</span>
+      <span class="chip">40.000</span>
+      <span class="chip">100.000</span>
+      <span class="chip">200.000</span>
+      <span class="chip">400.000</span>
+    </div>
+  </div>
+</section>
+
+<section class="sec-sm">
+  <div class="wrap-sm">
+    <div class="card" style="border-color:#0086ff">
+      <div class="between" style="flex-wrap:wrap;gap:16px;align-items:flex-start">
+        <div class="stack" style="max-width:520px">
+          <span class="pill pill-brand" style="width:fit-content">
+            <span class="dot dot-ok" style="display:inline-block"></span>
+            <span class="tiny mono" style="text-transform:uppercase;letter-spacing:.08em">NapKey chính thức ra mắt</span>
+          </span>
+          <h3 class="h3" style="font-size:22px">Tặng 20.000 VNĐ khi xác minh tài khoản</h3>
+          <p class="small muted">Kết nối Claude Code, Cursor, Cline, Anthropic SDK hoặc OpenAI SDK. Không phí tháng — dùng bao nhiêu trả bấy nhiêu. Nạp từ 10.000 VNĐ, tiền đã nạp không hết hạn.</p>
+          <p class="tiny dim">20.000 VNĐ dùng thử được tặng một lần cho tài khoản đủ điều kiện.</p>
+        </div>
+        <a href="#" class="btn btn-brand">Nhận ưu đãi trong ví</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="sec-sm">
+  <div class="wrap-sm">
+    <span class="eyebrow">Câu hỏi thường gặp</span>
+    <h2 class="h2" style="margin:12px 0 16px">Điểm cần biết trước</h2>
+
+    <details class="faq">
+      <summary>Số dư có rút lại được không?</summary>
+      <p class="muted">Không. Số dư đã nạp chỉ dùng để gọi API, không hoàn về tài khoản ngân hàng. Cần cân nhắc điều này trước khi nạp.</p>
+    </details>
+    <details class="faq">
+      <summary>Số dư có hạn sử dụng không?</summary>
+      <p class="muted">Không hết hạn. Không phí duy trì, không phí không hoạt động.</p>
+    </details>
+    <details class="faq">
+      <summary>Nạp tối thiểu bao nhiêu?</summary>
+      <p class="muted">10.000 &#8363;. Bạn có thể nạp thêm theo từng bước 1.000 &#8363;.</p>
+    </details>
+    <details class="faq">
+      <summary>Thanh toán qua PayOS hoạt động thế nào?</summary>
+      <p class="muted">Chọn số tiền trong console, PayOS tạo mã QR và xác nhận giao dịch tự động qua webhook đã ký. Sau khi thanh toán, màn hình tự cập nhật số dư mỗi 3 giây.</p>
+    </details>
+    <details class="faq">
+      <summary>Một request bị tính tiền ra sao?</summary>
+      <p class="muted">Mỗi request trừ đúng số token thực dùng theo giá model, cộng phí cố định 300 VND. Không làm tròn lên; model, token vào, token ra và chi phí được ghi rõ trong sổ usage đến từng request.</p>
+    </details>
+    <details class="faq">
+      <summary>API key của tôi được bảo mật thế nào?</summary>
+      <p class="muted">Key đầy đủ chỉ hiện một lần trong console; control plane lưu bản băm và API quản lý chỉ trả định danh đã che. Bạn có thể tắt hoặc thu hồi key bất kỳ lúc nào; hãy coi key bị lộ vẫn dùng được cho tới khi xoá đồng bộ xong.</p>
+    </details>
+    <details class="faq">
+      <summary>Có xuất hoá đơn không?</summary>
+      <p class="muted">Chưa hỗ trợ ở giai đoạn này. Nếu bạn cần hoá đơn VAT, hãy liên hệ trước khi nạp.</p>
+    </details>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap-sm" style="text-align:center">
+    <h2 class="h1" style="font-size:clamp(34px,4vw,56px)">Sẵn sàng thử?</h2>
+    <p class="muted" style="max-width:480px;margin:16px auto 32px">Nạp 10.000 &#8363;, lấy key, đổi endpoint. Nếu không vừa ý thì bạn chỉ mất đúng số đó.</p>
+    <div class="row" style="justify-content:center">
+      <a href="#" class="btn btn-brand">Bắt đầu</a>
+      <a href="#pricing" class="btn btn-ghost">Xem bảng giá</a>
+    </div>
+  </div>
+</section>
+
+<footer style="background:#111214;border-top:1px solid #262a31;padding:64px 0 32px">
+  <div class="wrap">
+    <div class="grid4">
+      <div class="stack">
+        <span class="h3">NapKey</span>
+        <p class="small muted">Cổng API Claude &amp; LLM chuẩn Enterprise với cơ chế nạp ví trả trước và đối soát minh bạch bằng VNĐ.</p>
+      </div>
+      <div class="stack">
+        <span class="tiny mono dim" style="text-transform:uppercase;letter-spacing:.08em">Sản phẩm</span>
+        <a href="#pricing" class="small muted">Bảng giá</a>
+        <a href="#" class="small muted">Tích hợp</a>
+        <a href="#" class="small muted">Cách tính tiền</a>
+        <a href="#" class="small muted">Trạng thái hệ thống</a>
+      </div>
+      <div class="stack">
+        <span class="tiny mono dim" style="text-transform:uppercase;letter-spacing:.08em">Tài nguyên</span>
+        <a href="#" class="small muted">Tài liệu</a>
+        <a href="#" class="small muted">Trung tâm tương thích</a>
+        <a href="#" class="small muted">Trung tâm tin cậy</a>
+        <a href="#" class="small muted">Liên hệ</a>
+      </div>
+      <div class="stack">
+        <span class="tiny mono dim" style="text-transform:uppercase;letter-spacing:.08em">Pháp lý</span>
+        <a href="#" class="small muted">Điều khoản sử dụng</a>
+        <a href="#" class="small muted">Chính sách dữ liệu</a>
+      </div>
+    </div>
+    <div class="divider" style="margin:40px 0 24px"></div>
+    <div class="between" style="flex-wrap:wrap;gap:12px">
+      <p class="tiny dim">&copy; 2026 NapKey. Mọi quyền được bảo lưu.</p>
+      <p class="tiny dim">NapKey là dịch vụ độc lập, không phải sản phẩm của Anthropic. Claude là thương hiệu của Anthropic PBC.</p>
+    </div>
+  </div>
+</footer><div class="surface-divider"><span class="eyebrow">Bề mặt 2 / 3 · Docs — Tài liệu tích hợp</span></div>
+<section class="sec-sm">
+  <div class="wrap">
+    <div style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;align-items:start">
+
+      <!-- Sidebar -->
+      <aside class="card" style="padding:20px 12px;position:sticky;top:88px">
+        <p class="tiny mono dim" style="text-transform:uppercase;letter-spacing:.08em;padding:0 14px 8px">Bắt đầu</p>
+        <a href="#" class="navitem on">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+          Bắt đầu nhanh
+        </a>
+        <a href="#" class="navitem">Tạo API key</a>
+        <p class="tiny mono dim" style="text-transform:uppercase;letter-spacing:.08em;padding:16px 14px 8px">Xác thực</p>
+        <a href="#" class="navitem">Header x-api-key</a>
+        <a href="#" class="navitem">Authorization: Bearer</a>
+        <p class="tiny mono dim" style="text-transform:uppercase;letter-spacing:.08em;padding:16px 14px 8px">Model</p>
+        <a href="#" class="navitem">Model đang công bố</a>
+        <a href="#" class="navitem">Giới hạn</a>
+        <p class="tiny mono dim" style="text-transform:uppercase;letter-spacing:.08em;padding:16px 14px 8px">Tính phí</p>
+        <a href="#" class="navitem">Credit &amp; tính phí</a>
+        <a href="#" class="navitem">Xử lý lỗi</a>
+        <p class="tiny mono dim" style="text-transform:uppercase;letter-spacing:.08em;padding:16px 14px 8px">SDK</p>
+        <a href="#" class="navitem">Anthropic SDK</a>
+        <a href="#" class="navitem">OpenAI SDK</a>
+        <a href="#" class="navitem">cURL</a>
+        <a href="#" class="navitem">Claude Code / Cursor</a>
+      </aside>
+
+      <!-- Nội dung -->
+      <div class="stack" style="gap:28px;min-width:0">
+        <header>
+          <p class="eyebrow">NapKey Docs</p>
+          <h1 class="h2" style="margin-top:12px">Từ API key đến request đầu tiên.</h1>
+          <p class="muted" style="max-width:640px;margin-top:12px;line-height:1.7">Hướng dẫn tích hợp NapKey với Claude Code, Anthropic SDK, OpenAI SDK và các client tương thích. Chọn model, sao chép cấu hình và kiểm tra usage trong một luồng ngắn.</p>
+          <div class="row" style="margin-top:16px">
+            <span class="badge b-blue">Claude Code</span>
+            <span class="badge b-blue">Cursor</span>
+            <span class="badge b-blue">Anthropic SDK</span>
+            <span class="badge b-blue">OpenAI SDK</span>
+            <span class="badge b-green">
+              <span class="dot dot-ok" style="display:inline-block;margin-right:6px"></span>api.napkey.io.vn
+            </span>
+          </div>
+        </header>
+
+        <!-- Interactive snippet -->
+        <div class="card-flat" style="padding:20px">
+          <div class="between" style="flex-wrap:wrap;gap:12px">
+            <div>
+              <p class="eyebrow">Interactive snippet</p>
+              <p class="tiny mono dim" style="margin-top:4px">Đổi client hoặc model để tạo lại đoạn mã.</p>
+            </div>
+            <div class="row" role="group" aria-label="Chọn SDK">
+              <button type="button" class="pill pill-brand" aria-pressed="true">Anthropic</button>
+              <button type="button" class="pill" aria-pressed="false">OpenAI</button>
+              <button type="button" class="pill" aria-pressed="false">curl</button>
+            </div>
+          </div>
+
+          <div class="code" style="margin-top:16px;overflow-x:auto"><pre style="margin:0;white-space:pre"><span class="dim"># Base URL: https://api.napkey.io.vn — giữ nguyên SDK hiện tại, chỉ thay endpoint</span>
+curl https://api.napkey.io.vn/v1/messages \
+  -H "content-type: application/json" \
+  -H "x-api-key: $NAPKEY_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -d '{
+    "model": "claude-sonnet-5",
+    "max_tokens": 1024,
+    "messages": [
+      { "role": "user", "content": "Xin chào NapKey" }
+    ]
+  }'</pre></div>
+
+          <div class="between" style="margin-top:14px;flex-wrap:wrap;gap:12px">
+            <div class="urlbox" style="flex:1;min-width:260px">
+              <span class="dim tiny" style="text-transform:uppercase;letter-spacing:.06em">Base URL</span>
+              <span class="mono">https://api.napkey.io.vn</span>
+              <button type="button" class="btn btn-ghost btn-sm" aria-label="Sao chép Base URL">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Sao chép
+              </button>
+            </div>
+            <button type="button" class="btn btn-brand btn-sm">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Sao chép đoạn mã
+            </button>
+          </div>
+          <p class="tiny dim" style="margin-top:12px">Giữ nguyên SDK hoặc công cụ hiện tại, thay endpoint và dùng API key do NapKey cấp. Các ví dụ dùng biến NAPKEY_API_KEY — không commit key vào Git, log hoặc ảnh chụp màn hình.</p>
+        </div>
+
+        <!-- Tính phí -->
+        <div class="card">
+          <div class="between" style="flex-wrap:wrap;gap:12px">
+            <div>
+              <h2 class="h3">Credit và tính phí</h2>
+              <p class="muted small" style="margin-top:6px">NapKey là ví trả trước. Mỗi request thành công được ghi vào Usage cùng model, token tham chiếu và số credit đã quyết toán.</p>
+            </div>
+            <div class="row">
+              <span class="badge b-yellow">+300 ₫ mỗi request</span>
+              <span class="badge b-green">1 credit = 400 ₫</span>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto;margin-top:20px">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Tier</th>
+                  <th>Giá (VND / 1M token)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="chip">claude-sonnet-5</span></td>
+                  <td><span class="badge b-green">0.5x</span></td>
+                  <td class="mono">1.500</td>
+                </tr>
+                <tr>
+                  <td><span class="chip">gpt-5.6-luna</span></td>
+                  <td><span class="badge b-green">0.5x</span></td>
+                  <td class="mono">1.500</td>
+                </tr>
+                <tr>
+                  <td><span class="chip">claude-opus-4.7</span></td>
+                  <td><span class="badge b-blue">1x</span></td>
+                  <td class="mono">3.000</td>
+                </tr>
+                <tr>
+                  <td><span class="chip">claude-opus-4.8</span></td>
+                  <td><span class="badge b-blue">1x</span></td>
+                  <td class="mono">3.000</td>
+                </tr>
+                <tr>
+                  <td><span class="chip">gpt-5.6-terra</span></td>
+                  <td><span class="badge b-yellow">1.2x</span></td>
+                  <td class="mono">3.600</td>
+                </tr>
+                <tr>
+                  <td><span class="chip">claude-opus-5</span></td>
+                  <td><span class="badge b-yellow">1.5x</span></td>
+                  <td class="mono">4.500</td>
+                </tr>
+                <tr>
+                  <td><span class="chip">gpt-5.6-sol</span></td>
+                  <td><span class="badge b-purple">2x</span></td>
+                  <td class="mono">6.000</td>
+                </tr>
+                <tr>
+                  <td><span class="chip">claude-fable-5</span></td>
+                  <td><span class="badge b-purple">3.3x</span></td>
+                  <td class="mono">10.000</td>
+                </tr>
+                <tr>
+                  <td><span class="chip">*</span> <span class="tiny dim">fallback</span></td>
+                  <td><span class="dim">—</span></td>
+                  <td class="mono">10.000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="divider" style="margin-top:20px"></div>
+          <div class="row" style="margin-top:16px">
+            <span class="pill mono small">chat — 2.600 / 1.100 token</span>
+            <span class="pill mono small">agent step — 4.100 / 1.400 token</span>
+            <span class="pill mono small">large context — 52.600 / 1.400 token</span>
+          </div>
+          <p class="tiny dim" style="margin-top:12px">Token rate khác nhau theo từng model, cộng 300 ₫ mỗi request. Trừ theo usage thực tế gateway ghi nhận. Nạp tối thiểu 10.000 ₫, bước 1.000 ₫ — thanh toán qua PayOS.</p>
+        </div>
+
+        <!-- Tạo API key -->
+        <div class="card-flat" style="padding:20px">
+          <div class="stack" style="gap:10px">
+            <div class="row" style="align-items:center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="muted"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+              <h2 class="h3">Tạo API key</h2>
+            </div>
+            <div class="urlbox">
+              <span class="mono dim">nk_live_...</span>
+              <button type="button" class="btn btn-ghost btn-sm" aria-label="Sao chép API key">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Sao chép
+              </button>
+            </div>
+            <p class="tiny dim">Key đầy đủ chỉ hiện một lần. Lưu vào secret manager hoặc biến môi trường. API key bị thu hồi hoặc chưa đồng bộ sẽ không gọi được.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section><div class="surface-divider"><span class="eyebrow">Bề mặt 3 / 3 · Console — Tổng quan, Usage và Ví</span></div>
+<div class="wrap" style="padding:48px 0">
+  <div class="shell">
+    <!-- SIDEBAR -->
+    <nav class="side" aria-label="Điều hướng console">
+      <div class="row" style="padding:6px 12px 18px">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="6" fill="#0086ff"/><path d="M12.6 4.5 7 12h3.4l-1 5.5L15 10h-3.4l1-5.5z" fill="#f5f7fa"/></svg>
+        <span style="font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;font-size:15px;color:#f5f7fa">NapKey</span>
+        <span class="chip" style="margin-left:auto">Console</span>
+      </div>
+
+      <div class="stack" style="gap:2px">
+        <a href="#" class="navitem on">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+          Tổng quan
+        </a>
+        <a href="#" class="navitem">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="8" r="3"/><path d="M8.5 8h5.5M11.5 8v2.5M14 8v1.8"/></svg>
+          API key
+        </a>
+        <a href="#" class="navitem">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 13.5V9M6 13.5V5.5M10 13.5V8M14 13.5V2.5"/></svg>
+          Lịch sử dùng
+        </a>
+        <a href="#" class="navitem">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M2 7.5h12M10.5 10.5h1.5"/></svg>
+          Ví &amp; nạp tiền
+        </a>
+        <a href="#" class="navitem">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 1.5h8v13l-2-1.4-2 1.4-2-1.4-2 1.4v-13z"/><path d="M6 5h4M6 8h4"/></svg>
+          Hóa đơn
+        </a>
+        <a href="#" class="navitem">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5"/></svg>
+          Developer
+        </a>
+        <a href="#" class="navitem">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M12.4 3.6l-1.1 1.1M4.7 11.3l-1.1 1.1"/></svg>
+          Cài đặt
+        </a>
+      </div>
+
+      <div style="margin-top:auto">
+        <div class="divider"></div>
+        <div class="row" style="padding:12px 10px 4px">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#1e2126;border:1px solid #262a31;font-size:11px;font-weight:600;color:#f5f7fa">QV</span>
+          <span class="stack" style="gap:1px;min-width:0">
+            <span class="small" style="color:#f5f7fa;font-weight:500">Quang Vinh</span>
+            <span class="tiny mono" style="color:#6b7280">vinh@napkey.io.vn</span>
+          </span>
+        </div>
+        <a href="#" class="navitem">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5H3.5v11H6M10.5 5.5 13 8l-2.5 2.5M13 8H6.5"/></svg>
+          Đăng xuất
+        </a>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="stack" style="gap:0;min-width:0">
+      <header class="topbar">
+        <div class="row" style="gap:14px">
+          <span class="h3">Tổng quan</span>
+          <span class="pill" style="padding:4px 12px;border-color:#262a31"><span class="dot dot-ok"></span><span class="small" style="color:#a1a7b3">Sẵn sàng</span></span>
+        </div>
+        <button type="button" class="btn btn-brand btn-sm">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+          Nạp tiền
+        </button>
+      </header>
+
+      <div class="stack" style="gap:20px;padding:24px">
+        <!-- STAT ROW -->
+        <div class="grid4">
+          <div class="stat">
+            <span class="tiny" style="color:#6b7280;text-transform:uppercase;letter-spacing:.04em">Số dư hiện tại</span>
+            <span style="display:block;font-size:26px;font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;color:#f5f7fa">187.450 VND</span>
+            <span class="tiny" style="color:#67b7ff">~468 credit tương đương</span>
+          </div>
+          <div class="stat">
+            <span class="tiny" style="color:#6b7280;text-transform:uppercase;letter-spacing:.04em">Chi hôm nay</span>
+            <span style="display:block;font-size:26px;font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;color:#f5f7fa">12.300 VND</span>
+            <span class="tiny" style="color:#6b7280">Cập nhật 2 phút trước</span>
+          </div>
+          <div class="stat">
+            <span class="tiny" style="color:#6b7280;text-transform:uppercase;letter-spacing:.04em">Request hôm nay</span>
+            <span style="display:block;font-size:26px;font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;color:#f5f7fa">1.428</span>
+            <span class="tiny" style="color:#34d399">Không có request lỗi</span>
+          </div>
+          <div class="stat">
+            <span class="tiny" style="color:#6b7280;text-transform:uppercase;letter-spacing:.04em">Key đang hoạt động</span>
+            <span style="display:block;font-size:26px;font-family:'Space Grotesk',Inter,sans-serif;font-weight:700;color:#f5f7fa">3/5</span>
+            <span class="tiny" style="color:#6b7280">1 đang chuẩn bị, 1 đã tắt</span>
+          </div>
+        </div>
+
+        <!-- CHART -->
+        <section class="card">
+          <div class="between" style="align-items:flex-start">
+            <div class="stack" style="gap:4px">
+              <span class="h3">Chi dùng 7 ngày</span>
+              <span class="small muted">Chi phí thực tế ghi nhận, nhóm theo ngày giờ Việt Nam.</span>
+            </div>
+            <span class="pill pill-brand tiny mono">7 ngày gần nhất</span>
+          </div>
+          <div style="overflow-x:auto;margin-top:12px">
+            <svg viewBox="0 0 560 180" width="100%" height="180" style="min-width:480px" role="img" aria-label="Biểu đồ chi dùng 7 ngày">
+              <line x1="16" y1="140" x2="544" y2="140" stroke="#262a31" stroke-width="1"/>
+              <line x1="16" y1="95" x2="544" y2="95" stroke="#262a31" stroke-width="1" stroke-dasharray="3 4"/>
+              <line x1="16" y1="50" x2="544" y2="50" stroke="#262a31" stroke-width="1" stroke-dasharray="3 4"/>
+              <rect x="40" y="98" width="36" height="42" rx="4" fill="#1e2126"/>
+              <rect x="114" y="80" width="36" height="60" rx="4" fill="#1e2126"/>
+              <rect x="188" y="108" width="36" height="32" rx="4" fill="#1e2126"/>
+              <rect x="262" y="62" width="36" height="78" rx="4" fill="#1e2126"/>
+              <rect x="336" y="88" width="36" height="52" rx="4" fill="#1e2126"/>
+              <rect x="410" y="48" width="36" height="92" rx="4" fill="#1e2126"/>
+              <rect x="484" y="74" width="36" height="66" rx="4" fill="#1e2126"/>
+              <polyline points="58,90 132,72 206,100 280,54 354,80 428,40 502,66" fill="none" stroke="#0086ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="58" cy="90" r="3" fill="#0086ff"/>
+              <circle cx="132" cy="72" r="3" fill="#0086ff"/>
+              <circle cx="206" cy="100" r="3" fill="#0086ff"/>
+              <circle cx="280" cy="54" r="3" fill="#0086ff"/>
+              <circle cx="354" cy="80" r="3" fill="#0086ff"/>
+              <circle cx="428" cy="40" r="3.5" fill="#121317" stroke="#0086ff" stroke-width="2"/>
+              <circle cx="502" cy="66" r="3" fill="#0086ff"/>
+              <g fill="#6b7280" font-size="10" font-family="'Source Code Pro',monospace" text-anchor="middle">
+                <text x="58" y="158">T2</text><text x="132" y="158">T3</text><text x="206" y="158">T4</text><text x="280" y="158">T5</text><text x="354" y="158">T6</text><text x="428" y="158">T7</text><text x="502" y="158">CN</text>
+              </g>
+              <text x="428" y="28" fill="#f5f7fa" font-size="11" font-family="Inter,sans-serif" font-weight="600" text-anchor="middle">14.900 VND</text>
+            </svg>
+          </div>
+          <div class="row tiny" style="margin-top:8px">
+            <span class="row" style="gap:6px;color:#a1a7b3"><span class="dot" style="background:#0086ff"></span>Chi phí theo ngày</span>
+            <span class="row" style="gap:6px;color:#6b7280"><span class="dot" style="background:#1e2126"></span>Số request tương đối</span>
+          </div>
+        </section>
+
+        <div class="grid2">
+          <!-- ACTIVE KEYS -->
+          <section class="card">
+            <div class="between">
+              <div class="stack" style="gap:4px">
+                <span class="h3">Key đang dùng</span>
+                <span class="small muted">3 key phát sinh chi phí trong 30 ngày.</span>
+              </div>
+              <a href="#" class="small" style="color:#67b7ff">Xem đối soát</a>
+            </div>
+            <div class="stack" style="gap:16px;margin-top:16px">
+              <div class="card-flat">
+                <div class="between">
+                  <span class="small" style="color:#f5f7fa;font-weight:500">Máy làm việc</span>
+                  <span class="chip">claude-sonnet-5</span>
+                </div>
+                <div class="progress" style="margin-top:10px"><span style="width:52%"></span></div>
+                <div class="between tiny" style="margin-top:6px;color:#6b7280"><span>96.200 VND đã chi</span><span class="mono">52%</span></div>
+              </div>
+              <div class="card-flat">
+                <div class="between">
+                  <span class="small" style="color:#f5f7fa;font-weight:500">CI pipeline</span>
+                  <span class="chip">gpt-5.6-luna</span>
+                </div>
+                <div class="progress" style="margin-top:10px"><span style="width:29%"></span></div>
+                <div class="between tiny" style="margin-top:6px;color:#6b7280"><span>54.800 VND đã chi</span><span class="mono">29%</span></div>
+              </div>
+              <div class="card-flat">
+                <div class="between">
+                  <span class="small" style="color:#f5f7fa;font-weight:500">Cursor — laptop cá nhân</span>
+                  <span class="chip">claude-opus-5</span>
+                </div>
+                <div class="progress" style="margin-top:10px"><span style="width:19%"></span></div>
+                <div class="between tiny" style="margin-top:6px;color:#6b7280"><span>36.450 VND đã chi</span><span class="mono">19%</span></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ONBOARDING CHECKLIST -->
+          <section class="card">
+            <div class="row" style="align-items:center">
+              <span class="badge b-blue">Bắt đầu tại đây</span>
+              <span class="tiny mono" style="color:#6b7280">2/3 bước (67%)</span>
+            </div>
+            <span class="h3" style="display:block;margin-top:12px">API key đã sẵn sàng — hãy kết nối công cụ</span>
+            <p class="small muted" style="margin-top:6px;line-height:1.6">Chọn Claude Code, Cursor, Cline hoặc SDK, sao chép cấu hình và gửi request đầu tiên để kiểm tra kết nối.</p>
+            <div class="progress" style="margin-top:14px"><span style="width:67%"></span></div>
+            <ul class="stack" style="gap:12px;list-style:none;margin:16px 0 0;padding:0">
+              <li class="row">
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#0086ff"/><path d="m6.2 10.2 2.4 2.4 5-5" fill="none" stroke="#f5f7fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="small" style="color:#f5f7fa;text-decoration:line-through;opacity:.8">Tài khoản sẵn sàng</span>
+              </li>
+              <li class="row">
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#0086ff"/><path d="m6.2 10.2 2.4 2.4 5-5" fill="none" stroke="#f5f7fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="small" style="color:#f5f7fa;text-decoration:line-through;opacity:.8">Tạo API key</span>
+              </li>
+              <li class="row">
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="none" stroke="#0086ff" stroke-width="1.5"/><circle cx="10" cy="10" r="4" fill="none" stroke="#67b7ff" stroke-width="1.5"/></svg>
+                <span class="small" style="color:#67b7ff;font-weight:500">Gửi request đầu tiên</span>
+              </li>
+            </ul>
+            <button type="button" class="btn btn-ghost btn-sm" style="margin-top:18px">
+              Mở hướng dẫn kết nối
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+            </button>
+          </section>
+        </div>
+
+        <!-- API KEYS TABLE -->
+        <section class="card" style="padding:0">
+          <div class="between" style="padding:24px 28px 16px;flex-wrap:wrap;gap:12px">
+            <div class="stack" style="gap:4px">
+              <span class="h3">API key</span>
+              <span class="small muted">Tắt tạm thời hoặc thu hồi hẳn. Thu hồi không hoàn lại được.</span>
+            </div>
+            <button type="button" class="btn btn-brand btn-sm">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+              Tạo key
+            </button>
+          </div>
+          <div class="row tiny" style="padding:0 28px 16px;gap:6px;color:#6b7280">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7"/></svg>
+            Key chỉ hiện một lần khi tạo — hãy lưu an toàn vào secret manager.
+          </div>
+          <div style="overflow-x:auto">
+            <table class="tbl" style="min-width:720px">
+              <thead>
+                <tr>
+                  <th>Tên</th>
+                  <th>Key đã ẩn</th>
+                  <th>Model</th>
+                  <th style="text-align:right">Đã chi</th>
+                  <th>Trạng thái</th>
+                  <th style="text-align:right">Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color:#f5f7fa;font-weight:500">Máy làm việc</td>
+                  <td class="mono" style="color:#6b7280">nk_live_ab12…x9f3</td>
+                  <td><span class="chip">claude-sonnet-5</span></td>
+                  <td class="mono" style="text-align:right;color:#f5f7fa">96.200 VND</td>
+                  <td><span class="badge b-green"><span class="dot dot-ok" style="width:6px;height:6px"></span>Hoạt động</span></td>
+                  <td style="text-align:right">
+                    <span class="row" style="justify-content:flex-end;gap:8px">
+                      <button type="button" title="Lấy cấu hình tích hợp" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid #262a31;background:transparent;color:#a1a7b3;cursor:pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 2v1.4M8 12.6V14M2 8h1.4M12.6 8H14M3.8 3.8l1 1M11.2 11.2l1 1M12.2 3.8l-1 1M4.8 11.2l-1 1"/></svg></button>
+                      <button type="button" title="Thu hồi" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid rgba(239,35,60,.4);background:transparent;color:#ef233c;cursor:pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.5 6.5v4M9.5 6.5v4"/></svg></button>
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color:#f5f7fa;font-weight:500">CI pipeline</td>
+                  <td class="mono" style="color:#6b7280">nk_live_cd34…m2k8</td>
+                  <td><span class="chip">gpt-5.6-luna</span></td>
+                  <td class="mono" style="text-align:right;color:#f5f7fa">54.800 VND</td>
+                  <td><span class="badge b-green"><span class="dot dot-ok" style="width:6px;height:6px"></span>Hoạt động</span></td>
+                  <td style="text-align:right">
+                    <span class="row" style="justify-content:flex-end;gap:8px">
+                      <button type="button" title="Lấy cấu hình tích hợp" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid #262a31;background:transparent;color:#a1a7b3;cursor:pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 2v1.4M8 12.6V14M2 8h1.4M12.6 8H14M3.8 3.8l1 1M11.2 11.2l1 1M12.2 3.8l-1 1M4.8 11.2l-1 1"/></svg></button>
+                      <button type="button" title="Thu hồi" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid rgba(239,35,60,.4);background:transparent;color:#ef233c;cursor:pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.5 6.5v4M9.5 6.5v4"/></svg></button>
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color:#f5f7fa;font-weight:500">Cursor — laptop cá nhân</td>
+                  <td class="mono" style="color:#6b7280">nk_live_ef56…q7d1</td>
+                  <td><span class="chip">claude-opus-5</span></td>
+                  <td class="mono" style="text-align:right;color:#f5f7fa">36.450 VND</td>
+                  <td><span class="badge b-green"><span class="dot dot-ok" style="width:6px;height:6px"></span>Hoạt động</span></td>
+                  <td style="text-align:right">
+                    <span class="row" style="justify-content:flex-end;gap:8px">
+                      <button type="button" title="Lấy cấu hình tích hợp" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid #262a31;background:transparent;color:#a1a7b3;cursor:pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 2v1.4M8 12.6V14M2 8h1.4M12.6 8H14M3.8 3.8l1 1M11.2 11.2l1 1M12.2 3.8l-1 1M4.8 11.2l-1 1"/></svg></button>
+                      <button type="button" title="Thu hồi" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid rgba(239,35,60,.4);background:transparent;color:#ef233c;cursor:pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.5 6.5v4M9.5 6.5v4"/></svg></button>
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color:#f5f7fa;font-weight:500">Máy bàn công ty</td>
+                  <td class="mono" style="color:#6b7280">nk_live_gh78…t4v6</td>
+                  <td><span class="chip">claude-sonnet-5</span></td>
+                  <td class="mono" style="text-align:right;color:#f5f7fa">8.100 VND</td>
+                  <td><span class="badge b-yellow">Đã tắt</span></td>
+                  <td style="text-align:right">
+                    <span class="row" style="justify-content:flex-end;gap:8px">
+                      <button type="button" title="Lấy cấu hình tích hợp" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid #262a31;background:transparent;color:#a1a7b3;cursor:pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 2v1.4M8 12.6V14M2 8h1.4M12.6 8H14M3.8 3.8l1 1M11.2 11.2l1 1M12.2 3.8l-1 1M4.8 11.2l-1 1"/></svg></button>
+                      <button type="button" title="Thu hồi" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid rgba(239,35,60,.4);background:transparent;color:#ef233c;cursor:pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.5 6.5v4M9.5 6.5v4"/></svg></button>
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color:#f5f7fa;font-weight:500">Thử nghiệm SDK</td>
+                  <td class="mono" style="color:#6b7280">nk_live_ij90…w5z2</td>
+                  <td><span class="chip">gpt-5.6-luna</span></td>
+                  <td class="mono" style="text-align:right;color:#6b7280">0 VND</td>
+                  <td><span class="badge b-yellow">Đang chuẩn bị</span></td>
+                  <td style="text-align:right">
+                    <span class="row" style="justify-content:flex-end;gap:8px">
+                      <button type="button" title="Lấy cấu hình tích hợp" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid #262a31;background:transparent;color:#a1a7b3;cursor:pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 2v1.4M8 12.6V14M2 8h1.4M12.6 8H14M3.8 3.8l1 1M11.2 11.2l1 1M12.2 3.8l-1 1M4.8 11.2l-1 1"/></svg></button>
+                      <button type="button" title="Thu hồi" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid rgba(239,35,60,.4);background:transparent;color:#ef233c;cursor:pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.5 6.5v4M9.5 6.5v4"/></svg></button>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div><div class="stack" role="group" aria-label="Console NapKey — hai man hinh Su dung va Vi">
+
+  <!-- ==================== MAN HINH 1: SU DUNG ==================== -->
+  <section class="sec-sm" aria-labelledby="console-usage-heading">
+    <div class="wrap">
+      <div class="card">
+        <div class="stack">
+          <div class="between">
+            <div class="row" style="align-items:center">
+              <span class="chip" style="padding:8px;border-radius:10px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20h16"/><path d="M7 16v-5"/><path d="M12 16V5"/><path d="M17 16v-8"/></svg>
+              </span>
+              <div class="stack" style="gap:2px">
+                <span class="eyebrow">Console · Usage</span>
+                <h3 class="h3" id="console-usage-heading">Sử dụng</h3>
+              </div>
+            </div>
+            <a class="btn btn-ghost btn-sm" href="#">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Xuất CSV
+            </a>
+          </div>
+          <p class="small muted">Mỗi dòng là một request, kèm credit upstream ghi nhận, token tham chiếu và chi phí để đối soát.</p>
+
+          <div class="row" role="group" aria-label="Khoảng thời gian">
+            <span class="pill on">Hôm nay</span>
+            <span class="pill">7 ngày</span>
+            <span class="pill">30 ngày</span>
+            <span class="pill">Tất cả key</span>
+          </div>
+
+          <div class="grid3">
+            <div class="stat"><div>Request</div><div>36</div></div>
+            <div class="stat"><div>Token</div><div>486.240</div></div>
+            <div class="stat"><div>Chi phí trong kỳ</div><div>11.540 VND</div></div>
+          </div>
+
+          <div class="card" style="padding:0;overflow:hidden">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Thời điểm</th>
+                  <th>Model</th>
+                  <th>Token vào / ra</th>
+                  <th>Phí 300 + tiền token</th>
+                  <th>Tổng</th>
+                  <th>Key</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="mono dim small">14:32 · 16/08</td>
+                  <td><span class="chip">claude-sonnet-5</span></td>
+                  <td class="mono">2.600 / 1.400</td>
+                  <td class="mono dim">300 + 6</td>
+                  <td class="mono" style="font-weight:600">306 VND</td>
+                  <td>prod-agent <span class="chip">sk-···a41f</span></td>
+                </tr>
+                <tr>
+                  <td class="mono dim small">13:58 · 16/08</td>
+                  <td><span class="chip">claude-opus-5</span></td>
+                  <td class="mono">8.200 / 1.800</td>
+                  <td class="mono dim">300 + 45</td>
+                  <td class="mono" style="font-weight:600">345 VND</td>
+                  <td>cursor-ide <span class="chip">sk-···9c2e</span></td>
+                </tr>
+                <tr>
+                  <td class="mono dim small">13:21 · 16/08</td>
+                  <td><span class="chip">gpt-5.6-luna</span></td>
+                  <td class="mono">5.200 / 800</td>
+                  <td class="mono dim">300 + 9</td>
+                  <td class="mono" style="font-weight:600">309 VND</td>
+                  <td>dev-test <span class="chip">sk-···7b30</span></td>
+                </tr>
+                <tr>
+                  <td class="mono dim small">11:47 · 16/08</td>
+                  <td><span class="chip">claude-sonnet-5</span></td>
+                  <td class="mono">52.600 / 1.400</td>
+                  <td class="mono dim">300 + 81</td>
+                  <td class="mono" style="font-weight:600">381 VND</td>
+                  <td>batch-nightly <span class="chip">sk-···d114</span></td>
+                </tr>
+                <tr>
+                  <td class="mono dim small">10:15 · 16/08</td>
+                  <td><span class="chip">claude-opus-5</span></td>
+                  <td class="mono">4.200 / 1.800</td>
+                  <td class="mono dim">300 + 27</td>
+                  <td class="mono" style="font-weight:600">327 VND</td>
+                  <td>cursor-ide <span class="chip">sk-···9c2e</span></td>
+                </tr>
+                <tr>
+                  <td class="mono dim small">09:03 · 16/08</td>
+                  <td><span class="chip">gpt-5.6-luna</span></td>
+                  <td class="mono">1.400 / 600</td>
+                  <td class="mono dim">300 + 3</td>
+                  <td class="mono" style="font-weight:600">303 VND</td>
+                  <td>dev-test <span class="chip">sk-···7b30</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="between" style="padding:14px 16px">
+              <span class="tiny dim">Đang xem 1–6 trong 36 request</span>
+              <div class="row" style="gap:8px">
+                <span class="pill" aria-disabled="true">Trước</span>
+                <span class="pill">Sau</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MAN HINH 2: VI & NAP TIEN ==================== -->
+  <section class="sec-sm" aria-labelledby="console-wallet-heading" style="padding-top:0">
+    <div class="wrap">
+      <div class="card">
+        <div class="stack">
+          <div class="between">
+            <div class="row" style="align-items:center">
+              <span class="chip" style="padding:8px;border-radius:10px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+              </span>
+              <div class="stack" style="gap:2px">
+                <span class="eyebrow">Console · Wallet</span>
+                <h3 class="h3" id="console-wallet-heading">Ví và nạp tiền</h3>
+              </div>
+            </div>
+            <span class="pill-brand">PayOS</span>
+          </div>
+
+          <div class="grid2" style="align-items:start">
+            <!-- Cot trai: so du + nap nhanh -->
+            <div class="stack" style="gap:20px">
+              <div class="card">
+                <div class="stack" style="gap:12px">
+                  <span class="eyebrow" style="color:#a1a7b3">Có thể dùng ngay</span>
+                  <div class="h2" style="color:#67b7ff">86.400 VND</div>
+                  <p class="small muted">≈ 216 credit · 1 credit = 400 VND. Số dư trừ phần đang giữ cho các request đang chạy.</p>
+                  <div class="between small">
+                    <span class="muted">Số dư ví <span class="mono">87.600</span></span>
+                    <span class="muted">Đang giữ <span class="mono" style="color:#facc15">1.200</span></span>
+                  </div>
+                  <div class="stack" style="gap:6px">
+                    <div class="between">
+                      <span class="tiny dim">Mức sử dụng tháng này</span>
+                      <span class="tiny mono">11.540 / 50.000 VND</span>
+                    </div>
+                    <div class="progress"><span style="width:23%"></span></div>
+                  </div>
+                  <div><a class="btn btn-brand" href="#">Nạp ngay</a></div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="stack" style="gap:12px">
+                  <h3 class="h3">Nạp tiền an toàn qua PayOS</h3>
+                  <p class="small muted">Chọn số tiền, sau đó mở PayOS để thanh toán. Nạp từ 10.000 VNĐ, không phí tháng và không áp dụng khuyến mãi nạp đầu.</p>
+                  <div class="row">
+                    <span class="pill">10.000</span>
+                    <span class="pill">20.000</span>
+                    <span class="pill">40.000</span>
+                    <span class="pill on">100.000</span>
+                    <span class="pill">200.000</span>
+                    <span class="pill">400.000</span>
+                  </div>
+                  <label class="small muted stack" style="gap:6px">Số tiền (VND)
+                    <input class="input" type="text" value="100.000" aria-label="Số tiền (VND)">
+                  </label>
+                  <p class="small mono" style="color:#67b7ff">Bạn nhận được 250 credit</p>
+                  <p class="tiny dim">Tối thiểu 10.000 VND — thanh toán qua PayOS.</p>
+                  <p class="tiny" style="color:#facc15">Quan trọng: số dư chỉ dùng cho API NapKey, không thể rút hoặc hoàn lại về tài khoản ngân hàng.</p>
+                  <div><a class="btn btn-brand btn-sm" href="#">Tạo thanh toán PayOS</a></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cot phai: lich su nap + goi credit -->
+            <div class="stack" style="gap:20px">
+              <div class="card" style="padding:0;overflow:hidden">
+                <div class="stack" style="gap:2px;padding:20px 28px 12px">
+                  <h3 class="h3">Lịch sử nạp tiền</h3>
+                  <p class="tiny dim">50 lệnh thanh toán gần nhất được lưu để bạn đối soát.</p>
+                </div>
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Ngày</th>
+                      <th>Mệnh giá</th>
+                      <th>Kênh</th>
+                      <th>Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="mono dim small">14/08/2026</td>
+                      <td class="mono">100.000 VND</td>
+                      <td class="small muted">PayOS</td>
+                      <td><span class="badge b-green">Thành công</span></td>
+                    </tr>
+                    <tr>
+                      <td class="mono dim small">02/08/2026</td>
+                      <td class="mono">200.000 VND</td>
+                      <td class="small muted">PayOS</td>
+                      <td><span class="badge b-green">Thành công</span></td>
+                    </tr>
+                    <tr>
+                      <td class="mono dim small">21/07/2026</td>
+                      <td class="mono">40.000 VND</td>
+                      <td class="small muted">PayOS</td>
+                      <td><span class="badge b-green">Thành công</span></td>
+                    </tr>
+                    <tr>
+                      <td class="mono dim small">09/07/2026</td>
+                      <td class="mono">20.000 VND</td>
+                      <td class="small muted">PayOS</td>
+                      <td><span class="badge b-green">Thành công</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="card">
+                <div class="stack" style="gap:12px">
+                  <h3 class="h3">Gói credit</h3>
+                  <div class="card-flat between">
+                    <div class="stack" style="gap:2px"><strong>Starter</strong><span class="tiny mono dim">250 credit</span></div>
+                    <div class="row" style="gap:10px"><span class="mono small">100.000 VND</span><a class="btn btn-ghost btn-sm" href="#">Chọn</a></div>
+                  </div>
+                  <div class="card-flat between">
+                    <div class="stack" style="gap:2px"><div class="row" style="gap:8px"><strong>Builder</strong><span class="badge b-blue">Phổ biến</span></div><span class="tiny mono dim">500 credit</span></div>
+                    <div class="row" style="gap:10px"><span class="mono small">200.000 VND</span><a class="btn btn-ghost btn-sm" href="#">Chọn</a></div>
+                  </div>
+                  <div class="card-flat between">
+                    <div class="stack" style="gap:2px"><strong>Scale</strong><span class="tiny mono dim">1.000 credit</span></div>
+                    <div class="row" style="gap:10px"><span class="mono small">400.000 VND</span><a class="btn btn-ghost btn-sm" href="#">Chọn</a></div>
+                  </div>
+                  <div class="card-flat between">
+                    <div class="stack" style="gap:2px"><strong>Pro</strong><span class="tiny mono dim">2.000 credit</span></div>
+                    <div class="row" style="gap:10px"><span class="mono small">800.000 VND</span><a class="btn btn-ghost btn-sm" href="#">Chọn</a></div>
+                  </div>
+                  <p class="tiny dim">Giá token phân bậc theo model, cộng 300 VNĐ mỗi request. Tiền đã nạp không hết hạn.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

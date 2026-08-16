@@ -26,7 +26,7 @@ export function Hero() {
 
             <h1
               id="hero-heading"
-              className="max-w-3xl text-[clamp(2.75rem,14vw,4.5rem)] leading-[0.94] font-semibold tracking-[-0.055em] lg:text-[5.5rem]"
+              className="max-w-3xl text-[clamp(2.75rem,14vw,4.5rem)] leading-[0.94] font-bold tracking-[-0.055em] lg:text-[5.5rem]"
             >
               <span className="block text-gradient-fade">{t('titleLine1')}</span>
               <span className="block text-gradient-fade">{t('titleLine2')}</span>

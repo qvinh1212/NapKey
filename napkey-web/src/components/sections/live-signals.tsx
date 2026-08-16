@@ -5,7 +5,7 @@ import { readModelCatalog } from '@/lib/model-catalog';
 import { ArrowUpRightIcon } from '@/components/ui/icon';
 
 const dotForStatus = {
-  operational: 'bg-accent shadow-[0_0_12px_rgba(16,185,129,0.65)] animate-pulse',
+  operational: 'bg-accent shadow-[0_0_12px_rgba(0,134,255,0.65)] animate-pulse',
   degraded: 'bg-warn shadow-[0_0_12px_rgba(250,204,21,0.55)]',
   outage: 'bg-danger shadow-[0_0_12px_rgba(239,35,60,0.55)]',
   unknown: 'bg-dim',

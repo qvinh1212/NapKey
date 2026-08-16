@@ -27,7 +27,7 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-zinc-900 bg-black pt-14 pb-8 sm:pt-20 sm:pb-10">
+    <footer className="border-t border-line bg-surface-3 pt-14 pb-8 sm:pt-20 sm:pb-10">
       <div className="container-page">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-[1.5fr_repeat(3,1fr)] md:gap-12">
           <div className="col-span-2 md:col-span-1">
@@ -56,7 +56,7 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="mt-16 flex flex-col gap-4 border-t border-zinc-900 pt-8 text-label text-dim md:flex-row md:items-center md:justify-between">
+        <div className="mt-16 flex flex-col gap-4 border-t border-line pt-8 text-label text-dim md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             <p>
               &copy; {year} NapKey. {t('rights')}

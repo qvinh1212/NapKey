@@ -16,7 +16,7 @@ export function Card({
   return (
     <div
       className={
-        'rounded-lg border border-line bg-surface p-8 ' +
+        'rounded-xl border border-line bg-surface p-6 sm:p-8 ' +
         (interactive
           ? 'transition-colors duration-300 ease-[var(--ease-smooth)] hover:bg-surface-hover '
           : '') +

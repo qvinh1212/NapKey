@@ -121,14 +121,14 @@ export function HeroTerminal() {
   }, []);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-white/15 bg-[#070908]/90 shadow-[0_32px_100px_rgba(0,0,0,0.65)] backdrop-blur">
+    <div className="relative overflow-hidden rounded-xl border border-line bg-terminal shadow-[0_32px_100px_rgba(0,0,0,0.65)] backdrop-blur">
       {/* Terminal Top Bar */}
       <div className="flex items-center justify-between border-b border-line px-4 py-3 sm:px-5">
         <div className="flex items-center gap-3">
           <div className="flex gap-2" aria-hidden>
-            <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-            <span className="size-2.5 rounded-full bg-[#febc2e]" />
-            <span className="size-2.5 rounded-full bg-[#28c840]" />
+            <span className="size-2.5 rounded-full bg-danger" />
+            <span className="size-2.5 rounded-full bg-warn" />
+            <span className="size-2.5 rounded-full bg-success" />
           </div>
 
           {/* Mode Tabs */}
@@ -152,7 +152,7 @@ export function HeroTerminal() {
                 tab === 'sandbox' ? 'bg-accent/20 text-accent-light font-semibold' : 'text-dim hover:text-muted'
               }`}
             >
-              ⚡ {t('tabSandbox')}
+              {t('tabSandbox')}
             </button>
           </div>
         </div>
@@ -174,14 +174,14 @@ export function HeroTerminal() {
                   NK
                 </span>
                 <div>
-                  <p className="font-mono text-ui text-zinc-200">{t('terminalTitle')}</p>
+                  <p className="font-mono text-ui text-fg">{t('terminalTitle')}</p>
                   <p className="font-mono text-micro text-muted">{t('terminalSubtitle')}</p>
                 </div>
               </div>
               <CopyButton value={rawSetupSnippet} label="Copy" variant="pill" showTooltip />
             </div>
 
-            <pre className="overflow-x-auto font-mono text-[0.75rem] leading-7 sm:text-ui text-zinc-300">
+            <pre className="overflow-x-auto font-mono text-ui leading-7 text-fg">
               <code>
                 {setupLines.map(([tone, line]) => (
                   <span
@@ -192,10 +192,10 @@ export function HeroTerminal() {
                         ? 'text-accent-light'
                         : tone === 'muted'
                           ? 'text-muted'
-                          : 'text-zinc-300')
+                          : 'text-fg')
                     }
                   >
-                    <span aria-hidden className="mr-3 select-none text-zinc-700">
+                    <span aria-hidden className="mr-3 select-none text-dim">
                       $
                     </span>
                     {line}
@@ -236,13 +236,13 @@ export function HeroTerminal() {
                 disabled={isStreaming}
                 className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent-soft px-3 py-1 font-mono text-micro font-medium text-accent-light hover:bg-accent/25 transition-colors disabled:opacity-50"
               >
-                <span>{isStreaming ? '⚡' : '▶'}</span>
+                <span aria-hidden>{isStreaming ? '…' : '›'}</span>
                 <span>{isStreaming ? t('sandbox.runningButton') : t('sandbox.runButton')}</span>
               </button>
             </div>
 
             {/* Simulated Streaming Output Canvas */}
-            <div className="rounded-lg border border-line/60 bg-black/60 p-3.5 font-mono text-[0.73rem] sm:text-label text-zinc-300 min-h-40 overflow-x-auto">
+            <div className="rounded-lg border border-line bg-terminal p-3.5 font-mono text-ui text-fg min-h-40 overflow-x-auto">
               {streamedText ? (
                 <pre className="whitespace-pre-wrap leading-relaxed">
                   <code>{streamedText}</code>
@@ -279,7 +279,7 @@ export function HeroTerminal() {
       </div>
 
       {/* Metrics Row Footer */}
-      <div className="grid grid-cols-3 border-t border-line bg-white/[0.015]">
+      <div className="grid grid-cols-3 border-t border-line bg-surface-3">
         {(['topUp', 'protocols', 'monthlyFee'] as const).map((key) => (
           <div key={key} className="min-w-0 border-r border-line px-2.5 py-3.5 last:border-r-0 sm:px-5">
             <p className="font-display text-base font-semibold tracking-[-0.04em] text-fg sm:text-xl">

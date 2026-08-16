@@ -158,8 +158,12 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
         hasAdminPermission={session.permissions.includes('operations.read')}
       />
 
-      <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
-        <div className="lg:w-52 lg:shrink-0">
+      {/*
+        Khoi console theo .shell cua master.css: vien 20px, bong 0 8px 24px,
+        sidebar 240px ben trai voi border-right. Tren mobile sidebar xuong tren.
+      */}
+      <div className="flex flex-col overflow-hidden rounded-[20px] border border-line bg-bg shadow-[0_8px_24px_rgba(0,0,0,0.35)] lg:grid lg:min-h-160 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <div className="border-b border-line bg-surface-1 px-4 py-5 lg:border-b-0 lg:border-r">
           <div className="mb-4">
             <p className="font-mono text-label tracking-[0.18em] text-accent uppercase">
               {t('eyebrow')}
@@ -172,7 +176,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={() => setPaletteOpen(true)}
-              className="group flex w-full items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-left transition-all hover:border-accent/40 hover:bg-surface-hover"
+              className="group flex w-full items-center justify-between gap-2 rounded-[10px] border border-line bg-surface px-3 py-2 text-left transition-all hover:border-accent/40 hover:bg-surface-hover"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <svg
@@ -201,7 +205,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setTopupOpen(true)}
-                className={`group flex w-full items-center justify-between gap-2 rounded-lg border p-2.5 text-left transition-all ${
+                className={`group flex w-full items-center justify-between gap-2 rounded-[10px] border p-2.5 text-left transition-all ${
                   isLowBalance
                     ? 'border-warn/40 bg-warn/10 text-warn hover:border-warn hover:bg-warn/15'
                     : 'border-line bg-surface text-muted hover:border-line hover:bg-surface-hover hover:text-fg'
@@ -238,7 +242,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
           */}
           <nav
             aria-label={t('navLabel')}
-            className="-mx-4 mb-4 flex gap-1 overflow-x-auto border-b border-line px-4 [scrollbar-width:thin] sm:-mx-6 sm:px-6 lg:mx-0 lg:mb-0 lg:flex-col lg:overflow-visible lg:border-b-0 lg:px-0"
+            className="-mx-4 mb-4 flex gap-1 overflow-x-auto px-4 [scrollbar-width:thin] lg:mx-0 lg:mb-0 lg:flex-col lg:overflow-visible lg:px-0"
           >
             {[...tabs, ...(session.permissions.includes('operations.read') ? [{ key: 'operations' as const, href: '/console/admin' as const }] : [])].map(({ key, href }) => {
               // So sanh chinh xac cho tab goc, tien to cho tab con: `/console` khong
@@ -250,12 +254,10 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
                   href={href}
                   aria-current={isActive ? 'page' : undefined}
                   className={
-                    'shrink-0 whitespace-nowrap text-ui transition-colors duration-150 ease-[var(--ease-smooth)] ' +
-                    '-mb-px border-b-2 px-4 py-2.5 ' +
-                    'lg:mb-0 lg:rounded-md lg:border-b-0 lg:border-l-2 lg:px-3 lg:py-2 ' +
+                    'shrink-0 whitespace-nowrap rounded-[10px] px-3 py-2 text-ui transition-colors duration-150 ease-[var(--ease-smooth)] ' +
                     (isActive
-                      ? 'border-accent text-fg lg:bg-surface'
-                      : 'border-transparent text-dim hover:text-muted lg:hover:bg-surface')
+                      ? 'bg-surface-2 font-semibold text-fg'
+                      : 'text-muted hover:bg-white/[0.03] hover:text-fg')
                   }
                 >
                   {key === 'operations' ? 'Vận hành' : t(`tabs.${key}`)}
@@ -278,7 +280,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 p-5 sm:p-6">
           {/* Tren mobile phan tai khoan, tim kiem va vi nam tren dau noi dung */}
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 lg:hidden">
             <div className="flex items-center gap-2">

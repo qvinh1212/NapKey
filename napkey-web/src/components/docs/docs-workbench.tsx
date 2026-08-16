@@ -30,9 +30,9 @@ export function DocsWorkbench({ models, apiBaseUrl }: { models: PublicModel[]; a
   );
 
   return (
-    <div className="overflow-hidden rounded-xl border border-line bg-surface shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+    <div className="overflow-hidden rounded-xl border border-line bg-surface-1 shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
       <div className="grid gap-px bg-line lg:grid-cols-[0.8fr_1.2fr]">
-        <div className="bg-surface p-5 sm:p-6">
+        <div className="bg-surface-1 p-5 sm:p-6">
           {/* Model Selector */}
           <label htmlFor="docs-model" className="font-mono text-label tracking-[0.12em] text-dim uppercase">
             {t('modelLabel')}
@@ -41,7 +41,7 @@ export function DocsWorkbench({ models, apiBaseUrl }: { models: PublicModel[]; a
             id="docs-model"
             value={model}
             onChange={(event) => setModel(event.target.value)}
-            className="mt-2.5 w-full rounded-lg border border-line bg-black px-4 py-2.5 font-mono text-ui text-fg outline-none focus:border-accent"
+            className="mt-2.5 w-full rounded-[10px] border border-line bg-terminal px-4 py-2.5 font-mono text-ui text-fg outline-none focus:border-accent"
           >
             {models.map((item) => (
               <option key={item.id} value={item.id}>
@@ -70,7 +70,7 @@ export function DocsWorkbench({ models, apiBaseUrl }: { models: PublicModel[]; a
               value={apiKeyInput}
               onChange={(e) => setApiKeyInput(e.target.value)}
               placeholder="nk_live_... hoặc để trống"
-              className="mt-2.5 w-full rounded-lg border border-line bg-black px-4 py-2 font-mono text-label text-fg placeholder:text-dim outline-none focus:border-accent"
+              className="mt-2.5 w-full rounded-[10px] border border-line bg-terminal px-4 py-2 font-mono text-label text-fg placeholder:text-dim outline-none focus:border-accent"
             />
           </div>
 
@@ -83,10 +83,10 @@ export function DocsWorkbench({ models, apiBaseUrl }: { models: PublicModel[]; a
                 type="button"
                 aria-pressed={tool === item.id}
                 onClick={() => setTool(item.id)}
-                className={`rounded-lg border px-3 py-1.5 font-mono text-micro transition-all ${
+                className={`rounded-full border px-3 py-1.5 font-mono text-micro transition-colors ${
                   tool === item.id
-                    ? 'border-accent/50 bg-accent-soft text-accent-light font-semibold'
-                    : 'border-line text-muted hover:border-line hover:text-fg'
+                    ? 'border-accent/45 bg-accent-soft font-semibold text-accent-light'
+                    : 'border-line bg-surface-2 text-muted hover:text-fg'
                 }`}
               >
                 {item.label}
@@ -102,7 +102,7 @@ export function DocsWorkbench({ models, apiBaseUrl }: { models: PublicModel[]; a
         </div>
 
         {/* Dynamic Code Snippet Canvas */}
-        <div className="min-w-0 bg-black/50 p-5 sm:p-6 flex flex-col justify-between">
+        <div className="min-w-0 bg-surface-3 p-5 sm:p-6 flex flex-col justify-between">
           <div>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
               <div>
@@ -118,7 +118,7 @@ export function DocsWorkbench({ models, apiBaseUrl }: { models: PublicModel[]; a
                 className="py-1.5"
               />
             </div>
-            <pre className="mt-4 max-h-[30rem] max-w-full overflow-auto rounded-lg border border-line bg-black/90 p-4 font-mono text-xs leading-relaxed text-zinc-300 sm:p-5">
+            <pre className="mt-4 max-h-[30rem] max-w-full overflow-auto rounded-xl border border-line bg-terminal p-4 font-mono text-[13px] leading-[1.65] text-[#d6dae2] sm:p-5">
               <code>{snippet.code}</code>
             </pre>
           </div>

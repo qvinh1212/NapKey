@@ -11,6 +11,17 @@ type FilterType = 'all' | ModelCapability;
 type ViewMode = 'cards' | 'table';
 type PricingUnit = 'credit' | 'vnd';
 
+/**
+ * Mau badge tier theo master.css (.badge b-green/b-blue/b-yellow/b-purple):
+ * 0.5x xanh la, 1x xanh brand, 1.2x-1.5x vang, 2x tro len tim.
+ */
+function tierBadgeClass(ratio: number): string {
+  if (ratio <= 0.5) return 'border-success/30 bg-success/10 text-success';
+  if (ratio <= 1) return 'border-accent/35 bg-accent-soft text-accent-light';
+  if (ratio <= 1.5) return 'border-warn/30 bg-warn/10 text-warn';
+  return 'border-purple/30 bg-purple/10 text-purple';
+}
+
 export function PricingTable() {
   const t = useTranslations('pricing');
   const [filter, setFilter] = useState<FilterType>('all');
@@ -84,7 +95,7 @@ export function PricingTable() {
                   : 'text-dim hover:text-muted'
               }`}
             >
-              💎 Credits (1 CR = 75 ₫)
+              Credits (1 CR = 75 ₫)
             </button>
             <button
               type="button"
@@ -137,7 +148,9 @@ export function PricingTable() {
                     <span className="size-1.5 rounded-full bg-accent animate-pulse" />
                     <span>{t('models.verifiedRoute')}</span>
                   </div>
-                  <span className="rounded-full border border-line bg-white/5 px-2 py-0.5 font-mono text-micro text-muted">
+                  <span
+                    className={`rounded-full border px-2.5 py-0.5 font-mono text-micro font-semibold ${tierBadgeClass(model.ratio)}`}
+                  >
                     {t('models.tierValue', { ratio: model.ratio })}
                   </span>
                 </div>
@@ -186,7 +199,7 @@ export function PricingTable() {
                     onClick={() => setConfigTarget({ id: model.id, name: model.name })}
                     className="shrink-0 rounded-full border border-line bg-surface-hover px-2.5 py-1 font-mono text-micro text-muted hover:border-accent/40 hover:bg-accent-soft hover:text-accent-light transition-all"
                   >
-                    ⚡ {t('quickConfig.button')}
+                    {t('quickConfig.button')}
                   </button>
                 </div>
               </div>
@@ -196,22 +209,22 @@ export function PricingTable() {
       ) : (
         /* View 2: Detailed Technical Matrix Table */
         <div className="overflow-x-auto rounded-xl border border-line bg-surface">
-          <table className="w-full text-left">
+          <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-line bg-bg/40">
-                <th className="px-6 py-4 font-mono text-label tracking-[0.14em] text-dim uppercase">
+                <th className="px-4 py-3 font-mono text-xs font-semibold tracking-[0.06em] text-dim uppercase whitespace-nowrap">
                   {t('models.colModel')}
                 </th>
-                <th className="px-6 py-4 font-mono text-label tracking-[0.14em] text-dim uppercase">
+                <th className="px-4 py-3 font-mono text-xs font-semibold tracking-[0.06em] text-dim uppercase whitespace-nowrap">
                   Protocol
                 </th>
-                <th className="px-6 py-4 text-right font-mono text-label tracking-[0.14em] text-dim uppercase">
+                <th className="px-4 py-3 text-right font-mono text-xs font-semibold tracking-[0.06em] text-dim uppercase whitespace-nowrap">
                   {t('models.colTier')}
                 </th>
-                <th className="px-6 py-4 text-right font-mono text-label tracking-[0.14em] text-accent-light uppercase">
+                <th className="px-4 py-3 text-right font-mono text-xs font-semibold tracking-[0.06em] text-accent-light uppercase whitespace-nowrap">
                   {unit === 'credit' ? 'Đơn giá / 1M Tokens (CR)' : t('models.rateHeader')}
                 </th>
-                <th className="px-6 py-4 text-right font-mono text-label tracking-[0.14em] text-dim uppercase">
+                <th className="px-4 py-3 text-right font-mono text-xs font-semibold tracking-[0.06em] text-dim uppercase whitespace-nowrap">
                   Action
                 </th>
               </tr>
@@ -220,29 +233,37 @@ export function PricingTable() {
               {filteredModels.map((model, index) => (
                 <tr
                   key={model.id}
-                  className={index < filteredModels.length - 1 ? 'border-b border-line/60' : ''}
+                  className={`transition-colors duration-150 hover:bg-surface-2 ${
+                    index < filteredModels.length - 1 ? 'border-b border-line/60' : ''
+                  }`}
                 >
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-ui font-semibold text-fg">{model.name}</span>
-                      <code className="font-mono text-micro text-dim">({model.id})</code>
+                      <code className="rounded-md border border-line bg-surface-2 px-2 py-0.5 font-mono text-micro text-muted">
+                        {model.id}
+                      </code>
                       <CopyButton value={model.id} variant="icon" showTooltip className="size-4" />
                     </div>
                   </td>
-                  <td className="px-6 py-4 font-mono text-label text-muted">{model.family}</td>
-                  <td className="px-6 py-4 text-right font-mono text-ui tabular-nums text-muted">
-                    {t('models.tierValue', { ratio: model.ratio })}
+                  <td className="px-4 py-3.5 font-mono text-label text-muted">{model.family}</td>
+                  <td className="px-4 py-3.5 text-right">
+                    <span
+                      className={`inline-flex rounded-full border px-2.5 py-0.5 font-mono text-micro font-semibold ${tierBadgeClass(model.ratio)}`}
+                    >
+                      {t('models.tierValue', { ratio: model.ratio })}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-right font-mono text-ui font-semibold tabular-nums text-accent-light">
+                  <td className="px-4 py-3.5 text-right font-mono text-ui font-semibold tabular-nums text-accent-light">
                     {formatModelRate(model.pricePerMillion)}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-4 py-3.5 text-right">
                     <button
                       type="button"
                       onClick={() => setConfigTarget({ id: model.id, name: model.name })}
                       className="rounded-full border border-line bg-surface-hover px-3 py-1 font-mono text-micro text-muted hover:border-accent/40 hover:bg-accent-soft hover:text-accent-light transition-all"
                     >
-                      ⚡ {t('quickConfig.button')}
+                      {t('quickConfig.button')}
                     </button>
                   </td>
                 </tr>

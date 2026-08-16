@@ -29,7 +29,7 @@ export function Billing() {
 
       <div className="mt-20">
         <h3 className="mb-8 text-2xl tracking-[-0.02em]">{t('faq.title')}</h3>
-        <dl className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
+        <dl className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
           {faqItems.map((key) => (
             <div key={key} className="grid gap-3 px-6 py-6 md:grid-cols-[18rem_1fr] md:gap-8">
               <dt className="text-base text-fg">{t(`faq.items.${key}.q`)}</dt>

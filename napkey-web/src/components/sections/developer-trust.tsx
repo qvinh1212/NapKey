@@ -9,7 +9,7 @@ export function DeveloperTrust() {
 
   return (
     <Section id="trust" eyebrow={t('eyebrow')} title={t('title')} subtitle={t('subtitle')}>
-      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface">
         <div className="grid lg:grid-cols-[0.72fr_1.28fr]">
           <div className="border-b border-line p-6 lg:border-r lg:border-b-0 lg:p-8">
             <p className="font-mono text-label tracking-[0.16em] text-accent uppercase">{t('manifestLabel')}</p>
@@ -18,10 +18,10 @@ export function DeveloperTrust() {
             </blockquote>
             <p className="mt-5 text-prose text-muted">{t('manifestBody')}</p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/trust" className="rounded-full bg-fg px-5 py-2.5 text-ui font-medium text-bg transition-colors hover:bg-white/90">
+              <Link href="/trust" className="rounded-lg bg-fg px-5 py-2.5 text-ui font-semibold text-bg transition-colors hover:bg-white/90">
                 {t('readTrust')}
               </Link>
-              <Link href="/status" className="rounded-full border border-line px-5 py-2.5 text-ui text-muted transition-colors hover:bg-white/10 hover:text-fg">
+              <Link href="/status" className="rounded-lg border border-line px-5 py-2.5 text-ui text-muted transition-colors hover:bg-surface-2 hover:text-fg">
                 {t('liveStatus')}
               </Link>
             </div>

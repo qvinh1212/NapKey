@@ -28,7 +28,7 @@ export function DeveloperWorkbench({ catalog, apiBaseUrl }: { catalog: ModelCata
         <div className="grid gap-px bg-line lg:grid-cols-[0.72fr_1.28fr]">
           <div className="bg-surface p-5">
             <label htmlFor="developer-model" className="font-mono text-label tracking-[0.12em] text-dim uppercase">{t('modelLabel')}</label>
-            <select id="developer-model" value={model} onChange={(event) => setModel(event.target.value)} className="mt-3 w-full rounded-md border border-line bg-black px-4 py-3 font-mono text-ui text-fg outline-none focus:border-accent">
+            <select id="developer-model" value={model} onChange={(event) => setModel(event.target.value)} className="mt-3 w-full rounded-[10px] border border-line bg-terminal px-3.5 py-2.5 font-mono text-ui text-fg outline-none focus:border-accent">
               {catalog.models.map((item) => <option key={item.id} value={item.id}>{item.id}</option>)}
             </select>
             <p className="mt-3 text-ui leading-relaxed text-dim">{t('modelHint')}</p>
@@ -60,8 +60,8 @@ export function DeveloperWorkbench({ catalog, apiBaseUrl }: { catalog: ModelCata
                 showTooltip
               />
             </div>
-            <pre className="mt-4 max-h-[30rem] overflow-auto rounded-md border border-line bg-black/50 p-4 font-mono text-xs leading-relaxed text-muted"><code>{snippet.code}</code></pre>
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line px-4 py-3">
+            <pre className="mt-4 max-h-[30rem] overflow-auto rounded-lg border border-line bg-terminal p-4 font-mono text-xs leading-relaxed text-muted"><code>{snippet.code}</code></pre>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-line bg-terminal px-4 py-3">
               <code className="min-w-0 truncate font-mono text-ui text-accent-light">{apiBaseUrl}</code>
               <CopyButton
                 value={apiBaseUrl}

@@ -9,13 +9,13 @@ export function Compatibility() {
 
   return (
     <Section id="compatibility" eyebrow={t('eyebrow')} title={t('title')} subtitle={t('subtitle')} joined>
-      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface">
         <div className="grid lg:grid-cols-[1.1fr_0.9fr]">
           <div className="border-b border-line p-6 sm:p-8 lg:border-r lg:border-b-0">
             <p className="font-mono text-label tracking-[0.16em] text-accent uppercase">{t('contractLabel')}</p>
             <p className="mt-5 max-w-2xl text-2xl leading-snug tracking-[-0.02em] text-fg sm:text-3xl">{t('contract')}</p>
             <p className="mt-5 max-w-2xl text-prose text-muted">{t('body')}</p>
-            <Link href="/compatibility" className="mt-7 inline-flex rounded-full bg-fg px-5 py-2.5 text-ui font-medium text-bg transition-colors hover:bg-white/90">
+            <Link href="/compatibility" className="mt-7 inline-flex rounded-lg bg-fg px-5 py-2.5 text-ui font-semibold text-bg transition-colors hover:bg-white/90">
               {t('cta')}
             </Link>
           </div>

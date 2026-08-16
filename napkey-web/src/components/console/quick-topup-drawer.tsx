@@ -134,8 +134,8 @@ export function QuickTopupDrawer({ open, onClose, wallet, onSuccess }: QuickTopu
                     onClick={() => setAmount(pkg.vnd)}
                     className={`relative rounded-xl border p-3 text-left transition-all ${
                       amount === pkg.vnd
-                        ? 'border-accent bg-accent-soft text-fg ring-1 ring-accent'
-                        : 'border-line bg-surface hover:border-accent/40 hover:bg-surface-hover'
+                        ? 'border-accent bg-accent-soft text-accent-light'
+                        : 'border-line bg-surface-2 hover:border-accent/40 hover:bg-surface-hover'
                     }`}
                   >
                     {pkg.popular ? (
@@ -166,7 +166,7 @@ export function QuickTopupDrawer({ open, onClose, wallet, onSuccess }: QuickTopu
                 step={TOPUP_STEP_VND}
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
-                className="mt-1.5 w-full rounded-lg border border-line bg-surface px-4 py-2.5 font-mono text-ui text-fg outline-none focus:border-accent"
+                className="mt-1.5 w-full rounded-[10px] border border-line bg-terminal px-3.5 py-2.5 font-mono text-ui text-fg outline-none focus:border-accent"
               />
             </div>
 

@@ -31,7 +31,7 @@ export function Field({
         id={id}
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? errorId : hint ? hintId : undefined}
-        className="w-full rounded-md border border-line bg-surface-hover px-4 py-2.5 text-ui text-fg placeholder:text-dim focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="w-full rounded-[10px] border border-line bg-terminal px-3.5 py-2.5 text-ui text-fg placeholder:text-dim outline-none focus:border-accent"
         {...rest}
       />
       {error ? (

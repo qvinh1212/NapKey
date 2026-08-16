@@ -39,7 +39,7 @@ export function Section({
         {(eyebrow ?? title ?? subtitle) ? (
           <header className={`max-w-3xl ${joined ? 'mb-8 sm:mb-10' : 'mb-10 sm:mb-16'}`}>
             {eyebrow ? (
-              <p className="mb-4 font-mono text-label tracking-[0.18em] text-accent uppercase">
+              <p className="mb-4 font-mono text-label font-semibold tracking-[0.14em] text-accent uppercase">
                 {eyebrow}
               </p>
             ) : null}

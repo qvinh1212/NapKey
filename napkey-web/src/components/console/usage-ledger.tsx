@@ -207,7 +207,7 @@ export function UsageLedger() {
                     }}
                     className={
                       'rounded-full px-3 py-1 font-mono text-label transition-colors duration-150 ' +
-                      (value === days ? 'bg-white/10 text-fg' : 'text-dim hover:text-muted')
+                      (value === days ? 'bg-accent-soft font-semibold text-accent-light' : 'text-dim hover:text-muted')
                     }
                   >
                     {t('rangeDays', { days: value })}
@@ -263,7 +263,7 @@ export function UsageLedger() {
               <select
                 value={modelFilter}
                 onChange={(e) => setModelFilter(e.target.value)}
-                className="rounded-lg border border-line bg-surface px-2.5 py-1 font-mono text-label text-muted focus:border-accent"
+                className="rounded-[10px] border border-line bg-terminal px-2.5 py-1 font-mono text-label text-muted outline-none focus:border-accent"
               >
                 <option value="">{t('allModels')}</option>
                 {availableModels.map((m) => (
@@ -277,7 +277,7 @@ export function UsageLedger() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as 'all' | 'success' | 'error')}
-                className="rounded-lg border border-line bg-surface px-2.5 py-1 font-mono text-label text-muted focus:border-accent"
+                className="rounded-[10px] border border-line bg-terminal px-2.5 py-1 font-mono text-label text-muted outline-none focus:border-accent"
               >
                 <option value="all">{t('allStatuses')}</option>
                 <option value="success">{t('statusSuccess')}</option>
@@ -291,7 +291,7 @@ export function UsageLedger() {
                   placeholder={t('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="rounded-lg border border-line bg-surface pl-2.5 pr-7 py-1 font-mono text-label text-fg placeholder:text-dim focus:border-accent outline-none w-48 sm:w-60"
+                  className="rounded-[10px] border border-line bg-terminal pl-2.5 pr-7 py-1 font-mono text-label text-fg placeholder:text-dim focus:border-accent outline-none w-48 sm:w-60"
                 />
                 {searchQuery ? (
                   <button

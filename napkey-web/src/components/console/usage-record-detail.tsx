@@ -28,7 +28,7 @@ export function UsageRecordDetail({ record }: { record: UsageRecord }) {
   ].filter((row) => row.value > 0);
 
   return (
-    <div className="grid gap-6 border-t border-line bg-black/40 px-5 py-5 lg:grid-cols-2">
+    <div className="grid gap-6 border-t border-line bg-surface-3 px-5 py-5 lg:grid-cols-2">
       <section>
         <h3 className="font-mono text-label tracking-[0.14em] text-dim uppercase">
           {t('chargeTitle')}

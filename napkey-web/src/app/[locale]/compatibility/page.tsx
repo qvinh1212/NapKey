@@ -22,7 +22,7 @@ export default async function CompatibilityPage({ params }: { params: Promise<{ 
   const apiBaseUrl = site.apiBaseUrl.replace(/\/+$/, '');
 
   return (
-    <div className="min-h-screen bg-black pt-32 pb-24">
+    <div className="min-h-screen bg-bg pt-32 pb-24">
       <div className="container-page">
         <header className="max-w-4xl border-b border-line pb-14">
           <p className="font-mono text-label tracking-[0.18em] text-accent uppercase">{t('eyebrow')}</p>
@@ -46,13 +46,13 @@ export default async function CompatibilityPage({ params }: { params: Promise<{ 
             </p>
           </div>
           <p className="mt-4 max-w-3xl text-ui leading-relaxed text-muted">{t('catalog.scope')}</p>
-          <ul className="mt-8 grid overflow-hidden rounded-lg border border-line sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-8 grid overflow-hidden rounded-xl border border-line sm:grid-cols-2 lg:grid-cols-3">
             {catalog.models.map((model) => (
               <li key={model.id} className="min-w-0 border-b border-line p-5 sm:border-r [&:last-child]:border-b-0">
                 <code className="block truncate font-mono text-sm text-fg" title={model.id}>{model.id}</code>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-white/5 px-2.5 py-1 font-mono text-micro tracking-wide text-muted uppercase">{model.family}</span>
-                  {model.thinking ? <span className="rounded-full bg-accent-soft px-2.5 py-1 font-mono text-micro tracking-wide text-accent-light uppercase">thinking</span> : null}
+                  <span className="rounded-lg border border-line bg-surface-2 px-2.5 py-1 font-mono text-micro tracking-wide text-muted uppercase">{model.family}</span>
+                  {model.thinking ? <span className="rounded-full border border-accent/35 bg-accent-soft px-2.5 py-1 font-mono text-micro font-semibold tracking-wide text-accent-light uppercase">thinking</span> : null}
                 </div>
               </li>
             ))}
@@ -63,10 +63,10 @@ export default async function CompatibilityPage({ params }: { params: Promise<{ 
           <p className="font-mono text-label tracking-[0.16em] text-accent uppercase">02 / {t('matrix.eyebrow')}</p>
           <h2 id="matrix-heading" className="mt-3 text-3xl sm:text-4xl">{t('matrix.title')}</h2>
           <p className="mt-4 max-w-3xl text-ui leading-relaxed text-muted">{t('matrix.scope')}</p>
-          <div className="mt-8 overflow-x-auto rounded-lg border border-line">
+          <div className="mt-8 overflow-x-auto rounded-xl border border-line">
             <table className="w-full min-w-[720px] border-collapse text-left text-ui">
               <caption className="sr-only">{t('matrix.caption')}</caption>
-              <thead className="bg-white/[0.03] font-mono text-label tracking-wide text-dim uppercase">
+              <thead className="bg-surface-2 font-mono text-label tracking-wide text-dim uppercase">
                 <tr><th className="px-5 py-4">{t('matrix.feature')}</th><th className="px-5 py-4">Anthropic</th><th className="px-5 py-4">OpenAI</th><th className="px-5 py-4">{t('matrix.behavior')}</th></tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -87,13 +87,13 @@ export default async function CompatibilityPage({ params }: { params: Promise<{ 
           <p className="font-mono text-label tracking-[0.16em] text-accent uppercase">03 / {t('migration.eyebrow')}</p>
           <h2 id="migration-heading" className="mt-3 text-3xl sm:text-4xl">{t('migration.title')}</h2>
           <p className="mt-4 max-w-3xl text-ui leading-relaxed text-muted">{t('migration.scope')}</p>
-          <div className="mt-8 grid gap-px overflow-hidden rounded-lg border border-line bg-line lg:grid-cols-3">
+          <div className="mt-8 grid gap-px overflow-hidden rounded-xl border border-line bg-line lg:grid-cols-3">
             {playbooks.map((playbook, index) => (
-              <article key={playbook} className="min-w-0 bg-black p-6">
+              <article key={playbook} className="min-w-0 bg-surface-1 p-6">
                 <p className="font-mono text-label text-dim">0{index + 1}</p>
                 <h3 className="mt-4 text-xl text-fg">{t(`migration.playbooks.${playbook}.title`)}</h3>
                 <p className="mt-3 text-ui leading-relaxed text-muted">{t(`migration.playbooks.${playbook}.body`)}</p>
-                <pre className="mt-5 max-w-full overflow-x-auto rounded-md bg-white/[0.04] p-4 text-xs leading-relaxed text-accent-light"><code>{t(`migration.playbooks.${playbook}.code`, { apiBaseUrl })}</code></pre>
+                <pre className="mt-5 max-w-full overflow-x-auto rounded-xl border border-line bg-terminal p-4 font-mono text-[13px] leading-[1.65] text-accent-light"><code>{t(`migration.playbooks.${playbook}.code`, { apiBaseUrl })}</code></pre>
               </article>
             ))}
           </div>
