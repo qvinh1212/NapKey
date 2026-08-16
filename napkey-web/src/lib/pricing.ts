@@ -1,8 +1,29 @@
 export const VND_PER_CREDIT = 400;
+export const VND_PER_CREDIT_CACH_2 = 75;
 export const MICROCREDITS_PER_CREDIT = 1_000_000;
 export const MIN_TOPUP_VND = 10_000;
 export const TOPUP_STEP_VND = 1_000;
 export const TOPUP_PRESETS = [10_000, 20_000, 40_000, 100_000, 200_000, 400_000] as const;
+
+export type CreditPackage = {
+  vnd: number;
+  credits: number;
+  label: string;
+  popular?: boolean;
+};
+
+// Cac goi nạp theo Cach 2: 1 Credit = 75 VND (1.5x ROI tu nguon von 50d/Credit)
+export const CREDIT_PACKAGES_CACH_2: CreditPackage[] = [
+  { vnd: 15_000, credits: 200, label: 'Khởi động' },
+  { vnd: 75_000, credits: 1_000, label: 'Tiêu chuẩn', popular: true },
+  { vnd: 150_000, credits: 2_000, label: 'Developer' },
+  { vnd: 375_000, credits: 5_000, label: 'Pro / Team' },
+];
+
+export function calculateCreditsCach2(vnd: number): number {
+  if (!Number.isFinite(vnd) || vnd <= 0) return 0;
+  return Math.round((vnd / 75) * 100) / 100;
+}
 
 export const creditPackages = [
   { credits: 250, vnd: 100_000, key: 'starter' },

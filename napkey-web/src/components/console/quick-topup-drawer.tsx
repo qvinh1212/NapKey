@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api/client';
 import type { TopupOrderResponse, WalletResponse } from '@/lib/api/types';
-import { formatVnd, MIN_TOPUP_VND, TOPUP_STEP_VND } from '@/lib/pricing';
+import {
+  calculateCreditsCach2,
+  CREDIT_PACKAGES_CACH_2,
+  formatVnd,
+  MIN_TOPUP_VND,
+  TOPUP_STEP_VND,
+} from '@/lib/pricing';
 import { money } from '@/lib/format';
 import { CheckIcon, CloseIcon } from '@/components/ui/icon';
 import { CopyButton } from '@/components/ui/copy-button';
@@ -16,21 +22,6 @@ export interface QuickTopupDrawerProps {
   wallet: WalletResponse['wallet'] | null;
   onSuccess?: () => void;
 }
-
-type CreditPackage = {
-  vnd: number;
-  credits: number;
-  label: string;
-  popular?: boolean;
-};
-
-// Cac goi nạp theo Cach 2: 1 Credit = 75 VND (1.5x ROI tu nguon von 50d/Credit)
-const CREDIT_PACKAGES_CACH_2: CreditPackage[] = [
-  { vnd: 15_000, credits: 200, label: 'Khởi động' },
-  { vnd: 75_000, credits: 1_000, label: 'Tiêu chuẩn', popular: true },
-  { vnd: 150_000, credits: 2_000, label: 'Developer' },
-  { vnd: 375_000, credits: 5_000, label: 'Pro / Team' },
-];
 
 export function QuickTopupDrawer({ open, onClose, wallet, onSuccess }: QuickTopupDrawerProps) {
   const t = useTranslations('console.wallet');
@@ -85,7 +76,7 @@ export function QuickTopupDrawer({ open, onClose, wallet, onSuccess }: QuickTopu
 
   if (!open) return null;
 
-  const estimatedCredits = Math.round(amount / 75);
+  const estimatedCredits = calculateCreditsCach2(amount);
 
   return (
     <div

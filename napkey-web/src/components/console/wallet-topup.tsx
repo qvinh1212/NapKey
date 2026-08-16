@@ -8,7 +8,13 @@ import { WalletBalance } from './wallet-balance';
 import { Badge, Panel, PanelHeader } from './ui';
 import { CopyButton } from '@/components/ui/copy-button';
 import { creditAmount } from '@/lib/format';
-import { creditsFromVnd, formatVnd, microcreditsFromVnd, MIN_TOPUP_VND, TOPUP_PRESETS, TOPUP_STEP_VND } from '@/lib/pricing';
+import {
+  calculateCreditsCach2,
+  CREDIT_PACKAGES_CACH_2,
+  formatVnd,
+  MIN_TOPUP_VND,
+  TOPUP_STEP_VND,
+} from '@/lib/pricing';
 
 export function WalletTopup() {
   const t = useTranslations('console.wallet');
@@ -16,7 +22,7 @@ export function WalletTopup() {
   const [wallet, setWallet] = useState<WalletResponse['wallet'] | null>(null);
   const [history, setHistory] = useState<TopupHistoryResponse['orders']>([]);
   const [order, setOrder] = useState<TopupOrderResponse['order'] | null>(null);
-  const [amount, setAmount] = useState(MIN_TOPUP_VND);
+  const [amount, setAmount] = useState(75_000);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,15 +89,83 @@ export function WalletTopup() {
       {!order ? (
         <Panel as="section">
           <PanelHeader title={t('topupTitle')} description={t('topupDescription')} />
-          <form onSubmit={createOrder} className="space-y-5 p-5">
-            <div className="flex flex-wrap gap-2">
-              {TOPUP_PRESETS.map((value) => <button key={value} type="button" onClick={() => setAmount(value)} className={`rounded-full border px-4 py-2 text-ui tabular-nums ${amount === value ? 'border-accent bg-accent-soft text-accent-light' : 'border-line text-muted hover:text-fg'}`}>{formatVnd(value, locale)}</button>)}
+          <form onSubmit={createOrder} className="space-y-6 p-5 sm:p-6">
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="block text-ui font-medium text-fg">
+                  Chọn gói nạp Credits (Tỉ giá 1 CR = 75 ₫)
+                </label>
+                <span className="font-mono text-micro text-accent-light">1 CR = 75 ₫</span>
+              </div>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {CREDIT_PACKAGES_CACH_2.map((pkg) => (
+                  <button
+                    key={pkg.vnd}
+                    type="button"
+                    onClick={() => setAmount(pkg.vnd)}
+                    className={`relative rounded-xl border p-4 text-left transition-all ${
+                      amount === pkg.vnd
+                        ? 'border-accent bg-accent-soft text-fg ring-1 ring-accent shadow-[0_0_20px_rgba(16,185,129,0.15)]'
+                        : 'border-line bg-surface hover:border-accent/40 hover:bg-surface-hover'
+                    }`}
+                  >
+                    {pkg.popular ? (
+                      <span className="absolute top-2.5 right-2.5 rounded-full bg-accent/20 px-2 py-0.5 font-mono text-[10px] font-bold tracking-wider text-accent-light">
+                        POPULAR
+                      </span>
+                    ) : null}
+                    <p className="font-mono text-lg font-bold text-accent-light">
+                      {pkg.credits.toLocaleString('vi-VN')} CR
+                    </p>
+                    <p className="mt-1 font-mono text-ui text-fg font-medium">
+                      {formatVnd(pkg.vnd, locale)}
+                    </p>
+                    <p className="mt-1 font-mono text-micro text-dim">{pkg.label}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-            <label className="block max-w-sm text-ui text-muted">{t('customAmount')}<input type="number" min={MIN_TOPUP_VND} max={1000000000} step={TOPUP_STEP_VND} value={amount} onChange={(event) => setAmount(Number(event.target.value))} className="mt-2 w-full rounded-md border border-line bg-black px-4 py-3 text-fg outline-none focus:border-accent" /></label>
-            <p className="font-mono text-ui text-accent-light">{t('youReceive', { credits: creditAmount({ micros: microcreditsFromVnd(amount), credits: creditsFromVnd(amount) }, locale) })}</p>
-            <p className="max-w-2xl rounded-md border border-warn/30 bg-warn/10 px-4 py-3 text-ui leading-relaxed text-warn">{t('nonRefundable')}</p>
-            {error ? <p role="alert" className="text-ui text-danger">{error}</p> : null}
-            <button disabled={pending || amount < MIN_TOPUP_VND || amount % TOPUP_STEP_VND !== 0} className="rounded-full bg-fg px-6 py-2.5 text-ui font-medium text-bg disabled:opacity-50">{pending ? t('creating') : t('create')}</button>
+
+            <div className="max-w-md">
+              <label htmlFor="wallet-topup-custom-amount" className="block text-label text-dim">
+                {t('customAmount')}
+              </label>
+              <div className="mt-1.5 flex items-center gap-3">
+                <input
+                  id="wallet-topup-custom-amount"
+                  type="number"
+                  min={MIN_TOPUP_VND}
+                  max={1000000000}
+                  step={TOPUP_STEP_VND}
+                  value={amount}
+                  onChange={(event) => setAmount(Number(event.target.value))}
+                  className="w-full rounded-lg border border-line bg-surface px-4 py-2.5 font-mono text-ui text-fg outline-none focus:border-accent"
+                />
+              </div>
+              <p className="mt-2 font-mono text-label text-accent-light">
+                Bạn nhận được:{' '}
+                <span className="font-bold">
+                  {calculateCreditsCach2(amount).toLocaleString('vi-VN')} CR
+                </span>{' '}
+                <span className="text-dim">(Tỉ giá 1 CR = 75 ₫)</span>
+              </p>
+            </div>
+
+            <p className="max-w-2xl rounded-md border border-warn/30 bg-warn/10 px-4 py-3 text-ui leading-relaxed text-warn">
+              {t('nonRefundable')}
+            </p>
+            {error ? (
+              <p role="alert" className="text-ui text-danger">
+                {error}
+              </p>
+            ) : null}
+            <button
+              type="submit"
+              disabled={pending || amount < MIN_TOPUP_VND || amount % TOPUP_STEP_VND !== 0}
+              className="rounded-full bg-fg px-6 py-2.5 text-ui font-medium text-bg transition-colors hover:bg-white/90 disabled:opacity-50"
+            >
+              {pending ? t('creating') : t('create')}
+            </button>
           </form>
         </Panel>
       ) : (
