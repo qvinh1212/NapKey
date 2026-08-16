@@ -895,7 +895,15 @@
       "disable": "Tắt",
       "revoke": "Thu hồi",
       "revokeConfirm": "Thu hồi key \"{name}\"? Mọi request dùng key này sẽ bị từ chối ngay.",
-      "revokedAt": "Thu hồi {when}"
+      "revokedAt": "Thu hồi {when}",
+      "configure": "Cấu hình",
+      "configureKey": "Lấy cấu hình tích hợp",
+      "viewUsage": "Xem đối soát",
+      "totalTokensUsed": "Tổng token đã tiêu thụ",
+      "totalRequestsMade": "Tổng request đã thực hiện",
+      "activeKeysCount": "{count} key đang hoạt động",
+      "quickConfigTitle": "Cấu hình kết nối cho {name}",
+      "quickConfigDesc": "Sao chép cấu hình chuẩn để tích hợp ngay vào Claude Code, Cursor, Windsurf hoặc SDK."
     },
     "developer": {
       "metaTitle": "Không gian developer",

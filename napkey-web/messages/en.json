@@ -885,7 +885,15 @@
       "disable": "Disable",
       "revoke": "Revoke",
       "revokeConfirm": "Revoke key \"{name}\"? Requests using it will be rejected immediately.",
-      "revokedAt": "Revoked {when}"
+      "revokedAt": "Revoked {when}",
+      "configure": "Configure",
+      "configureKey": "Get client configuration",
+      "viewUsage": "View Ledger",
+      "totalTokensUsed": "Total tokens consumed",
+      "totalRequestsMade": "Total requests made",
+      "activeKeysCount": "{count} active keys",
+      "quickConfigTitle": "Connect configuration for {name}",
+      "quickConfigDesc": "Copy pre-formatted config to integrate directly with Claude Code, Cursor, Windsurf, or SDKs."
     },
     "developer": {
       "metaTitle": "Developer workspace",

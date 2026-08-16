@@ -1,28 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { api, ApiError } from '@/lib/api/client';
 import type { ApiKey, CreateKeyResponse, KeyListResponse, KeySyncState } from '@/lib/api/types';
 import { compact, dateTime } from '@/lib/format';
 import { useSession } from './session-provider';
 import { KeyOnboarding } from './key-onboarding';
-import { Badge, EmptyState, ErrorNotice, Panel, PanelHeader, SkeletonRows, TableScroll, Td, Th, type BadgeTone } from './ui';
+import { KeyConfigModal } from './key-config-modal';
+import { Badge, EmptyState, ErrorNotice, Panel, PanelHeader, SkeletonRows, StatCard, TableScroll, Td, Th, type BadgeTone } from './ui';
 
-/**
- * Quan ly API key.
- *
- * Diem quan trong nhat: ban tho cua key chi ton tai mot lan, trong phan hoi cua
- * lenh tao. napkey-core chi luu hash. Nen UI phai bat khach chu dong xac nhan da
- * luu, khong duoc de ho dong tab roi mat key.
- */
-
-/**
- * `syncState` quyet dinh key co dung duoc hay khong.
- *
- * An trang thai nay se de khach nhin mot key `active` ma goi API nhan 401 khong hieu
- * vi sao. `pending` la binh thuong va se tu het; `failed` thi can nguoi xu ly.
- */
 const syncTone: Record<KeySyncState, BadgeTone> = {
   pending: 'info',
   synced: 'accent',
@@ -42,13 +30,13 @@ export function KeysManager() {
   const canCreate = session.status === 'authenticated' && session.user.emailVerified;
 
   const [state, setState] = useState<ListState>({ status: 'loading' });
-  // Tang len sau moi thay doi de doc lai danh sach tu server.
   const [reloadToken, setReloadToken] = useState(0);
   const [name, setName] = useState('');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<CreateKeyResponse | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [configKey, setConfigKey] = useState<ApiKey | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -68,7 +56,6 @@ export function KeysManager() {
     return () => controller.abort();
   }, [t, reloadToken]);
 
-  /** Yeu cau doc lai danh sach. Dung sau moi thao tac ghi. */
   function reload() {
     setReloadToken((v) => v + 1);
   }
@@ -79,8 +66,6 @@ export function KeysManager() {
     setCreateError(null);
     try {
       const created = await api.post<CreateKeyResponse>('/v1/keys', { name: name.trim() });
-      // Giu ban tho trong state de hien mot lan. Khong ghi vao localStorage: mot bi
-      // mat dai han nam trong storage la mot bi mat cho bi lay.
       setRevealed(created);
       setName('');
       reload();
@@ -107,8 +92,6 @@ export function KeysManager() {
   }
 
   async function revokeKey(key: ApiKey) {
-    // Thu hoi khong hoan lai duoc, nen phai hoi. Dung confirm cua trinh duyet: mot
-    // modal tu ve o day chi them be mat loi ma khong ro hon.
     if (!window.confirm(t('revokeConfirm', { name: key.name || key.keyMasked }))) return;
     setBusyId(key.id);
     try {
@@ -124,9 +107,54 @@ export function KeysManager() {
     }
   }
 
+  const totals = useMemo(() => {
+    if (state.status !== 'ready') return { totalKeys: 0, activeKeys: 0, totalRequests: 0, totalTokens: 0 };
+    let activeKeys = 0;
+    let totalRequests = 0;
+    let totalTokens = 0;
+
+    state.keys.forEach((k) => {
+      if (k.status === 'active' && k.enabled) activeKeys++;
+      totalRequests += k.requestsCount || 0;
+      totalTokens += k.tokensUsed || 0;
+    });
+
+    return {
+      totalKeys: state.keys.length,
+      activeKeys,
+      totalRequests,
+      totalTokens,
+    };
+  }, [state]);
+
   return (
     <div className="flex flex-col gap-6">
+      {/* 1-Click Key Configuration Modal */}
+      <KeyConfigModal apiKey={configKey} onClose={() => setConfigKey(null)} />
+
       {revealed ? <KeyOnboarding key={revealed.details.id} created={revealed} onDone={() => setRevealed(null)} /> : null}
+
+      {/* Per-Key Summary Analytics Bar */}
+      {state.status === 'ready' && state.keys.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCard
+            label={t('metaTitle')}
+            value={`${totals.activeKeys} / ${totals.totalKeys}`}
+            hint={t('activeKeysCount', { count: totals.activeKeys })}
+            tone="accent"
+          />
+          <StatCard
+            label={t('totalRequestsMade')}
+            value={compact(totals.totalRequests, locale)}
+            hint="Tổng lượt gọi API phục vụ qua các keys"
+          />
+          <StatCard
+            label={t('totalTokensUsed')}
+            value={compact(totals.totalTokens, locale)}
+            hint="Tổng lượng token xử lý qua gateway"
+          />
+        </div>
+      ) : null}
 
       <Panel as="section">
         <PanelHeader title={t('createTitle')} description={t('createDescription')} />
@@ -139,8 +167,6 @@ export function KeysManager() {
               id="key-name"
               type="text"
               value={name}
-              // 60 la maxKeyNameLength cua napkey-core. Chan o day de nguoi dung
-              // biet gioi han truoc khi gui, thay vi nhan mot loi tu server.
               maxLength={60}
               disabled={revealed !== null}
               onChange={(event) => setName(event.target.value)}
@@ -198,7 +224,7 @@ export function KeysManager() {
                 const isRevoked = key.status === 'revoked';
                 return (
                   <tr key={key.id} className="transition-colors hover:bg-surface-hover">
-                    <Td className="text-fg">{key.name || t('unnamed')}</Td>
+                    <Td className="text-fg font-medium">{key.name || t('unnamed')}</Td>
                     <Td className="font-mono text-dim">
                       <span className="flex flex-wrap items-center gap-2">
                         {key.keyMasked}
@@ -220,7 +246,6 @@ export function KeysManager() {
                         >
                           {t(`status.${key.status}`)}
                         </Badge>
-                        {/* Chi noi ve sync khi no chua xong - `synced` la mac dinh, khong can nhac. */}
                         {key.syncState !== 'synced' ? (
                           <Badge tone={syncTone[key.syncState]} title={key.syncError}>
                             {t(`sync.${key.syncState}`)}
@@ -228,35 +253,64 @@ export function KeysManager() {
                         ) : null}
                       </span>
                     </Td>
-                    <Td align="right">{compact(key.requestsCount, locale)}</Td>
-                    <Td align="right">{compact(key.tokensUsed, locale)}</Td>
-                    <Td className="whitespace-nowrap text-dim">
+                    <Td align="right" className="font-mono tabular-nums">
+                      {compact(key.requestsCount, locale)}
+                    </Td>
+                    <Td align="right" className="font-mono tabular-nums">
+                      {compact(key.tokensUsed, locale)}
+                    </Td>
+                    <Td className="whitespace-nowrap text-dim font-mono text-label">
                       {key.lastUsedAt ? dateTime(key.lastUsedAt, locale) : t('never')}
                     </Td>
                     <Td align="right">
                       {isRevoked ? (
-                        <span className="text-dim">{t('revokedAt', {
-                          when: key.revokedAt ? dateTime(key.revokedAt, locale) : '',
-                        })}</span>
+                        <span className="text-dim text-label">
+                          {t('revokedAt', {
+                            when: key.revokedAt ? dateTime(key.revokedAt, locale) : '',
+                          })}
+                        </span>
                       ) : (
-                        <span className="flex justify-end gap-2">
+                        <div className="flex flex-wrap items-center justify-end gap-1.5">
+                          {/* 1-Click Configure Button */}
+                          <button
+                            type="button"
+                            onClick={() => setConfigKey(key)}
+                            title={t('configureKey')}
+                            className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent-soft px-2.5 py-1 font-mono text-micro font-medium text-accent-light hover:bg-accent/25 transition-colors"
+                          >
+                            <span>⚡</span>
+                            <span>{t('configure')}</span>
+                          </button>
+
+                          {/* 1-Click Ledger Filter */}
+                          <Link
+                            href={`/console/usage?keyId=${key.id}`}
+                            title={t('viewUsage')}
+                            className="rounded-full border border-line px-2.5 py-1 font-mono text-micro text-muted hover:border-line hover:text-fg transition-colors"
+                          >
+                            {t('viewUsage')}
+                          </Link>
+
+                          {/* Toggle Active */}
                           <button
                             type="button"
                             disabled={busyId === key.id}
                             onClick={() => void toggleEnabled(key)}
-                            className="rounded-full border border-line px-3 py-1 text-ui text-muted transition-colors hover:bg-white/10 hover:text-fg disabled:pointer-events-none disabled:opacity-40"
+                            className="rounded-full border border-line px-2.5 py-1 font-mono text-micro text-muted transition-colors hover:bg-white/10 hover:text-fg disabled:pointer-events-none disabled:opacity-40"
                           >
                             {key.enabled ? t('disable') : t('enable')}
                           </button>
+
+                          {/* Revoke Key */}
                           <button
                             type="button"
                             disabled={busyId === key.id}
                             onClick={() => void revokeKey(key)}
-                            className="rounded-full border border-danger/40 px-3 py-1 text-ui text-danger transition-colors hover:bg-danger/10 disabled:pointer-events-none disabled:opacity-40"
+                            className="rounded-full border border-danger/40 px-2.5 py-1 font-mono text-micro text-danger transition-colors hover:bg-danger/10 disabled:pointer-events-none disabled:opacity-40"
                           >
                             {t('revoke')}
                           </button>
-                        </span>
+                        </div>
                       )}
                     </Td>
                   </tr>
