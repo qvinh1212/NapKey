@@ -7,19 +7,17 @@ import { count, dayLabel, money } from '@/lib/format';
 import { usageBarPercent } from '@/lib/usage-chart-layout';
 
 /**
- * Bieu do cot chi phi theo ngay.
+ * Bieu do cot chi phi va phan bo token theo ngay.
  *
- * SVG viet tay chu khong dung thu vien chart. Du lieu la mot chuoi mot chieu voi
- * duoi 400 diem; keo them mot thu vien chart vao bundle cho viec nay la doi mot
- * phan dang ke kich thuoc tai ve de lay mot thu 60 dong lam duoc. Neu ve sau can
- * chart phuc tap (nhieu truc, zoom, brush) thi luc do hay doi.
+ * SVG & CSS thuan khong dung thu vien nang bundle.
+ * Ho tro tooltip tuong tac chi tiet:
+ * - Phan tach ro ty le giua Prompt Tokens (Input) va Completion Tokens (Output).
+ * - Chi phi thuc te va so request tren tung moc thoi gian.
+ * - Mini proportional distribution bar voi animation spring.
  *
- * Truy cap duoc: `<table>` an di mang toan bo so lieu cho trinh doc man hinh, con
- * SVG duoc `aria-hidden`. Mot bieu do chi ton tai bang mau sac va chieu cao thi
- * nguoi khong nhin thay khong doc duoc gi.
+ * Truy cap duoc: `<table>` an di mang toan bo so lieu cho trinh doc man hinh.
  */
 
-/** Ngay khong co traffic bi backend bo qua, nen chart tu chua khoang trong. */
 export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
   const t = useTranslations('console.usage');
   const locale = useLocale();
@@ -37,14 +35,30 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
 
   return (
     <div className="px-4 py-5 sm:px-5">
-      <div className="mb-4 flex min-h-5 flex-col gap-1 text-ui sm:mb-3 sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-dim">{t('chartLegend')}</span>
+      {/* Header & Legend */}
+      <div className="mb-4 flex flex-col gap-2 border-b border-line pb-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-3 text-label">
+          <span className="font-medium text-dim">{t('chartLegend')}</span>
+          <span className="inline-flex items-center gap-1.5 text-muted">
+            <span className="size-2 rounded-full bg-accent" />
+            <span>{t('colInput')} (Prompt)</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-muted">
+            <span className="size-2 rounded-full bg-info" />
+            <span>{t('colOutput')} (Completion)</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-dim">
+            <span className="size-2 rounded-full bg-zinc-400" />
+            <span>{t('colCacheRead')}</span>
+          </span>
+        </div>
+
         {activeDay ? (
-          <span className="tabular-nums text-muted">
+          <span className="font-mono text-label tabular-nums text-muted">
             <span className="text-dim">{dayLabel(activeDay.day, locale)}</span>
-            {'  '}
-            <span className="text-accent-light">{money(activeDay.cost)}</span>
-            {'  '}
+            {' · '}
+            <span className="font-medium text-accent-light">{money(activeDay.cost)}</span>
+            {' · '}
             <span className="text-dim">
               {t('chartRequests', { count: count(activeDay.requests, locale) })}
             </span>
@@ -52,6 +66,7 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
         ) : null}
       </div>
 
+      {/* Chart Bars List */}
       <div
         aria-hidden
         className="space-y-3"
@@ -60,24 +75,142 @@ export function UsageChart({ daily }: { daily: UsageDayBucket[] }) {
         {daily.map((day, index) => {
           const widthPct = usageBarPercent(day.cost.micros, maxMicros);
           const isActive = active === index;
+
+          const inputTokens = day.tokens.input;
+          const outputTokens = day.tokens.output;
+          const cacheTokens = day.tokens.cacheRead;
+          const totalTokens = day.tokens.total || (inputTokens + outputTokens + cacheTokens);
+
+          const inputRatio = totalTokens > 0 ? (inputTokens / totalTokens) * 100 : 0;
+          const outputRatio = totalTokens > 0 ? (outputTokens / totalTokens) * 100 : 0;
+          const cacheRatio = totalTokens > 0 ? (cacheTokens / totalTokens) * 100 : 0;
+
           return (
             <div
               key={day.day}
               onMouseEnter={() => setActive(index)}
-              className="grid cursor-default grid-cols-[4.25rem_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5 sm:grid-cols-[5.5rem_minmax(0,1fr)_10rem]"
+              className="relative"
             >
-              <span className="font-mono text-label text-dim">{dayLabel(day.day, locale)}</span>
-              <span className="h-2 overflow-hidden rounded-full bg-white/[0.07]">
-                <span
-                  style={{ width: `${widthPct}%` }}
-                  className={'block h-full rounded-full transition-[width,background-color] duration-200 ease-[var(--ease-smooth)] ' +
-                    (isActive ? 'bg-accent-light shadow-[0_0_14px_rgba(52,211,153,0.3)]' : 'bg-accent/65')}
-                />
-              </span>
-              <span className="col-span-2 text-right font-mono text-label tabular-nums text-muted sm:col-span-1">
-                {money(day.cost)}
-                <span className="ml-2 hidden text-dim sm:inline">· {count(day.requests, locale)} req</span>
-              </span>
+              <div className="grid cursor-default grid-cols-[4.25rem_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5 sm:grid-cols-[5.5rem_minmax(0,1fr)_10rem]">
+                <span className="font-mono text-label text-dim">{dayLabel(day.day, locale)}</span>
+                
+                {/* Horizontal Segmented Bar */}
+                <span className="relative flex h-2.5 overflow-hidden rounded-full bg-white/[0.07]">
+                  <span
+                    style={{ width: `${widthPct}%` }}
+                    className={`flex h-full overflow-hidden rounded-full transition-all duration-200 ease-[var(--ease-smooth)] ${
+                      isActive ? 'shadow-[0_0_16px_rgba(52,211,153,0.35)] ring-1 ring-white/20' : ''
+                    }`}
+                  >
+                    {totalTokens > 0 ? (
+                      <>
+                        <span
+                          style={{ width: `${inputRatio}%` }}
+                          className="h-full bg-accent transition-colors"
+                        />
+                        <span
+                          style={{ width: `${outputRatio}%` }}
+                          className="h-full bg-info transition-colors"
+                        />
+                        {cacheRatio > 0 ? (
+                          <span
+                            style={{ width: `${cacheRatio}%` }}
+                            className="h-full bg-zinc-400 transition-colors"
+                          />
+                        ) : null}
+                      </>
+                    ) : (
+                      <span className="h-full w-full bg-accent/65" />
+                    )}
+                  </span>
+                </span>
+
+                <span className="col-span-2 text-right font-mono text-label tabular-nums text-muted sm:col-span-1">
+                  {money(day.cost)}
+                  <span className="ml-2 hidden text-dim sm:inline">· {count(day.requests, locale)} req</span>
+                </span>
+              </div>
+
+              {/* Interactive Tooltip Card */}
+              {isActive ? (
+                <div
+                  role="tooltip"
+                  className="mt-2 overflow-hidden rounded-lg border border-line bg-black/95 p-3.5 shadow-2xl backdrop-blur-md animate-[tooltip-spring_0.25s_cubic-bezier(0.34,1.56,0.64,1)_both]"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-ui font-semibold text-fg">
+                        {dayLabel(day.day, locale)}
+                      </span>
+                      <span className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-micro text-dim">
+                        {count(day.requests, locale)} req
+                      </span>
+                    </div>
+                    <div className="font-mono text-ui font-semibold text-accent-light">
+                      {money(day.cost)}
+                    </div>
+                  </div>
+
+                  {/* Token breakdown details */}
+                  <div className="mt-2.5 grid grid-cols-2 gap-3 text-label sm:grid-cols-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 text-muted">
+                        <span className="size-2 rounded-full bg-accent shrink-0" />
+                        <span>{t('colInput')} (Prompt)</span>
+                      </div>
+                      <div className="font-mono text-fg">
+                        {count(inputTokens, locale)}{' '}
+                        <span className="text-micro text-accent-light">
+                          ({inputRatio.toFixed(1)}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 text-muted">
+                        <span className="size-2 rounded-full bg-info shrink-0" />
+                        <span>{t('colOutput')} (Completion)</span>
+                      </div>
+                      <div className="font-mono text-fg">
+                        {count(outputTokens, locale)}{' '}
+                        <span className="text-micro text-info">
+                          ({outputRatio.toFixed(1)}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    {cacheTokens > 0 ? (
+                      <div className="col-span-2 space-y-1 sm:col-span-1">
+                        <div className="flex items-center gap-1.5 text-muted">
+                          <span className="size-2 rounded-full bg-zinc-400 shrink-0" />
+                          <span>{t('colCacheRead')}</span>
+                        </div>
+                        <div className="font-mono text-fg">
+                          {count(cacheTokens, locale)}{' '}
+                          <span className="text-micro text-dim">
+                            ({cacheRatio.toFixed(1)}%)
+                          </span>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {/* Token distribution mini progress bar */}
+                  {totalTokens > 0 ? (
+                    <div className="mt-3 border-t border-line/60 pt-2.5">
+                      <div className="mb-1 flex justify-between font-mono text-micro text-dim">
+                        <span>{t('colTokens')}: {count(totalTokens, locale)}</span>
+                        <span>{inputRatio.toFixed(0)}% In / {outputRatio.toFixed(0)}% Out</span>
+                      </div>
+                      <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                        <div style={{ width: `${inputRatio}%` }} className="bg-accent" />
+                        <div style={{ width: `${outputRatio}%` }} className="bg-info" />
+                        {cacheRatio > 0 ? <div style={{ width: `${cacheRatio}%` }} className="bg-zinc-400" /> : null}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           );
         })}
