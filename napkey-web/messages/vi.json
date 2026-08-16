@@ -275,6 +275,33 @@
       "title": "Tặng 20.000 VNĐ để trải nghiệm ngay",
       "body": "Nạp từ 10.000 VNĐ, không phí tháng, tiền đã nạp không hết hạn.",
       "example": "Đủ cho khoảng 58 lượt chat ngắn"
+    },
+    "calculator": {
+      "eyebrow": "Ước tính chi phí",
+      "title": "So sánh chi phí: Dùng bao nhiêu trả bấy nhiêu vs Gói $20",
+      "subtitle": "Kéo thanh trượt theo nhu cầu thực tế của bạn để xem NapKey giúp bạn tiết kiệm bao nhiêu so với gói tháng cố định.",
+      "dailyRequests": "Nhu cầu hàng ngày",
+      "requestsPerDay": "{count} request / ngày",
+      "monthlyRequests": "Khoảng {count} request / tháng",
+      "modelLabel": "Model ưu tiên",
+      "workloadLabel": "Kiểu tác vụ",
+      "workloads": {
+        "chat": "Chat & Edit nhỏ",
+        "agentStep": "Claude Code / Agent",
+        "largeContext": "Đọc file lớn / Context sâu"
+      },
+      "presets": {
+        "light": "Nhẹ (20/ngày)",
+        "moderate": "Dev (60/ngày)",
+        "heavy": "Power (150/ngày)"
+      },
+      "napkeyCost": "Chi phí NapKey dự tính",
+      "fixedPlanCost": "Gói $20 Pro nước ngoài",
+      "fixedPlanDesc": "Cố định ~520.000 ₫/tháng dù không dùng hết",
+      "savingsBadge": "Tiết kiệm {percent}% (~{amount}/tháng)",
+      "overageNotice": "Tần suất cao — không lo bị bóp rate limit như gói cố định",
+      "perDayAverage": "Trung bình ~{amount}/ngày",
+      "zeroWaste": "Không mất tiền vào cuối tuần hoặc khi không code"
     }
   },
   "launchOffer": {

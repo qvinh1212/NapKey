@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Section } from '@/components/ui/section';
 import { MODEL_TIERS } from '@/lib/pricing';
+import { PricingCalculator } from './pricing-calculator';
 
 export function PricingTable() {
   const t = useTranslations('pricing');
@@ -39,7 +40,10 @@ export function PricingTable() {
 
       <p className="mt-3 text-prose text-dim">{t('models.note')}</p>
 
-      <div className="relative mt-6 overflow-hidden rounded-xl border border-accent/40 bg-accent-soft p-5 sm:p-7">
+      {/* Interactive Cost Calculator & $20 Pro Comparison */}
+      <PricingCalculator />
+
+      <div className="relative mt-8 overflow-hidden rounded-xl border border-accent/40 bg-accent-soft p-5 sm:p-7">
         <div aria-hidden="true" className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-accent/15 blur-3xl" />
         <div className="relative grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
           <div>
