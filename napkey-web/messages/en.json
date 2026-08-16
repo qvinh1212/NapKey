@@ -453,7 +453,10 @@
       "resend": "Resend email",
       "resendSending": "Sending...",
       "resendSent": "Sent, check your inbox.",
-      "resendRetry": "Try again"
+      "resendRetry": "Try again",
+      "lowBalance": "Low balance",
+      "quickTopup": "Quick Top-up",
+      "availableBalance": "Available: {amount}"
     },
     "auth": {
       "emailLabel": "Email",

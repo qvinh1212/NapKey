@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { api } from '@/lib/api/client';
+import type { WalletResponse } from '@/lib/api/types';
 import { useSession } from './session-provider';
+import { QuickTopupDrawer } from './quick-topup-drawer';
 import { Badge } from './ui';
 
 /**
@@ -68,11 +70,31 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [wallet, setWallet] = useState<WalletResponse['wallet'] | null>(null);
+  const [topupOpen, setTopupOpen] = useState(false);
+
   // Khach chua dang nhap thi dua ve trang dang nhap. Chay trong effect vi dieu
   // huong trong khi render la loi trong React.
   useEffect(() => {
     if (session.status === 'anonymous') router.replace('/signin');
   }, [session.status, router]);
+
+  useEffect(() => {
+    if (session.status !== 'authenticated') return;
+    const controller = new AbortController();
+
+    async function fetchWallet() {
+      try {
+        const res = await api.get<WalletResponse>('/v1/me/wallet', controller.signal);
+        setWallet(res.wallet);
+      } catch {
+        // Best-effort
+      }
+    }
+
+    void fetchWallet();
+    return () => controller.abort();
+  }, [session.status]);
 
   if (session.status === 'loading') {
     return (
@@ -97,9 +119,20 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
   }
 
   const { user } = session;
+  const isLowBalance = Boolean(wallet && wallet.available.vnd < 20000);
 
   return (
     <div className="container-page pt-24 pb-16 sm:pt-28 sm:pb-24">
+      {/* Quick VietQR Top-up Drawer / Modal */}
+      <QuickTopupDrawer
+        open={topupOpen}
+        onClose={() => setTopupOpen(false)}
+        wallet={wallet}
+        onSuccess={() => {
+          void api.get<WalletResponse>('/v1/me/wallet').then((res) => setWallet(res.wallet)).catch(() => {});
+        }}
+      />
+
       <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
         <div className="lg:w-52 lg:shrink-0">
           <div className="mb-6">
@@ -108,6 +141,43 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
             </p>
             <h1 className="mt-2 text-2xl tracking-[-0.02em]">{t('title')}</h1>
           </div>
+
+          {/* Quick VietQR Topup Button / Low Balance Alert on Sidebar */}
+          {wallet ? (
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => setTopupOpen(true)}
+                className={`group flex w-full items-center justify-between gap-2 rounded-lg border p-2.5 text-left transition-all ${
+                  isLowBalance
+                    ? 'border-warn/40 bg-warn/10 text-warn hover:border-warn hover:bg-warn/15'
+                    : 'border-line bg-surface text-muted hover:border-line hover:bg-surface-hover hover:text-fg'
+                }`}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 font-mono text-micro uppercase tracking-wider">
+                    {isLowBalance ? (
+                      <>
+                        <span className="size-1.5 rounded-full bg-warn animate-pulse" />
+                        <span className="text-warn">{t('lowBalance')}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="size-1.5 rounded-full bg-accent" />
+                        <span className="text-dim">Ví</span>
+                      </>
+                    )}
+                  </div>
+                  <p className="mt-0.5 truncate font-mono text-ui font-semibold text-fg">
+                    {wallet.available.formatted}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full border border-line bg-white/5 px-2.5 py-1 text-label font-medium group-hover:bg-white/10 group-hover:text-fg">
+                  + {t('quickTopup')}
+                </span>
+              </button>
+            </div>
+          ) : null}
 
           {/*
             Tren mobile: hang ngang cuon duoc. Tren desktop: cot doc.
@@ -156,11 +226,27 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          {/* Tren mobile phan tai khoan nam tren dau noi dung, vi sidebar da thu gon. */}
-          <div className="mb-6 flex items-center justify-between gap-3 lg:hidden">
-            <span className="min-w-0 truncate text-ui text-dim" title={user.email}>
-              {user.email}
-            </span>
+          {/* Tren mobile phan tai khoan va vi nam tren dau noi dung */}
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 lg:hidden">
+            <div className="flex items-center gap-3">
+              <span className="min-w-0 truncate text-ui text-dim" title={user.email}>
+                {user.email}
+              </span>
+              {wallet ? (
+                <button
+                  type="button"
+                  onClick={() => setTopupOpen(true)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-label ${
+                    isLowBalance
+                      ? 'border-warn/40 bg-warn/10 text-warn'
+                      : 'border-line bg-surface text-accent-light'
+                  }`}
+                >
+                  <span>{wallet.available.formatted}</span>
+                  <span className="text-dim">· Nạp</span>
+                </button>
+              ) : null}
+            </div>
             <button
               type="button"
               onClick={() => void session.signOut()}

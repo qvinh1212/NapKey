@@ -463,7 +463,10 @@
       "resend": "Gửi lại email",
       "resendSending": "Đang gửi...",
       "resendSent": "Đã gửi, kiểm tra hộp thư.",
-      "resendRetry": "Thử lại"
+      "resendRetry": "Thử lại",
+      "lowBalance": "Số dư thấp",
+      "quickTopup": "Nạp nhanh VietQR",
+      "availableBalance": "Khả dụng: {amount}"
     },
     "auth": {
       "emailLabel": "Email",
