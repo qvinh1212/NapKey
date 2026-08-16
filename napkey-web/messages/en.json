@@ -321,8 +321,8 @@
       "colModel": "Model",
       "colTier": "Multiplier",
       "tierValue": "{ratio}x",
-      "ratePerMillion": "{rate} VND / 1M tokens",
-      "rateHeader": "Rate per 1M Tokens",
+      "ratePerMillion": "{rate} CR / 1M tokens",
+      "rateHeader": "Rate per 1M Tokens (CR)",
       "verifiedRoute": "Verified Route",
       "filterLabel": "Capability:",
       "filters": {

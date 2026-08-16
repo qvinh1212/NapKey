@@ -10,7 +10,7 @@ const PROMPT_SNIPPETS = {
     id: 'debounce',
     model: 'claude-sonnet-5',
     tokens: 118,
-    costVnd: '300.18 \u20ab',
+    costVnd: '4.00 CR',
     code: `// TypeScript Debounce Hook
 import { useState, useEffect } from 'react';
 
@@ -29,7 +29,7 @@ export function useDebounce<T>(value: T, delayMs = 300): T {
     id: 'sql',
     model: 'claude-sonnet-5',
     tokens: 145,
-    costVnd: '300.22 \u20ab',
+    costVnd: '4.00 CR',
     code: `-- Optimized Index Scan Query
 WITH active_keys AS (
   SELECT id, user_id, last_used_at
@@ -47,7 +47,7 @@ GROUP BY k.id, k.user_id;`,
     id: 'auth',
     model: 'claude-sonnet-5',
     tokens: 132,
-    costVnd: '300.20 \u20ab',
+    costVnd: '4.01 CR',
     code: `// Next.js Edge Auth Middleware
 import { NextResponse, type NextRequest } from 'next/server';
 

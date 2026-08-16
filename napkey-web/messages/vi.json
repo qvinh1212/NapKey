@@ -319,8 +319,8 @@
       "colModel": "Model",
       "colTier": "Hệ số",
       "tierValue": "{ratio}x",
-      "ratePerMillion": "{rate} ₫ / 1M tokens",
-      "rateHeader": "Đơn giá 1M Tokens",
+      "ratePerMillion": "{rate} CR / 1M tokens",
+      "rateHeader": "Đơn giá 1M Tokens (CR)",
       "verifiedRoute": "Verified Route",
       "filterLabel": "Năng lực:",
       "filters": {
