@@ -201,16 +201,16 @@ func publicModelsFromUpstream(upstreamIDs []string, prefix string) []string {
 //
 //	claude-sonnet-4.8  published, but a completion returns no usable response
 //	gpt-image-2        an image model; /v1/chat/completions cannot serve it
-//	claude-fable-5     published, but the pool key is not entitled to it
 //
-// claude-fable-5 was measured against the NapKey/ pool on 2026-08-09: fifteen probes
-// returned Cloudflare 524 or closed the stream without usage, never a completion,
-// while claude-sonnet-5 answered in nine seconds on the same key. The entitlement is
-// missing upstream, so the id is published but unbuyable.
-//
-// Unlike the other two it does carry price rows, from migrations 0018 and 0019. Those
-// stay: closing a price period would reprice traffic that already settled against it.
-// Withdrawing an id from sale is a catalog decision, not a pricing one.
+// claude-fable-5 sat in this switch from 2026-08-09 until 2026-08-16. Fifteen probes
+// against the NapKey/ pool returned Cloudflare 524 or closed the stream without usage,
+// never a completion, while claude-sonnet-5 answered in nine seconds on the same key:
+// the pool key was not entitled to it, so the id was published but unbuyable. The
+// provider granted the entitlement on 2026-08-16 and the id returned to sale at the
+// top tier it already anchored. Unlike the ids above it carries price rows, from
+// migrations 0018 and 0019: withdrawing an id from sale is a catalog decision, not a
+// pricing one, and closing a price period would reprice traffic that already settled
+// against it.
 //
 // Seven more ids were dropped from sale on 2026-08-15, when migration 0021 replaced
 // the flat price book with a tiered one covering eight models:
@@ -250,7 +250,7 @@ func nineRouterUnservable(publicModel string) bool {
 		return true
 	}
 	switch id {
-	case "claude-sonnet-4.8", "claude-sonnet-4-8", "gpt-image-2", "claude-fable-5",
+	case "claude-sonnet-4.8", "claude-sonnet-4-8", "gpt-image-2",
 		"claude-haiku-4.5", "claude-haiku-4-5",
 		"claude-sonnet-4.6", "claude-sonnet-4-6",
 		"claude-sonnet-4.7",
@@ -318,7 +318,9 @@ func (h *Handler) refuseUnservableNineRouterModel(w http.ResponseWriter, r *http
 }
 
 // nineRouterPublicModel strips the pool prefix if a client sends the upstream id
-// verbatim, so the refusal covers both "claude-fable-5" and "NapKey/claude-fable-5".
+// verbatim, so the refusal covers both "gpt-image-2" and "NapKey/gpt-image-2". gpt-image-2
+// stands in for the unservable id because it stays unservable while other ids rotate
+// in and out of sale.
 func nineRouterPublicModel(model string) string {
 	trimmed := strings.TrimSpace(model)
 	prefix := nineRouterModelPrefix()
@@ -352,9 +354,10 @@ func nineRouterModelList(ids []string) []map[string]interface{} {
 // an unpriced id is the accident the price book exists to prevent, so the catalog is
 // intersected with this list rather than trusting whatever the pool lists.
 //
-// The seven entries match MODEL_TIERS in napkey-web and the eight named rows of
-// migration 0021 minus claude-fable-5, which is priced only to anchor the fallback but
-// withdrawn from sale because the pool key is not entitled to it upstream.
+// The eight entries match MODEL_TIERS in napkey-web and the eight named rows of
+// migration 0021. claude-fable-5 rejoined on 2026-08-16, when the provider granted
+// the pool key entitlement for it; until then it was priced only to anchor the
+// '*' fallback.
 var nineRouterServedModels = map[string]bool{
 	"claude-sonnet-5": true,
 	"gpt-5.6-luna":    true,
@@ -363,6 +366,7 @@ var nineRouterServedModels = map[string]bool{
 	"gpt-5.6-terra":   true,
 	"claude-opus-5":   true,
 	"gpt-5.6-sol":     true,
+	"claude-fable-5":  true,
 }
 
 // nineRouterServed reports whether a public id is one of the models NapKey sells.
@@ -383,9 +387,9 @@ func nineRouterServed(publicModel string) bool {
 // That alignment only ever governed this fallback, never the live path: the upstream
 // list wins whenever it can be read. The list was trimmed on 2026-08-15 when
 // migration 0021 repriced the catalog; haiku, sonnet-4.6/4.7 and opus-4.6 were
-// retired then, and claude-fable-5 was withdrawn in the same change because the
-// pool key is not entitled to it. Both are excluded here for the same reason
-// nineRouterUnservable drops them from the live list.
+// retired then and stay excluded for the same reason nineRouterUnservable drops
+// them from the live list. claude-fable-5 left in the same change and returned on
+// 2026-08-16, when the provider granted the pool key entitlement for it.
 //
 // It is a fallback, not the source of truth: the upstream list wins whenever it can
 // be read, so adding a model there does not require editing this. Ids that cannot be
@@ -400,6 +404,7 @@ func nineRouterFallbackModels() []string {
 		"gpt-5.6-terra",
 		"claude-opus-5",
 		"gpt-5.6-sol",
+		"claude-fable-5",
 	}
 }
 

@@ -60,10 +60,10 @@ export const UPSTREAM_MODEL_COSTS: Record<string, number> = {
  * the model and its tier, and leaves the VND conversion out of sight because
  * customers settle in wallet credits.
  *
- * claude-fable-5 has a price row in migration 0021 but is not listed here: the
- * pool key is not entitled to it upstream, so it was withdrawn from sale in the
- * same change that added this table. Its rate survives only to anchor the '*'
- * fallback at the top tier.
+ * claude-fable-5 anchors the '*' fallback at the top tier. It was withdrawn
+ * from sale on 2026-08-09 while the pool key was not entitled to it upstream,
+ * and returned to the catalog on 2026-08-16 when the provider granted the
+ * entitlement.
  */
 export const MODEL_TIERS: readonly { id: string; ratio: number }[] = [
   { id: 'claude-sonnet-5', ratio: 0.5 },
@@ -73,6 +73,7 @@ export const MODEL_TIERS: readonly { id: string; ratio: number }[] = [
   { id: 'gpt-5.6-terra', ratio: 1.2 },
   { id: 'claude-opus-5', ratio: 1.5 },
   { id: 'gpt-5.6-sol', ratio: 2 },
+  { id: 'claude-fable-5', ratio: 3.3 },
 ] as const;
 
 /** Look up the VND/1M rate for a given model id. Case-insensitive. */

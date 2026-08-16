@@ -14,7 +14,7 @@ test('maps NapKey to supported developer clients and Claude model families', () 
   );
   assert.deepEqual(
     ecosystemModels.map((model) => model.id),
-    ['claude-opus-5', 'claude-sonnet-5', 'claude-haiku-4.5', 'auto'],
+    ['claude-opus-5', 'claude-sonnet-5', 'claude-fable-5', 'auto'],
   );
 });
 
@@ -27,7 +27,7 @@ test('only advertises models the price book covers', () => {
     'claude-opus-5',
     'claude-opus-4.7',
     'claude-opus-4.8',
-    'claude-haiku-4.5',
+    'claude-fable-5',
     // Resolved by the gateway before anything reaches the upstream.
     'auto',
   ]);

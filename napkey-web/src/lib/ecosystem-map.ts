@@ -9,14 +9,13 @@ export const ecosystemClients = [
 
 // The models named on the landing diagram. Kept to ids that are actually on sale and
 // priced, so the marketing surface cannot promise a model the API would refuse.
-// claude-fable-5 used to sit here. It was withdrawn on 2026-08-09: the pool publishes
-// the id but the account is not entitled to it, so every probe came back as a
-// Cloudflare 524 or a stream that closed without usage. The gateway now refuses it
-// before the wallet is touched, and the diagram must not promise what the API refuses.
+// claude-fable-5 left on 2026-08-09 when every probe 524'd on an unentitled key, and
+// returned on 2026-08-16 when the provider granted the entitlement. claude-haiku-4.5
+// left with migration 0021's repricing and stays gone: the API refuses it now.
 export const ecosystemModels = [
   { id: 'claude-opus-5', family: 'opus', mark: 'O' },
   { id: 'claude-sonnet-5', family: 'sonnet', mark: 'S' },
-  { id: 'claude-haiku-4.5', family: 'haiku', mark: 'H' },
+  { id: 'claude-fable-5', family: 'fable', mark: 'F' },
   { id: 'auto', family: 'router', mark: 'A' },
 ] as const;
 

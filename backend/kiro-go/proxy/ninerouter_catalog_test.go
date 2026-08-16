@@ -88,9 +88,11 @@ func TestPublicModelsKeepsOnlyTheServedSet(t *testing.T) {
 		"Viberouter/gpt-5.6-terra",
 		"Viberouter/gpt-5.6-terra-thinking",
 		"Viberouter/deepseek-v4-pro",
+		"Viberouter/claude-fable-5",
 	}, "Viberouter/")
 
 	want := []string{
+		"claude-fable-5",
 		"claude-opus-4.7",
 		"claude-opus-4.8",
 		"claude-opus-5",
@@ -131,7 +133,7 @@ func TestPublicModelsDropsUnservableModels(t *testing.T) {
 		"Viberouter/claude-sonnet-5",
 		"Viberouter/claude-sonnet-4.8",
 		"Viberouter/gpt-image-2",
-		"Viberouter/claude-fable-5",
+		"Viberouter/deepseek-v4-pro",
 	}, "Viberouter/")
 
 	want := []string{"claude-sonnet-5"}
@@ -140,28 +142,31 @@ func TestPublicModelsDropsUnservableModels(t *testing.T) {
 	}
 }
 
-// claude-fable-5 is published by the pool and priced by migrations 0018 and 0019, so
-// nothing except this check keeps it off the menu. Measured 2026-08-09: every probe
-// returned 524 or a stream with no usage, on a key that served claude-sonnet-5 fine.
-func TestFableIsWithdrawnFromSale(t *testing.T) {
+// claude-fable-5 was withdrawn from sale on 2026-08-09, when every probe returned
+// 524 or a stream with no usage on a key that served claude-sonnet-5 fine. The
+// provider granted the pool key entitlement on 2026-08-16, so the id is served
+// again at the top tier it always anchored: advertised, priced, and not refused.
+func TestFableIsBackOnSale(t *testing.T) {
 	for _, id := range []string{"claude-fable-5", "CLAUDE-FABLE-5", " claude-fable-5 "} {
-		if !nineRouterUnservable(id) {
-			t.Errorf("nineRouterUnservable(%q) = false, want true", id)
+		if !nineRouterServed(id) {
+			t.Errorf("nineRouterServed(%q) = false, want true", id)
 		}
-		if !nineRouterRefusesModel(id) {
-			t.Errorf("nineRouterRefusesModel(%q) = false, want true", id)
+		if nineRouterUnservable(id) {
+			t.Errorf("nineRouterUnservable(%q) = true, want false", id)
 		}
-	}
-	if nineRouterUnservable("claude-sonnet-5") {
-		t.Error("claude-sonnet-5 must stay on sale")
+		if nineRouterRefusesModel(id) {
+			t.Errorf("nineRouterRefusesModel(%q) = true, want false", id)
+		}
 	}
 }
 
 // A client that hardcoded the namespaced id must be refused too, otherwise the
-// prefixed form slips past the check and pays for a 524.
+// prefixed form slips past the check and pays for a 524. gpt-image-2 stands in
+// for the unservable id because it stays unservable while the others rotate in
+// and out of sale.
 func TestRefusalCoversThePrefixedForm(t *testing.T) {
 	t.Setenv("NINEROUTER_MODEL_PREFIX", "NapKey/")
-	for _, id := range []string{"NapKey/claude-fable-5", "napkey/claude-fable-5"} {
+	for _, id := range []string{"NapKey/gpt-image-2", "napkey/gpt-image-2"} {
 		if !nineRouterRefusesModel(id) {
 			t.Errorf("nineRouterRefusesModel(%q) = false, want true", id)
 		}
@@ -232,16 +237,16 @@ func TestRefusalAnswers404WithoutCallingUpstream(t *testing.T) {
 
 	h := &Handler{}
 	r := httptest.NewRequest(http.MethodPost, "/v1/chat/completions",
-		strings.NewReader(`{"model":"claude-fable-5","messages":[]}`))
+		strings.NewReader(`{"model":"gpt-image-2","messages":[]}`))
 	w := httptest.NewRecorder()
 
 	if !h.refuseUnservableNineRouterModel(w, r, false) {
-		t.Fatal("claude-fable-5 must be refused")
+		t.Fatal("gpt-image-2 must be refused")
 	}
 	if w.Code != http.StatusNotFound {
 		t.Fatalf("status = %d, want 404", w.Code)
 	}
-	if body := w.Body.String(); !strings.Contains(body, "claude-fable-5") ||
+	if body := w.Body.String(); !strings.Contains(body, "gpt-image-2") ||
 		!strings.Contains(body, "No credit was held") {
 		t.Fatalf("unhelpful refusal: %s", body)
 	}

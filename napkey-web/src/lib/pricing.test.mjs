@@ -51,8 +51,8 @@ test('prices models at their tiered rates with a 300 VND per-request fee', () =>
   assert.equal(MODEL_PRICES['gpt-5.6-terra'], 3_600);
   assert.equal(MODEL_PRICES['claude-opus-5'], 4_500);
   assert.equal(MODEL_PRICES['gpt-5.6-sol'], 6_000);
-  // fable-5 has a price row (anchors the '*' fallback) but is not in the served
-  // catalog because the pool key is not entitled to it upstream.
+  // fable-5 anchors the '*' fallback and is back in the served catalog since
+  // 2026-08-16, when the provider granted the pool key entitlement for it.
   assert.equal(MODEL_PRICES['claude-fable-5'], 10_000);
   assert.equal(FALLBACK_TOKEN_PRICE, 10_000);
   assert.equal(VND_PER_REQUEST, 300);
@@ -65,11 +65,11 @@ test('tokenPriceForModel is case-insensitive and falls back to the highest tier'
   assert.equal(tokenPriceForModel('unknown-model-id'), FALLBACK_TOKEN_PRICE);
 });
 
-test('MODEL_TIERS is the served catalog: every model except fable-5, in ascending ratio', () => {
-  // fable-5 is priced but not served (pool key not entitled to it upstream), so the
-  // catalog has one fewer entry than the price book.
-  assert.equal(MODEL_TIERS.length, Object.keys(MODEL_PRICES).length - 1);
-  assert.ok(!MODEL_TIERS.some((tier) => tier.id === 'claude-fable-5'));
+test('MODEL_TIERS is the served catalog: every priced model, in ascending ratio', () => {
+  // fable-5 returned to the served catalog on 2026-08-16, so the catalog now
+  // names every priced model.
+  assert.equal(MODEL_TIERS.length, Object.keys(MODEL_PRICES).length);
+  assert.ok(MODEL_TIERS.some((tier) => tier.id === 'claude-fable-5'));
   for (const tier of MODEL_TIERS) {
     assert.ok(Object.prototype.hasOwnProperty.call(MODEL_PRICES, tier.id), `${tier.id} must be priced`);
   }
