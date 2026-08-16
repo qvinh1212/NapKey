@@ -46,7 +46,6 @@ export function Overview() {
   const tu = useTranslations('console.usage');
   const locale = useLocale();
   const [state, setState] = useState<State>({ status: 'loading' });
-  // Tang len de yeu cau doc lai. Re hon viec giu mot ham `load` trong dependency.
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
@@ -56,7 +55,6 @@ export function Overview() {
       setState({ status: 'loading' });
       try {
         const query = rangeQuery(billingRange(30));
-        // Wallet failure only hides the meter; usage remains useful on its own.
         const [summary, detail, walletResponse] = await Promise.all([
           api.get<UsageSummaryResponse>('/v1/me/usage', controller.signal),
           api.get<UsageDetailResponse>(`/v1/me/usage/detail${query}`, controller.signal),
@@ -64,7 +62,6 @@ export function Overview() {
         ]);
         setState({ status: 'ready', summary, detail, wallet: walletResponse?.wallet ?? null });
       } catch (error) {
-        // Huy do unmount hoac do doc lai thi khong phai loi de bao cho nguoi dung.
         if (controller.signal.aborted) return;
         const message = error instanceof ApiError ? error.message : t('loadFailed');
         setState({ status: 'error', message });
@@ -76,8 +73,6 @@ export function Overview() {
   }, [t, reloadToken]);
 
   if (state.status === 'loading') {
-    // Khung xuong dung theo bo cuc that cua trang (meter, hang the, hai bang) de
-    // noi dung khong nhay cho khi so lieu ve.
     return (
       <div className="flex flex-col gap-6">
         <LoadingStatus label={t('loading')} />
@@ -106,11 +101,12 @@ export function Overview() {
     totalRequests: summary.usage.totalRequests,
   });
   const activationTarget = activation.stage === 'create_key' ? '/console/keys' : '/console/developer';
+  const progressPercent = Math.round((activation.completedSteps / 3) * 100);
 
   return (
     <div className="flex flex-col gap-6">
       {activation.stage !== 'activated' ? (
-        <section className="relative overflow-hidden rounded-xl border border-accent/40 bg-[radial-gradient(circle_at_top_right,var(--color-accent-soft),transparent_55%),var(--color-surface)] px-5 py-6 sm:px-7 sm:py-7">
+        <section className="relative overflow-hidden rounded-2xl border border-accent/40 bg-[radial-gradient(circle_at_top_right,var(--color-accent-soft),transparent_55%),var(--color-surface)] p-6 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
           <div className="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <div>
               <div className="flex flex-wrap items-center gap-3">
@@ -120,23 +116,46 @@ export function Overview() {
                     {t('activation.balance', { amount: money(wallet.available) })}
                   </span>
                 ) : null}
+                <span className="font-mono text-micro text-dim">
+                  Tiến độ: {activation.completedSteps}/3 bước ({progressPercent}%)
+                </span>
               </div>
+
+              {/* Visual Progress Bar */}
+              <div className="mt-3.5 h-1.5 w-full max-w-lg overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full bg-accent transition-all duration-500 ease-out"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+
               <h2 className="mt-4 max-w-2xl text-2xl tracking-[-0.03em] text-fg sm:text-3xl">
                 {t(`activation.${activation.stage}.title`)}
               </h2>
               <p className="mt-2 max-w-2xl text-ui leading-relaxed text-muted">
                 {t(`activation.${activation.stage}.description`)}
               </p>
+
               <ol className="mt-5 flex flex-wrap gap-x-5 gap-y-3" aria-label={t('activation.progressLabel')}>
                 {(['account', 'key', 'request'] as const).map((step, index) => {
                   const complete = index < activation.completedSteps;
                   const current = index === activation.completedSteps;
                   return (
                     <li key={step} className="flex items-center gap-2 text-ui">
-                      <span className={`flex size-6 items-center justify-center rounded-full border font-mono text-[11px] ${complete ? 'border-accent bg-accent text-bg' : current ? 'border-accent text-accent-light' : 'border-line text-dim'}`}>
+                      <span
+                        className={`flex size-6 items-center justify-center rounded-full border font-mono text-[11px] transition-all ${
+                          complete
+                            ? 'border-accent bg-accent text-bg font-bold'
+                            : current
+                              ? 'border-accent text-accent-light ring-2 ring-accent/30'
+                              : 'border-line text-dim'
+                        }`}
+                      >
                         {complete ? <CheckIcon className="size-3.5" /> : index + 1}
                       </span>
-                      <span className={complete || current ? 'text-fg' : 'text-dim'}>{t(`activation.steps.${step}`)}</span>
+                      <span className={complete ? 'text-fg line-through opacity-80' : current ? 'text-accent-light font-medium' : 'text-dim'}>
+                        {t(`activation.steps.${step}`)}
+                      </span>
                     </li>
                   );
                 })}
@@ -181,39 +200,9 @@ export function Overview() {
         <StatCard
           label={t('stats.activeKeys')}
           value={count(summary.usage.activeKeys, locale)}
-          hint={t('stats.activeKeysHint', {
-            total: money(summary.usage.totalCost),
-          })}
+          hint={t('stats.activeKeysHint', { total: money(summary.usage.totalCost) })}
         />
       </div>
-
-      {/*
-        Hai canh bao nay la ly do trang nay ton tai. Chung noi cho khach biet con so
-        tien ben tren duoc tao ra the nao, chu khong bat ho tin.
-      */}
-      {last30Days.estimatedRequests > 0 ? (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface px-5 py-4">
-          <Badge tone="info">{t('estimatedBadge')}</Badge>
-          <p className="text-ui text-muted">
-            {t('estimatedNotice', {
-              count: count(last30Days.estimatedRequests, locale),
-              total: count(last30Days.requests, locale),
-            })}
-          </p>
-        </div>
-      ) : null}
-
-      {last30Days.unpricedRequests > 0 ? (
-        <div
-          role="status"
-          className="flex flex-wrap items-center gap-3 rounded-lg border border-warn/30 bg-warn/10 px-5 py-4"
-        >
-          <Badge tone="warn">{t('unpricedBadge')}</Badge>
-          <p className="text-ui text-warn">
-            {t('unpricedNotice', { count: count(last30Days.unpricedRequests, locale) })}
-          </p>
-        </div>
-      ) : null}
 
       <Panel as="section">
         <PanelHeader title={t('chartTitle')} description={t('chartDescription')} />
@@ -221,55 +210,46 @@ export function Overview() {
       </Panel>
 
       <Panel as="section">
-        <PanelHeader title={t('byModelTitle')} description={t('byModelDescription')} />
+        <PanelHeader
+          title={t('byModelTitle')}
+          description={t('byModelDescription')}
+          action={
+            <ButtonLink href="/console/usage" variant="pill">
+              {t('viewLedger')}
+            </ButtonLink>
+          }
+        />
+
         {detail.byModel.length === 0 ? (
-          <p className="px-5 py-12 text-center text-ui text-dim">{t('byModelEmpty')}</p>
+          <div className="p-8 text-center text-ui text-dim">{t('byModelEmpty')}</div>
         ) : (
           <TableScroll>
             <thead>
               <tr>
                 <Th>{tu('colModel')}</Th>
                 <Th align="right">{tu('colRequests')}</Th>
-                <Th align="right">{tu('colInput')}</Th>
-                <Th align="right">{tu('colOutput')}</Th>
-                <Th align="right">{tu('colCacheRead')}</Th>
+                <Th align="right">{tu('colTokens')}</Th>
                 <Th align="right">{tu('colCost')}</Th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {detail.byModel.map((row) => (
-                <tr key={row.model} className="transition-colors hover:bg-surface-hover">
-                  <Td className="font-mono text-ui text-muted">{row.model}</Td>
-                  <Td align="right">{count(row.requests, locale)}</Td>
-                  <Td align="right">{compact(row.tokens.input, locale)}</Td>
-                  <Td align="right">{compact(row.tokens.output, locale)}</Td>
-                  <Td align="right">{compact(row.tokens.cacheRead, locale)}</Td>
-                  <Td align="right" className="font-mono text-accent-light">
-                    {money(row.cost)}
+              {detail.byModel.map((item) => (
+                <tr key={item.model} className="transition-colors hover:bg-surface-hover">
+                  <Td className="font-mono text-fg">{item.model}</Td>
+                  <Td align="right" className="font-mono text-dim tabular-nums">
+                    {count(item.requests, locale)}
+                  </Td>
+                  <Td align="right" className="font-mono text-dim tabular-nums">
+                    {compact(item.tokens.total, locale)}
+                  </Td>
+                  <Td align="right" className="font-mono font-medium text-fg tabular-nums">
+                    {money(item.cost)}
                   </Td>
                 </tr>
               ))}
             </tbody>
           </TableScroll>
         )}
-      </Panel>
-
-      {/*
-        Trang thai tinh tien lay tu backend chu khong hardcode: Giai doan 3 do usage
-        nhung chua thu tien, va console khong duoc tu bay ra mot so du chua ton tai.
-      */}
-      <Panel as="section" className="px-5 py-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge tone={summary.billing.mode === 'metered_no_wallet' ? 'info' : 'neutral'}>
-            {t(`billingMode.${summary.billing.mode}`)}
-          </Badge>
-          <p className="text-ui text-dim">{summary.billing.message}</p>
-        </div>
-        <div className="mt-4">
-          <ButtonLink href="/console/usage" variant="pill">
-            {t('viewLedger')}
-          </ButtonLink>
-        </div>
       </Panel>
     </div>
   );

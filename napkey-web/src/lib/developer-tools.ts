@@ -22,13 +22,24 @@ export function normalizeDeveloperModel(selected: string, models: Pick<PublicMod
   return models.find((model) => model.id === 'auto')?.id ?? models[0]?.id ?? 'auto';
 }
 
-export function developerSnippet(tool: DeveloperTool, model: string, apiBaseUrl: string): DeveloperSnippet {
+export function developerSnippet(
+  tool: DeveloperTool,
+  model: string,
+  apiBaseUrl: string,
+  customApiKey?: string
+): DeveloperSnippet {
   const base = cleanBaseUrl(apiBaseUrl);
+  const key = customApiKey?.trim() || '$NAPKEY_API_KEY';
+  const anthropicToken = customApiKey?.trim() || '$NAPKEY_API_KEY';
+  const pythonKey = customApiKey?.trim() ? `"${customApiKey.trim()}"` : 'os.environ["NAPKEY_API_KEY"]';
+  const nodeKey = customApiKey?.trim() ? `'${customApiKey.trim()}'` : 'process.env.NAPKEY_API_KEY';
+  const psKey = customApiKey?.trim() ? `'${customApiKey.trim()}'` : '$env:NAPKEY_API_KEY';
+
   const snippets: Record<DeveloperTool, DeveloperSnippet> = {
     claudeCode: {
       lang: 'bash',
       code: `export ANTHROPIC_BASE_URL="${base}"
-export ANTHROPIC_AUTH_TOKEN="$NAPKEY_API_KEY"
+export ANTHROPIC_AUTH_TOKEN="${anthropicToken}"
 
 claude --model "${model}"`,
     },
@@ -37,21 +48,21 @@ claude --model "${model}"`,
       code: `# Cursor Settings -> Models -> Add Custom Model:
 # Model Name: ${model}
 # Base URL:   ${base}/v1
-# API Key:    $NAPKEY_API_KEY`,
+# API Key:    ${key}`,
     },
     cline: {
       lang: 'json',
       code: `// Cline / Roo Code Settings:
 // API Provider: Anthropic (or OpenAI Compatible)
 // Base URL:     ${base}
-// API Key:      $NAPKEY_API_KEY
+// API Key:      ${key}
 // Model ID:     ${model}`,
     },
     windsurf: {
       lang: 'bash',
       code: `# Windsurf AI Cascade -> OpenAI Compatible Provider:
 # Base URL:   ${base}/v1
-# API Key:    $NAPKEY_API_KEY
+# API Key:    ${key}
 # Model Name: ${model}`,
     },
     langchain: {
@@ -61,7 +72,7 @@ from langchain_anthropic import ChatAnthropic
 
 llm = ChatAnthropic(
     anthropic_api_url="${base}",
-    anthropic_api_key=os.environ["NAPKEY_API_KEY"],
+    anthropic_api_key=${pythonKey},
     model="${model}",
 )
 
@@ -75,7 +86,7 @@ from anthropic import Anthropic
 
 client = Anthropic(
     base_url="${base}",
-    api_key=os.environ["NAPKEY_API_KEY"],
+    api_key=${pythonKey},
 )
 
 message = client.messages.create(
@@ -91,7 +102,7 @@ print(message.content[0].text)`,
 
 const client = new OpenAI({
   baseURL: '${base}/v1',
-  apiKey: process.env.NAPKEY_API_KEY,
+  apiKey: ${nodeKey},
 });
 
 const response = await client.chat.completions.create({
@@ -103,7 +114,7 @@ console.log(response.choices[0]?.message.content);`,
     curl: {
       lang: 'bash',
       code: `curl "${base}/v1/messages" \\
-  -H "x-api-key: $NAPKEY_API_KEY" \\
+  -H "x-api-key: ${key}" \\
   -H "anthropic-version: 2023-06-01" \\
   -H "content-type: application/json" \\
   -d '{
@@ -115,7 +126,7 @@ console.log(response.choices[0]?.message.content);`,
     powershell: {
       lang: 'powershell',
       code: `$headers = @{
-  'x-api-key' = $env:NAPKEY_API_KEY
+  'x-api-key' = ${psKey}
   'anthropic-version' = '2023-06-01'
 }
 
