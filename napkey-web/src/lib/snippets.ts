@@ -1,8 +1,8 @@
-﻿import { defaultModel } from './model-catalog';
+import { defaultModel } from './model-catalog';
 import { site } from './site';
 
 export type Snippet = {
-  key: 'claudeCode' | 'anthropic' | 'openai' | 'curl';
+  key: 'claudeCode' | 'cursor' | 'cline' | 'windsurf' | 'langchain' | 'anthropic' | 'openai' | 'curl';
   lang: string;
   code: string;
 };
@@ -16,7 +16,47 @@ export const snippets: readonly Snippet[] = [
     code: `export ANTHROPIC_BASE_URL="${base}"
 export ANTHROPIC_AUTH_TOKEN="nk_live_..."
 
-claude`,
+claude --model "${defaultModel}"`,
+  },
+  {
+    key: 'cursor',
+    lang: 'bash',
+    code: `# Cursor Settings -> Models -> Add Custom Model:
+# Model Name: ${defaultModel}
+# Base URL:   ${base}/v1
+# API Key:    $NAPKEY_API_KEY`,
+  },
+  {
+    key: 'cline',
+    lang: 'json',
+    code: `// Cline / Roo Code Settings:
+// API Provider: Anthropic Compatible
+// Base URL:     ${base}
+// API Key:      $NAPKEY_API_KEY
+// Model ID:     ${defaultModel}`,
+  },
+  {
+    key: 'windsurf',
+    lang: 'bash',
+    code: `# Windsurf AI Cascade -> OpenAI Compatible Provider:
+# Base URL:   ${base}/v1
+# API Key:    $NAPKEY_API_KEY
+# Model Name: ${defaultModel}`,
+  },
+  {
+    key: 'langchain',
+    lang: 'python',
+    code: `import os
+from langchain_anthropic import ChatAnthropic
+
+llm = ChatAnthropic(
+    anthropic_api_url="${base}",
+    anthropic_api_key=os.environ["NAPKEY_API_KEY"],
+    model="${defaultModel}",
+)
+
+response = llm.invoke("Chao NapKey!")
+print(response.content)`,
   },
   {
     key: 'anthropic',

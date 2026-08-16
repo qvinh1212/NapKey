@@ -17,6 +17,9 @@ export interface QuickConfigModalProps {
 const TOOLS: readonly { key: DeveloperTool; label: string }[] = [
   { key: 'claudeCode', label: 'Claude Code' },
   { key: 'cursor', label: 'Cursor' },
+  { key: 'cline', label: 'Cline / Roo' },
+  { key: 'windsurf', label: 'Windsurf' },
+  { key: 'langchain', label: 'LangChain' },
   { key: 'anthropic', label: 'Anthropic SDK' },
   { key: 'openai', label: 'OpenAI SDK' },
   { key: 'curl', label: 'cURL' },

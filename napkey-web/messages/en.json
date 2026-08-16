@@ -258,7 +258,9 @@
       "claudeCode": "Claude Code",
       "cursor": "Cursor",
       "vscode": "VS Code",
-      "cline": "Cline",
+      "cline": "Cline / Roo Code",
+      "windsurf": "Windsurf Cascade",
+      "langchain": "LangChain / LlamaIndex",
       "openCode": "OpenCode",
       "sdk": "Anthropic / OpenAI SDK"
     },
@@ -280,6 +282,10 @@
     "docsLink": "Read the full integration guide",
     "tabs": {
       "claudeCode": "Claude Code",
+      "cursor": "Cursor",
+      "cline": "Cline / Roo",
+      "windsurf": "Windsurf",
+      "langchain": "LangChain",
       "anthropic": "Anthropic SDK",
       "openai": "OpenAI SDK",
       "curl": "cURL"
@@ -824,7 +830,7 @@
       "modelLabel": "Model",
       "modelHint": "The catalog describes accepted model IDs. Live capacity can still vary when a request is sent.",
       "clientLabel": "Client",
-      "tools": { "claudeCode": "Claude Code", "cursor": "Cursor", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL", "powershell": "PowerShell" },
+      "tools": { "claudeCode": "Claude Code", "cursor": "Cursor", "cline": "Cline / Roo", "windsurf": "Windsurf", "langchain": "LangChain", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL", "powershell": "PowerShell" },
       "secretTitle": "Keep the secret outside source code",
       "secretBody": "Every snippet reads the key from your environment. Do not paste a live key into Git, screenshots, support messages, or browser storage.",
       "snippetLabel": "Copy-ready configuration",

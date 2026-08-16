@@ -1,6 +1,15 @@
 import type { PublicModel } from './model-catalog';
 
-export type DeveloperTool = 'claudeCode' | 'cursor' | 'anthropic' | 'openai' | 'curl' | 'powershell';
+export type DeveloperTool =
+  | 'claudeCode'
+  | 'cursor'
+  | 'cline'
+  | 'windsurf'
+  | 'langchain'
+  | 'anthropic'
+  | 'openai'
+  | 'curl'
+  | 'powershell';
 
 export type DeveloperSnippet = { lang: string; code: string };
 
@@ -29,6 +38,35 @@ claude --model "${model}"`,
 # Model Name: ${model}
 # Base URL:   ${base}/v1
 # API Key:    $NAPKEY_API_KEY`,
+    },
+    cline: {
+      lang: 'json',
+      code: `// Cline / Roo Code Settings:
+// API Provider: Anthropic (or OpenAI Compatible)
+// Base URL:     ${base}
+// API Key:      $NAPKEY_API_KEY
+// Model ID:     ${model}`,
+    },
+    windsurf: {
+      lang: 'bash',
+      code: `# Windsurf AI Cascade -> OpenAI Compatible Provider:
+# Base URL:   ${base}/v1
+# API Key:    $NAPKEY_API_KEY
+# Model Name: ${model}`,
+    },
+    langchain: {
+      lang: 'python',
+      code: `import os
+from langchain_anthropic import ChatAnthropic
+
+llm = ChatAnthropic(
+    anthropic_api_url="${base}",
+    anthropic_api_key=os.environ["NAPKEY_API_KEY"],
+    model="${model}",
+)
+
+response = llm.invoke("Reply with: NapKey ready")
+print(response.content)`,
     },
     anthropic: {
       lang: 'python',

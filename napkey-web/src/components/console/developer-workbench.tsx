@@ -8,7 +8,7 @@ import type { ModelCatalog } from '@/lib/model-catalog';
 import { Badge, Panel, PanelHeader } from './ui';
 import { CopyButton } from '@/components/ui/copy-button';
 
-const tools: DeveloperTool[] = ['claudeCode', 'cursor', 'anthropic', 'openai', 'curl', 'powershell'];
+const tools: DeveloperTool[] = ['claudeCode', 'cursor', 'cline', 'windsurf', 'langchain', 'anthropic', 'openai', 'curl', 'powershell'];
 const failureStatuses = [400, 401, 402, 429, 503] as const;
 
 export function DeveloperWorkbench({ catalog, apiBaseUrl }: { catalog: ModelCatalog; apiBaseUrl: string }) {

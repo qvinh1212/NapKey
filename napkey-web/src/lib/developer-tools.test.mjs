@@ -7,7 +7,7 @@ import {
 } from './developer-tools.ts';
 
 test('builds copy-ready snippets with environment variables instead of embedded secrets', () => {
-  for (const tool of ['claudeCode', 'anthropic', 'openai', 'curl', 'powershell']) {
+  for (const tool of ['claudeCode', 'cursor', 'cline', 'windsurf', 'langchain', 'anthropic', 'openai', 'curl', 'powershell']) {
     const snippet = developerSnippet(tool, 'claude-sonnet-4-6', 'https://api.napkey.io.vn/');
     assert.match(snippet.code, /claude-sonnet-4-6/);
     assert.doesNotMatch(snippet.code, /nk_live_/);
