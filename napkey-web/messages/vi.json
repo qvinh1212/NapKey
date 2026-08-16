@@ -269,7 +269,7 @@
   "ecosystem": {
     "eyebrow": "Một key, một tuyến",
     "title": "Công cụ lập trình đi vào. Đúng model Claude đi ra.",
-    "subtitle": "NapKey giữ nguyên client bạn đang dùng, định tuyến request tương thích Anthropic qua một key trả trước và ghi lại từng khoản phí bằng VNĐ.",
+    "subtitle": "NapKey giữ nguyên client bạn đang dùng, định tuyến request tương thích Anthropic qua một key trả trước và ghi lại từng khoản phí bằng Credit.",
     "clientsLabel": "IDE · CLI · coding agent",
     "modelsLabel": "Tuyến model đang hoạt động",
     "hubBody": "Một endpoint cho xác thực, định tuyến, failover và tính phí theo từng request.",
@@ -377,15 +377,15 @@
   },
   "launchOffer": {
     "eyebrow": "NAPKEY CHÍNH THỨC RA MẮT",
-    "title": "Một API key. Nhiều công cụ AI. Thanh toán bằng VNĐ.",
+    "title": "Một API key. Nhiều công cụ AI. Thanh toán bằng Credit.",
     "body": "Kết nối Claude Code, Cursor, Cline, Anthropic SDK hoặc OpenAI SDK. Không phí tháng — dùng bao nhiêu trả bấy nhiêu.",
-    "trial": "Tặng 20.000 VNĐ khi xác minh tài khoản",
-    "policy": "Nhận 20.000 VNĐ để trải nghiệm ngay. Nạp từ 10.000 VNĐ.",
-    "example": "Nạp 10.000 VNĐ — đủ cho khoảng 29 lượt chat ngắn",
+    "trial": "Tặng 250 Credits khi xác minh tài khoản",
+    "policy": "Nhận 250 Credits để trải nghiệm ngay. Nạp từ 200 Credits.",
+    "example": "Nạp 200 Credits — đủ cho khoảng 50 lượt chat ngắn",
     "ctaAnonymous": "Tạo API key",
     "ctaAuthenticated": "Nhận ưu đãi trong ví",
     "ctaLoading": "Đang kiểm tra tài khoản...",
-    "terms": "20.000 VNĐ dùng thử được tặng một lần cho tài khoản đủ điều kiện. Tiền đã nạp không hết hạn.",
+    "terms": "250 Credits dùng thử được tặng một lần cho tài khoản đủ điều kiện. Credit đã nạp không hết hạn.",
     "close": "Đóng ưu đãi ra mắt"
   },
   "billing": {
@@ -694,7 +694,7 @@
       "estimatedBadge": "Có ước lượng",
       "estimatedNotice": "{count} trong {total} request có số token đầu ra là ước lượng vì upstream không trả số đo. Credit và chi phí vẫn lấy từ usage upstream báo về, không suy ra từ token ước lượng.",
       "unpricedBadge": "Thiếu bảng giá",
-      "unpricedNotice": "{count} request được phục vụ nhưng chưa có giá trên sổ, nên tính 0 đồng. Bên vận hành đã nhận cảnh báo.",
+      "unpricedNotice": "{count} request được phục vụ nhưng chưa có giá trên sổ, nên tính 0 Credit. Bên vận hành đã nhận cảnh báo.",
       "chartTitle": "Credit theo ngày",
       "chartDescription": "Credit thực tế upstream báo về, nhóm theo ngày giờ Việt Nam.",
       "byModelTitle": "Phân theo model",
@@ -791,7 +791,7 @@
         "rateValue": "Bản giá #{id}",
         "noRate": "Không có trên sổ"
       },
-      "unpricedNote": "Request này được phục vụ khi model chưa có giá trên sổ, nên bạn không bị trừ đồng nào.",
+      "unpricedNote": "Request này được phục vụ khi model chưa có giá trên sổ, nên bạn không bị trừ Credit nào.",
       "disputeNote": "Mọi con số ở trên được đóng băng lúc quyết toán. Đổi giá sau này không làm thay đổi hóa đơn đã ghi."
     },
       "status": {
@@ -802,7 +802,7 @@
       "estimatedShort": "Ước lượng",
       "estimatedTooltip": "Số token đầu ra là ước lượng vì upstream không trả số đo.",
       "unpricedShort": "Chưa có giá",
-      "unpricedTooltip": "Model này chưa có giá trên sổ, request được tính 0 đồng.",
+      "unpricedTooltip": "Model này chưa có giá trên sổ, request được tính 0 Credit.",
       "keyDeleted": "Key đã xoá",
       "pageInfo": "Đang xem {from}–{to} trong {total} request",
       "prev": "Trước",
@@ -1012,7 +1012,7 @@
       "loadFailed": "Không tải được ví của bạn.",
       "createFailed": "Không tạo được lệnh nạp tiền.",
       "balance": "Số dư ví",
-      "creditRate": "Giá token phân bậc theo model, cộng 300 VNĐ mỗi request. Tiền đã nạp không hết hạn.",
+      "creditRate": "Giá token phân bậc theo model, cộng 4 CR (~300 ₫) mỗi request. Credit đã nạp không hết hạn.",
       "promotional": "Credit khuyến mãi",
       "promotionalExpiry": "Hết hạn vào {date}. Credit khuyến mãi được sử dụng trước.",
       "promotionalEmpty": "Không có credit khuyến mãi đang hoạt động.",

@@ -107,7 +107,7 @@ export function EcosystemMap() {
             <div className="mt-4 flex flex-wrap justify-center gap-2 font-mono text-micro tracking-[0.08em] text-dim uppercase">
               <span className="rounded-full border border-line px-2.5 py-1">Anthropic</span>
               <span className="rounded-full border border-line px-2.5 py-1">OpenAI</span>
-              <span className="rounded-full border border-line px-2.5 py-1">VNĐ</span>
+              <span className="rounded-full border border-line px-2.5 py-1">Credits</span>
             </div>
           </div>
 

@@ -8,6 +8,7 @@ import type { WalletResponse } from '@/lib/api/types';
 import { useSession } from './session-provider';
 import { QuickTopupDrawer } from './quick-topup-drawer';
 import { CommandPalette } from './command-palette';
+import { money } from '@/lib/format';
 import { Badge } from './ui';
 
 /**
@@ -221,7 +222,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
                     )}
                   </div>
                   <p className="mt-0.5 truncate font-mono text-ui font-semibold text-fg">
-                    {wallet.available.formatted}
+                    {money(wallet.available)}
                   </p>
                 </div>
                 <span className="shrink-0 rounded-full border border-line bg-white/5 px-2.5 py-1 text-label font-medium group-hover:bg-white/10 group-hover:text-fg">
@@ -302,7 +303,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
                       : 'border-line bg-surface text-accent-light'
                   }`}
                 >
-                  <span>{wallet.available.formatted}</span>
+                  <span>{money(wallet.available)}</span>
                   <span className="text-dim">· Nạp</span>
                 </button>
               ) : null}
