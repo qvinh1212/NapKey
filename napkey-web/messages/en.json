@@ -270,6 +270,20 @@
       "colModel": "Model",
       "colTier": "Multiplier",
       "tierValue": "{ratio}x",
+      "ratePerMillion": "{rate} VND / 1M tokens",
+      "rateHeader": "Rate per 1M Tokens",
+      "verifiedRoute": "Verified Route",
+      "filterLabel": "Capability:",
+      "filters": {
+        "all": "All Models",
+        "coding": "Coding & Agent",
+        "fast": "Fast & Budget",
+        "thinking": "Extended Thinking"
+      },
+      "views": {
+        "cards": "Cards",
+        "table": "Detailed Table"
+      },
       "note": "Every request records the model, input/output token counts, and the actual cost. Rates may change when upstream pricing shifts; settled usage always keeps the rate that was effective when it was recorded."
     },
     "offer": {

@@ -65,7 +65,9 @@ export const UPSTREAM_MODEL_COSTS: Record<string, number> = {
  * and returned to the catalog on 2026-08-16 when the provider granted the
  * entitlement.
  */
-export const MODEL_TIERS: readonly { id: string; ratio: number }[] = [
+export type ModelTier = { id: string; ratio: number };
+
+export const MODEL_TIERS: readonly ModelTier[] = [
   { id: 'claude-sonnet-5', ratio: 0.5 },
   { id: 'gpt-5.6-luna', ratio: 0.5 },
   { id: 'claude-opus-4.7', ratio: 1 },

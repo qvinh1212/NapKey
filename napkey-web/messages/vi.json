@@ -268,6 +268,20 @@
       "colModel": "Model",
       "colTier": "Hệ số",
       "tierValue": "{ratio}x",
+      "ratePerMillion": "{rate} ₫ / 1M tokens",
+      "rateHeader": "Đơn giá 1M Tokens",
+      "verifiedRoute": "Verified Route",
+      "filterLabel": "Năng lực:",
+      "filters": {
+        "all": "Tất cả model",
+        "coding": "Coding & Agent",
+        "fast": "Siêu tốc & Tiết kiệm",
+        "thinking": "Extended Thinking"
+      },
+      "views": {
+        "cards": "Thẻ",
+        "table": "Bảng chi tiết"
+      },
       "note": "Mỗi request đều ghi lại model, số token input/output và chi phí thực tế. Giá có thể đổi khi tỷ giá upstream thay đổi; usage đã quyết toán luôn giữ nguyên đơn giá tại thời điểm ghi nhận."
     },
     "offer": {
