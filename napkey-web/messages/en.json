@@ -543,6 +543,40 @@
       "quickTopup": "Quick Top-up",
       "availableBalance": "Available: {amount}"
     },
+    "commandPalette": {
+      "trigger": "Quick search...",
+      "placeholder": "Type a command, page, or action...",
+      "shortcut": "Ctrl K",
+      "noResults": "No matching commands or pages found.",
+      "groups": {
+        "actions": "Quick Actions",
+        "navigation": "Console Navigation",
+        "resources": "Resources & Help"
+      },
+      "commands": {
+        "topup": "Quick VietQR Top-up",
+        "topupDesc": "Open instant QR transfer payment drawer",
+        "createKey": "Create New API Key",
+        "createKeyDesc": "Go to API key management to create key",
+        "configure": "Configure Claude Code / Cursor",
+        "configureDesc": "Get environment variables and quick snippets",
+        "exportCsv": "Export Usage CSV Ledger",
+        "exportCsvDesc": "Go to usage ledger to download CSV audit sheet",
+        "contrast": "High Contrast Mode",
+        "contrastDesc": "Toggle high contrast mode for bright ambient",
+        "overview": "Overview",
+        "usage": "Usage Ledger Records",
+        "wallet": "Wallet & Billing",
+        "keys": "Manage API Keys",
+        "developer": "Developer Workbench",
+        "settings": "Account Settings",
+        "admin": "Operations Cockpit",
+        "docs": "API Documentation",
+        "status": "Gateway Liveness Status",
+        "pricing": "Model Pricing Matrix",
+        "signOut": "Sign Out"
+      }
+    },
     "auth": {
       "emailLabel": "Email",
       "passwordLabel": "Password",

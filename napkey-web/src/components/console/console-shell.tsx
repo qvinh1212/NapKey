@@ -7,6 +7,7 @@ import { api } from '@/lib/api/client';
 import type { WalletResponse } from '@/lib/api/types';
 import { useSession } from './session-provider';
 import { QuickTopupDrawer } from './quick-topup-drawer';
+import { CommandPalette } from './command-palette';
 import { Badge } from './ui';
 
 /**
@@ -66,12 +67,26 @@ function ResendVerification({ email }: { email: string }) {
 
 export function ConsoleShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations('console.shell');
+  const tPalette = useTranslations('console.commandPalette');
   const session = useSession();
   const router = useRouter();
   const pathname = usePathname();
 
   const [wallet, setWallet] = useState<WalletResponse['wallet'] | null>(null);
   const [topupOpen, setTopupOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setPaletteOpen((prev) => !prev);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Khach chua dang nhap thi dua ve trang dang nhap. Chay trong effect vi dieu
   // huong trong khi render la loi trong React.
@@ -123,7 +138,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="container-page pt-24 pb-16 sm:pt-28 sm:pb-24">
-      {/* Quick VietQR Top-up Drawer / Modal */}
+      {/* Quick VietQR Top-up Drawer */}
       <QuickTopupDrawer
         open={topupOpen}
         onClose={() => setTopupOpen(false)}
@@ -133,13 +148,50 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
         }}
       />
 
+      {/* Command Palette (Ctrl+K) */}
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onOpenTopup={() => setTopupOpen(true)}
+        onSignOut={() => void session.signOut()}
+        hasAdminPermission={session.permissions.includes('operations.read')}
+      />
+
       <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
         <div className="lg:w-52 lg:shrink-0">
-          <div className="mb-6">
+          <div className="mb-4">
             <p className="font-mono text-label tracking-[0.18em] text-accent uppercase">
               {t('eyebrow')}
             </p>
             <h1 className="mt-2 text-2xl tracking-[-0.02em]">{t('title')}</h1>
+          </div>
+
+          {/* Command Palette Trigger Button on Sidebar */}
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              className="group flex w-full items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-left transition-all hover:border-accent/40 hover:bg-surface-hover"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <svg
+                  className="size-3.5 text-dim group-hover:text-accent-light shrink-0 transition-colors"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <span className="font-mono text-label text-dim group-hover:text-muted truncate">
+                  {tPalette('trigger')}
+                </span>
+              </div>
+              <kbd className="hidden sm:inline-flex shrink-0 rounded border border-line bg-surface-hover px-1.5 py-0.5 font-mono text-micro text-dim group-hover:text-fg">
+                Ctrl K
+              </kbd>
+            </button>
           </div>
 
           {/* Quick VietQR Topup Button / Low Balance Alert on Sidebar */}
@@ -226,17 +278,25 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          {/* Tren mobile phan tai khoan va vi nam tren dau noi dung */}
+          {/* Tren mobile phan tai khoan, tim kiem va vi nam tren dau noi dung */}
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 lg:hidden">
-            <div className="flex items-center gap-3">
-              <span className="min-w-0 truncate text-ui text-dim" title={user.email}>
-                {user.email}
-              </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPaletteOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 font-mono text-micro text-muted hover:text-fg"
+              >
+                <svg className="size-3 text-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <span>Tìm nhanh (Ctrl+K)</span>
+              </button>
               {wallet ? (
                 <button
                   type="button"
                   onClick={() => setTopupOpen(true)}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-label ${
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-label ${
                     isLowBalance
                       ? 'border-warn/40 bg-warn/10 text-warn'
                       : 'border-line bg-surface text-accent-light'
@@ -250,7 +310,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={() => void session.signOut()}
-              className="shrink-0 rounded-full border border-line bg-surface-hover px-4 py-1.5 text-ui text-muted transition-colors hover:bg-white/10 hover:text-fg"
+              className="shrink-0 rounded-full border border-line bg-surface-hover px-3.5 py-1 text-ui text-muted transition-colors hover:bg-white/10 hover:text-fg"
             >
               {t('signOut')}
             </button>

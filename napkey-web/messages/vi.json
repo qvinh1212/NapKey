@@ -553,6 +553,40 @@
       "quickTopup": "Nạp nhanh VietQR",
       "availableBalance": "Khả dụng: {amount}"
     },
+    "commandPalette": {
+      "trigger": "Tìm kiếm nhanh...",
+      "placeholder": "Nhập lệnh, thao tác hoặc tìm trang...",
+      "shortcut": "Ctrl K",
+      "noResults": "Không tìm thấy lệnh hoặc trang phù hợp.",
+      "groups": {
+        "actions": "Thao tác nhanh",
+        "navigation": "Điều hướng Console",
+        "resources": "Tài nguyên & Hỗ trợ"
+      },
+      "commands": {
+        "topup": "Nạp nhanh VietQR",
+        "topupDesc": "Mở hộp thoại quét mã QR chuyển khoản tức thì",
+        "createKey": "Tạo API Key mới",
+        "createKeyDesc": "Mở trang quản lý API Key",
+        "configure": "Cấu hình Claude Code / Cursor",
+        "configureDesc": "Lấy biến môi trường và thiết lập nhanh",
+        "exportCsv": "Xuất CSV Sổ đối soát",
+        "exportCsvDesc": "Mở trang lịch sử để tải bảng đối soát",
+        "contrast": "Chế độ tương phản cao",
+        "contrastDesc": "Bật/tắt tương phản cao cho môi trường sáng",
+        "overview": "Tổng quan",
+        "usage": "Sổ chi tiết Usage Ledger",
+        "wallet": "Ví & Nạp tiền",
+        "keys": "Quản lý API Key",
+        "developer": "Developer Workbench",
+        "settings": "Cài đặt tài khoản",
+        "admin": "Bảng điều khiển Vận hành",
+        "docs": "Tài liệu Tích hợp API",
+        "status": "Trạng thái Gateway Liveness",
+        "pricing": "Bảng giá Model Matrix",
+        "signOut": "Đăng xuất tài khoản"
+      }
+    },
     "auth": {
       "emailLabel": "Email",
       "passwordLabel": "Mật khẩu",
