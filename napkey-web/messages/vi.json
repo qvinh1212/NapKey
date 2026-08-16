@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "NapKey — Claude Code thanh toán bằng VNĐ",
-    "description": "Nạp từ 10.000 ₫, lấy API key và chạy Claude Code hoặc SDK Anthropic/OpenAI qua NapKey. Không gói tháng, trả theo mức dùng thực tế.",
-    "ogAlt": "NapKey — cổng API Claude trả trước theo ví"
+    "title": "NapKey — Cổng API Claude & LLM chuẩn Enterprise",
+    "description": "Nạp từ 10.000 ₫, lấy API key và chạy Claude Code, Cursor, Anthropic hoặc OpenAI SDK qua NapKey. Cổng API Claude & LLM chuẩn Enterprise, thanh toán linh hoạt bằng VNĐ.",
+    "ogAlt": "NapKey — Cổng API Claude & LLM chuẩn Enterprise thanh toán bằng VNĐ"
   },
   "nav": {
     "pricing": "Bảng giá",
@@ -23,10 +23,10 @@
     "contrastHigh": "Tương phản cao"
   },
   "hero": {
-    "badge": "Dành cho Claude Code và SDK hiện tại của bạn",
-    "titleLine1": "Claude Code",
-    "titleLine2": "thanh toán bằng VNĐ.",
-    "subtitle": "Nạp từ 10.000 ₫, lấy API key và chạy ngay. Giữ nguyên Anthropic hoặc OpenAI SDK — chỉ đổi endpoint, dùng bao nhiêu trả bấy nhiêu.",
+    "badge": "Cổng API Claude & LLM chuẩn Enterprise",
+    "titleLine1": "Cổng API Claude & LLM,",
+    "titleLine2": "thanh toán linh hoạt bằng VNĐ.",
+    "subtitle": "Nạp từ 10.000 ₫, lấy API key và chạy ngay. Giữ nguyên Claude Code, Cursor, Anthropic hoặc OpenAI SDK — chỉ đổi endpoint, dùng bao nhiêu trả bấy nhiêu.",
     "ctaPrimary": "Tạo API key",
     "ctaSecondary": "Xem cách kết nối",
     "note": "Không gói tháng. Không phí duy trì. Mỗi request được ghi lại theo model, token và chi phí thực tế.",
@@ -382,7 +382,7 @@
     "button": "Bắt đầu"
   },
   "footer": {
-    "tagline": "Cổng API Claude trả trước theo ví, tính bằng VNĐ.",
+    "tagline": "Cổng API Claude & LLM chuẩn Enterprise với cơ chế nạp ví trả trước và đối soát minh bạch bằng VNĐ.",
     "product": "Sản phẩm",
     "resources": "Tài nguyên",
     "legal": "Pháp lý",

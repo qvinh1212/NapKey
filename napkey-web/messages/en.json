@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "NapKey — Claude Code billed in Vietnamese dong",
-    "description": "Top up from 10,000 d and run Claude Code or your Anthropic/OpenAI SDK through NapKey. No monthly plan, billed by actual token usage.",
-    "ogAlt": "NapKey — prepaid wallet API gateway for Claude"
+    "title": "NapKey — Enterprise-Grade Claude & LLM API Gateway",
+    "description": "Top up from 10,000 d and run Claude Code, Cursor, or Anthropic/OpenAI SDK through NapKey. Enterprise-grade Claude & LLM API gateway, billed flexibly in Vietnamese dong.",
+    "ogAlt": "NapKey — Enterprise-Grade Claude & LLM API Gateway"
   },
   "nav": {
     "pricing": "Pricing",
@@ -23,10 +23,10 @@
     "contrastHigh": "High Contrast"
   },
   "hero": {
-    "badge": "Built for Claude Code and your existing SDK",
-    "titleLine1": "Claude Code,",
-    "titleLine2": "billed in Vietnamese dong.",
-    "subtitle": "Top up from 10,000 d, get an API key, and run. Keep your Anthropic or OpenAI SDK — change only the endpoint and pay for what you use.",
+    "badge": "Enterprise-Grade Claude & LLM API Gateway",
+    "titleLine1": "Enterprise Claude & LLM,",
+    "titleLine2": "billed flexibly in Vietnamese dong.",
+    "subtitle": "Top up from 10,000 d, get an API key, and run immediately. Keep your Claude Code, Cursor, Anthropic or OpenAI SDK — change only the endpoint and pay for what you use.",
     "ctaPrimary": "Create an API key",
     "ctaSecondary": "See the setup",
     "note": "No monthly plan. No maintenance fee. Every request is recorded with its model, token usage, and actual cost.",
@@ -384,7 +384,7 @@
     "button": "Get started"
   },
   "footer": {
-    "tagline": "A prepaid wallet API gateway for Claude, billed in VND.",
+    "tagline": "Enterprise-grade Claude & LLM API gateway with transparent prepaid billing in Vietnamese dong.",
     "product": "Product",
     "resources": "Resources",
     "legal": "Legal",
