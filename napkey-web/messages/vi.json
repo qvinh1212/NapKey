@@ -83,6 +83,29 @@
       }
     }
   },
+  "enterpriseControls": {
+    "eyebrow": "Kiểm soát cấp Doanh nghiệp",
+    "title": "Bảo mật tuyệt đối. Kiểm soát chi phí tối đa.",
+    "subtitle": "Được xây dựng cho lập trình viên và đội ngũ kỹ thuật đòi hỏi chuẩn mực cao nhất về quyền riêng tư và khả năng kiểm soát tài chính.",
+    "features": {
+      "zeroLogging": {
+        "title": "Zero Prompt & Code Logging",
+        "description": "Gateway không lưu trữ nội dung prompt, source code hay kết quả AI. Chỉ ghi nhận metadata kỹ thuật phục vụ đối soát chi phí."
+      },
+      "hardCaps": {
+        "title": "Khóa hạn mức chi tiêu cứng",
+        "description": "Tự động ngắt kết nối an toàn khi đạt hạn mức ví. Không bao giờ lo bị trừ tiền âm hoặc rủi ro infinite loop ngoài ý muốn."
+      },
+      "smartRouting": {
+        "title": "Định tuyến tự động & Độ trễ thấp",
+        "description": "Kết nối trực tiếp tới Edge Node với độ trễ phản hồi ban đầu cực thấp (~320ms TTFT), tự động chuyển tuyến dự phòng khi tải cao."
+      },
+      "keyScoping": {
+        "title": "Phân tách Key theo Môi trường",
+        "description": "Quản lý nhiều API key độc lập cho từng công cụ (Claude Code, Cursor, CI/CD) với khả năng bật/tắt hoặc thu hồi ngay lập tức."
+      }
+    }
+  },
   "trustSection": {
     "eyebrow": "Niềm tin cho developer",
     "title": "Bằng chứng, không phải huy hiệu bảo mật",
@@ -811,7 +834,7 @@
       "modelLabel": "Model",
       "modelHint": "Catalog mô tả model ID được chấp nhận. Khả năng phục vụ thực tế vẫn có thể thay đổi khi gửi request.",
       "clientLabel": "Client",
-      "tools": { "claudeCode": "Claude Code", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL", "powershell": "PowerShell" },
+      "tools": { "claudeCode": "Claude Code", "cursor": "Cursor", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL", "powershell": "PowerShell" },
       "secretTitle": "Giữ secret bên ngoài source code",
       "secretBody": "Mọi snippet đều đọc key từ biến môi trường. Không dán key thật vào Git, ảnh chụp, tin nhắn hỗ trợ hoặc browser storage.",
       "snippetLabel": "Cấu hình sẵn để sao chép",
@@ -819,6 +842,15 @@
       "copy": "Chép snippet",
       "copied": "Đã chép",
       "copyEndpoint": "Chép endpoint",
+      "controlsTitle": "Kiểm soát cấp Doanh nghiệp",
+      "controlsDescription": "Chuẩn mực bảo mật và an toàn tài chính được kích hoạt mặc định cho mọi tài khoản.",
+      "controlsBadge": "Enterprise Ready",
+      "controls": {
+        "zeroLogging": { "title": "Zero Prompt Logging", "body": "Không lưu trữ nội dung prompt hoặc source code của bạn." },
+        "hardCaps": { "title": "Hard Spending Cap", "body": "Tự động ngắt khi chạm hạn mức ví, tránh rủi ro tràn chi phí." },
+        "smartRouting": { "title": "Smart Edge Routing", "body": "Định tuyến tới cụm máy chủ gần nhất với độ trễ phản hồi thấp." },
+        "keyScoping": { "title": "Key Isolation", "body": "Tạo nhiều key riêng biệt theo từng môi trường hoặc dự án." }
+      },
       "errorsTitle": "Hiểu lỗi nhanh",
       "errorsDescription": "Đọc HTTP status và x-request-id trước khi sửa code hoặc thử lại.",
       "retryable": "Có thể thử lại",

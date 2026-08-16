@@ -85,6 +85,29 @@
       }
     }
   },
+  "enterpriseControls": {
+    "eyebrow": "Enterprise-Grade Controls",
+    "title": "Absolute Privacy. Total Cost Governance.",
+    "subtitle": "Engineered for developers and technical teams demanding the highest standards of data privacy and strict financial guardrails.",
+    "features": {
+      "zeroLogging": {
+        "title": "Zero Prompt & Code Logging",
+        "description": "Our gateway never logs your prompts, source code, or AI completions. We only store technical metadata strictly required for billing audits."
+      },
+      "hardCaps": {
+        "title": "Hard Spending Limits",
+        "description": "Automatically disconnects when your funded wallet balance is reached. Zero risk of runaway infinite loops or surprise credit overdrafts."
+      },
+      "smartRouting": {
+        "title": "Sub-Second Latency & Smart Routing",
+        "description": "Direct edge-optimized connections with low initial latency (~320ms TTFT), automatically routed to backup pools under high traffic."
+      },
+      "keyScoping": {
+        "title": "Environment & Key Isolation",
+        "description": "Create separate API keys for distinct environments (Claude Code, Cursor, CI/CD) with instant revocation and granular status controls."
+      }
+    }
+  },
   "trustSection": {
     "eyebrow": "Developer trust",
     "title": "Evidence, not a trust badge",
@@ -801,7 +824,7 @@
       "modelLabel": "Model",
       "modelHint": "The catalog describes accepted model IDs. Live capacity can still vary when a request is sent.",
       "clientLabel": "Client",
-      "tools": { "claudeCode": "Claude Code", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL", "powershell": "PowerShell" },
+      "tools": { "claudeCode": "Claude Code", "cursor": "Cursor", "anthropic": "Anthropic SDK", "openai": "OpenAI SDK", "curl": "cURL", "powershell": "PowerShell" },
       "secretTitle": "Keep the secret outside source code",
       "secretBody": "Every snippet reads the key from your environment. Do not paste a live key into Git, screenshots, support messages, or browser storage.",
       "snippetLabel": "Copy-ready configuration",
@@ -809,6 +832,15 @@
       "copy": "Copy snippet",
       "copied": "Copied",
       "copyEndpoint": "Copy endpoint",
+      "controlsTitle": "Enterprise-Grade Controls",
+      "controlsDescription": "Security and financial guardrail standards enabled by default for all accounts.",
+      "controlsBadge": "Enterprise Ready",
+      "controls": {
+        "zeroLogging": { "title": "Zero Prompt Logging", "body": "Never logs your prompt content or source code." },
+        "hardCaps": { "title": "Hard Spending Cap", "body": "Automatically disconnects at balance limit to prevent runaway costs." },
+        "smartRouting": { "title": "Smart Edge Routing", "body": "Routes to the nearest edge gateway with low initial latency." },
+        "keyScoping": { "title": "Key Isolation", "body": "Create distinct API keys scoped by environment or project." }
+      },
       "errorsTitle": "Understand failures quickly",
       "errorsDescription": "Use the HTTP status and x-request-id before changing code or retrying.",
       "retryable": "Retryable",

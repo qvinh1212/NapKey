@@ -8,7 +8,7 @@ import type { ModelCatalog } from '@/lib/model-catalog';
 import { Badge, Panel, PanelHeader } from './ui';
 import { CopyButton } from '@/components/ui/copy-button';
 
-const tools: DeveloperTool[] = ['claudeCode', 'anthropic', 'openai', 'curl', 'powershell'];
+const tools: DeveloperTool[] = ['claudeCode', 'cursor', 'anthropic', 'openai', 'curl', 'powershell'];
 const failureStatuses = [400, 401, 402, 429, 503] as const;
 
 export function DeveloperWorkbench({ catalog, apiBaseUrl }: { catalog: ModelCatalog; apiBaseUrl: string }) {
@@ -72,6 +72,36 @@ export function DeveloperWorkbench({ catalog, apiBaseUrl }: { catalog: ModelCata
                 className="shrink-0"
               />
             </div>
+          </div>
+        </div>
+      </Panel>
+
+      <Panel as="section">
+        <PanelHeader
+          title={t('controlsTitle')}
+          description={t('controlsDescription')}
+          action={<Badge tone="accent">{t('controlsBadge')}</Badge>}
+        />
+        <div className="grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-4">
+          <div className="bg-surface p-5">
+            <span className="font-mono text-micro text-accent-light uppercase tracking-wider">01 · Privacy</span>
+            <h3 className="mt-2 text-sm font-medium text-fg">{t('controls.zeroLogging.title')}</h3>
+            <p className="mt-1.5 text-ui text-dim leading-relaxed">{t('controls.zeroLogging.body')}</p>
+          </div>
+          <div className="bg-surface p-5">
+            <span className="font-mono text-micro text-accent-light uppercase tracking-wider">02 · Guardrails</span>
+            <h3 className="mt-2 text-sm font-medium text-fg">{t('controls.hardCaps.title')}</h3>
+            <p className="mt-1.5 text-ui text-dim leading-relaxed">{t('controls.hardCaps.body')}</p>
+          </div>
+          <div className="bg-surface p-5">
+            <span className="font-mono text-micro text-accent-light uppercase tracking-wider">03 · Network</span>
+            <h3 className="mt-2 text-sm font-medium text-fg">{t('controls.smartRouting.title')}</h3>
+            <p className="mt-1.5 text-ui text-dim leading-relaxed">{t('controls.smartRouting.body')}</p>
+          </div>
+          <div className="bg-surface p-5">
+            <span className="font-mono text-micro text-accent-light uppercase tracking-wider">04 · Isolation</span>
+            <h3 className="mt-2 text-sm font-medium text-fg">{t('controls.keyScoping.title')}</h3>
+            <p className="mt-1.5 text-ui text-dim leading-relaxed">{t('controls.keyScoping.body')}</p>
           </div>
         </div>
       </Panel>
