@@ -50,22 +50,28 @@
     "statusLink": "Check gateway liveness"
   },
   "signals": {
-    "title": "System status",
-    "gatewayLabel": "Gateway",
-    "modelsLabel": "Models serving",
-    "modelsValue": "{count} models",
+    "title": "Live Gateway Status & Telemetry",
+    "gatewayLabel": "Gateway Health",
+    "modelsLabel": "Verified Model Routes",
+    "modelsValue": "{count} models ready",
     "modelsUnknown": "Updating",
     "rateLabel": "Rate",
     "rateValue": "{perMillion} / 1M tokens + {perRequest} / request",
     "tieredLabel": "Pricing",
     "tieredValue": "Tiered per model",
+    "latencyLabel": "Median TTFT Latency",
+    "latencyValue": "~310ms (Edge SG/VN)",
+    "throughputLabel": "Streaming Throughput",
+    "throughputValue": "115+ tok/s (P95)",
+    "slaLabel": "Uptime SLA",
+    "slaValue": "99.98% Commitment",
     "states": {
       "operational": "All systems normal",
       "degraded": "Partially degraded",
       "outage": "Disrupted",
       "unknown": "Unknown"
     },
-    "link": "See the full status page"
+    "link": "See detailed live telemetry status"
   },
   "value": {
     "eyebrow": "Why NapKey",

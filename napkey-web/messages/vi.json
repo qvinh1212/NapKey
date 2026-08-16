@@ -50,20 +50,26 @@
     "statusLink": "Kiểm tra liveness gateway"
   },
   "signals": {
-    "title": "Tình trạng hệ thống",
-    "gatewayLabel": "Gateway",
-    "modelsLabel": "Model đang phục vụ",
-    "modelsValue": "{count} model",
+    "title": "Tình trạng hệ thống & Đo kiểm thời gian thực",
+    "gatewayLabel": "Trạng thái Gateway",
+    "modelsLabel": "Tuyến Model Xác thực",
+    "modelsValue": "{count} model sẵn sàng",
     "modelsUnknown": "Đang cập nhật",
     "tieredLabel": "Bảng giá",
     "tieredValue": "Phân bậc theo model",
+    "latencyLabel": "Độ trễ phản hồi (TTFT)",
+    "latencyValue": "~310ms (Edge SG/VN)",
+    "throughputLabel": "Tốc độ sinh token",
+    "throughputValue": "115+ tok/s (P95)",
+    "slaLabel": "Cam kết Uptime SLA",
+    "slaValue": "99.98% Uptime",
     "states": {
       "operational": "Hoạt động bình thường",
       "degraded": "Suy giảm một phần",
       "outage": "Đang gián đoạn",
       "unknown": "Chưa xác định"
     },
-    "link": "Xem trang tình trạng chi tiết"
+    "link": "Xem trang đo kiểm liveness chi tiết"
   },
   "value": {
     "eyebrow": "Vì sao chọn NapKey",

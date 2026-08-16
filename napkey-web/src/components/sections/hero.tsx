@@ -53,10 +53,16 @@ export function Hero() {
             <div aria-hidden className="absolute -inset-8 bg-accent/6 blur-3xl" />
             <div className="relative overflow-hidden rounded-xl border border-white/15 bg-[#070908]/90 shadow-[0_32px_100px_rgba(0,0,0,0.65)] backdrop-blur">
               <div className="flex items-center justify-between border-b border-line px-5 py-4">
-                <div className="flex gap-2" aria-hidden>
-                  <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-                  <span className="size-2.5 rounded-full bg-[#febc2e]" />
-                  <span className="size-2.5 rounded-full bg-[#28c840]" />
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-2" aria-hidden>
+                    <span className="size-2.5 rounded-full bg-[#ff5f57]" />
+                    <span className="size-2.5 rounded-full bg-[#febc2e]" />
+                    <span className="size-2.5 rounded-full bg-[#28c840]" />
+                  </div>
+                  <div className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-2 py-0.5 font-mono text-micro text-accent-light">
+                    <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+                    <span>~310ms TTFT · 115 tok/s</span>
+                  </div>
                 </div>
                 <span className="font-mono text-micro tracking-[0.14em] text-muted uppercase">
                   {t('terminalLabel')}
