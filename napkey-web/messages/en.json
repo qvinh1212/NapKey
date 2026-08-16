@@ -47,6 +47,22 @@
       "anthropicSdk": "Anthropic SDK",
       "openaiSdk": "OpenAI SDK"
     },
+    "tabSetup": "30s Setup",
+    "tabSandbox": "Live Simulator",
+    "sandbox": {
+      "promptLabel": "Sample prompt:",
+      "prompts": {
+        "debounce": "TypeScript Debounce Hook",
+        "sql": "SQL Query Optimization",
+        "auth": "Next.js JWT Middleware"
+      },
+      "runButton": "Run Live Stream",
+      "runningButton": "Streaming tokens...",
+      "ttftLabel": "TTFT Latency",
+      "speedLabel": "Speed",
+      "tokensLabel": "Tokens",
+      "costLabel": "Exact Cost"
+    },
     "statusLink": "Check gateway liveness"
   },
   "signals": {

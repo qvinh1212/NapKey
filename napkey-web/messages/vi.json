@@ -47,6 +47,22 @@
       "anthropicSdk": "Anthropic SDK",
       "openaiSdk": "OpenAI SDK"
     },
+    "tabSetup": "Cấu hình 30s",
+    "tabSandbox": "Live Simulator",
+    "sandbox": {
+      "promptLabel": "Tác vụ mẫu:",
+      "prompts": {
+        "debounce": "TypeScript Debounce Hook",
+        "sql": "SQL Query Optimization",
+        "auth": "Next.js JWT Middleware"
+      },
+      "runButton": "Chạy thử Live Stream",
+      "runningButton": "Đang sinh token...",
+      "ttftLabel": "Độ trễ TTFT",
+      "speedLabel": "Tốc độ",
+      "tokensLabel": "Token sinh",
+      "costLabel": "Chi phí thực tế"
+    },
     "statusLink": "Kiểm tra liveness gateway"
   },
   "signals": {
