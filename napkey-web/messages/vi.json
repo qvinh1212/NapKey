@@ -17,7 +17,10 @@
     "skipToContent": "Bỏ qua, đến nội dung chính",
     "openMenu": "Mở menu",
     "closeMenu": "Đóng menu",
-    "switchLanguage": "Đổi ngôn ngữ"
+    "switchLanguage": "Đổi ngôn ngữ",
+    "contrastMode": "Chế độ tương phản",
+    "contrastOled": "Đen OLED",
+    "contrastHigh": "Tương phản cao"
   },
   "hero": {
     "badge": "Dành cho Claude Code và SDK hiện tại của bạn",

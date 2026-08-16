@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Logo } from './logo';
+import { ContrastToggle } from './contrast-toggle';
 
 const groups = [
   { title: 'product', links: ['pricing', 'integrate', 'billing'] },
@@ -56,9 +57,12 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-16 flex flex-col gap-4 border-t border-zinc-900 pt-8 text-label text-dim md:flex-row md:items-center md:justify-between">
-          <p>
-            &copy; {year} NapKey. {t('rights')}
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p>
+              &copy; {year} NapKey. {t('rights')}
+            </p>
+            <ContrastToggle />
+          </div>
           <p className="max-w-xl md:text-right">{t('disclaimer')}</p>
         </div>
       </div>

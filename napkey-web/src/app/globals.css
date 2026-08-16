@@ -173,6 +173,41 @@
   }
 }
 
+/*
+ * Che do tuong phan cao (High Contrast Mode)
+ * Ho tro nguoi dung trong moi truong anh sang manh hoac can do net toi da.
+ */
+[data-contrast='high'],
+:root.high-contrast {
+  --color-surface: rgba(255, 255, 255, 0.07);
+  --color-surface-hover: rgba(255, 255, 255, 0.12);
+  --color-line: rgba(255, 255, 255, 0.22);
+
+  --color-fg: #ffffff;
+  --color-muted: #d4d4d8;
+  --color-dim: #a1a1aa;
+  --color-subtle: #e4e4e7;
+
+  --color-accent: #10b981;
+  --color-accent-soft: rgba(16, 185, 129, 0.2);
+  --color-accent-light: #6ee7b7;
+
+  --color-info: #93c5fd;
+  --color-warn: #fde047;
+}
+
+@media (prefers-contrast: more) {
+  :root:not([data-contrast='oled']) {
+    --color-surface: rgba(255, 255, 255, 0.07);
+    --color-surface-hover: rgba(255, 255, 255, 0.12);
+    --color-line: rgba(255, 255, 255, 0.22);
+    --color-muted: #d4d4d8;
+    --color-dim: #a1a1aa;
+    --color-subtle: #e4e4e7;
+    --color-accent-light: #6ee7b7;
+  }
+}
+
 @utility container-page {
   margin-inline: auto;
   width: 100%;

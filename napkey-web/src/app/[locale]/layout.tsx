@@ -88,6 +88,13 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`${manrope.variable} ${inter.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var c=localStorage.getItem('napkey-contrast');if(c==='high'||(!c&&window.matchMedia('(prefers-contrast: more)').matches)){document.documentElement.setAttribute('data-contrast','high')}else{document.documentElement.setAttribute('data-contrast','oled')}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="min-h-dvh antialiased">
         <NextIntlClientProvider>
           <a

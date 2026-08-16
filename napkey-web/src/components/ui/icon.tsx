@@ -91,3 +91,14 @@ export function CopyIcon(props: IconProps) {
   );
 }
 
+/** Bieu tuong che do tuong phan cao (nua sang nua toi). */
+export function ContrastIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="8" cy="8" r="5.75" />
+      <path d="M8 2.25v11.5a5.75 5.75 0 0 0 0-11.5z" fill="currentColor" />
+    </Icon>
+  );
+}
+
+

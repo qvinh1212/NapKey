@@ -8,6 +8,7 @@ import { useSession } from '@/components/console/session-provider';
 import { publicAuthAction } from '@/lib/session-ui';
 import { Logo } from './logo';
 import { LocaleSwitcher } from './locale-switcher';
+import { ContrastToggle } from './contrast-toggle';
 
 const sections = [
   { key: 'pricing', href: '/#pricing' },
@@ -118,7 +119,8 @@ export function SiteHeader() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ContrastToggle />
             <LocaleSwitcher />
             {authAction ? (
               <Link
@@ -156,6 +158,10 @@ export function SiteHeader() {
             aria-label="Mobile"
             className="mt-3 flex max-h-[calc(100dvh-5.5rem)] flex-col gap-1 overflow-y-auto rounded-xl border border-line bg-black/95 p-4 shadow-2xl backdrop-blur lg:hidden"
           >
+            <div className="mb-2 flex items-center justify-between border-b border-line pb-3 sm:hidden">
+              <span className="text-label text-dim">{t('contrastMode')}</span>
+              <ContrastToggle />
+            </div>
             {sections.map(({ key, href }) => (
               <Link
                 key={key}

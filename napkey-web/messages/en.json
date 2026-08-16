@@ -17,7 +17,10 @@
     "skipToContent": "Skip to main content",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "switchLanguage": "Switch language"
+    "switchLanguage": "Switch language",
+    "contrastMode": "Display contrast",
+    "contrastOled": "OLED Black",
+    "contrastHigh": "High Contrast"
   },
   "hero": {
     "badge": "Built for Claude Code and your existing SDK",
