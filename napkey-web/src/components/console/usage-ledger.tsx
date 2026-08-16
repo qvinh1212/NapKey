@@ -1,11 +1,12 @@
 'use client';
 
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api/client';
 import type { KeyListResponse, UsageDetailResponse, UsageRecordsResponse } from '@/lib/api/types';
 import { billingRange, compact, count, dateTime, latency, money } from '@/lib/format';
 import { usagePageQueries } from '@/lib/usage-query';
+import { exportUsageCsv } from '@/lib/export-csv';
 import { UsageChart } from './usage-chart';
 import { usageRecordView } from '@/lib/usage-record-view';
 import { UsageRecordDetail, UsageQualityBadge } from './usage-record-detail';
@@ -21,14 +22,6 @@ import {
   Td,
   Th,
 } from './ui';
-
-/**
- * So usage tung request.
- *
- * Day la trang lam cho mot khoan tien tra loi duoc: moi request mot dong, kem token
- * tach theo loai, chi phi, va co cho biet output token la DO DUOC hay UOC LUONG.
- * Neu chi hien mot con so tong thi khach khong co cach nao doi soat.
- */
 
 const PAGE_SIZE = 50;
 
@@ -47,6 +40,9 @@ export function UsageLedger() {
 
   const [days, setDays] = useState<Preset>(30);
   const [keyId, setKeyId] = useState('');
+  const [modelFilter, setModelFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'error'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [offset, setOffset] = useState(0);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [state, setState] = useState<State>({ status: 'loading' });
@@ -104,6 +100,46 @@ export function UsageLedger() {
   const total = state.status === 'ready' ? state.records.total : 0;
   const hasPrev = offset > 0;
   const hasNext = offset + PAGE_SIZE < total;
+
+  const availableModels = useMemo(() => {
+    if (state.status !== 'ready') return [];
+    const set = new Set<string>();
+    state.records.records.forEach((r) => {
+      if (r.model) set.add(r.model);
+    });
+    return Array.from(set).sort();
+  }, [state]);
+
+  const filteredRecords = useMemo(() => {
+    if (state.status !== 'ready') return [];
+    return state.records.records.filter((record) => {
+      if (modelFilter && record.model.toLowerCase() !== modelFilter.toLowerCase()) return false;
+      if (statusFilter !== 'all' && record.status !== statusFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.trim().toLowerCase();
+        const matchesId = (record.requestId || '').toLowerCase().includes(q) || String(record.id).includes(q);
+        const matchesModel = record.model.toLowerCase().includes(q);
+        const matchesKey = (record.keyName || '').toLowerCase().includes(q) || (record.keyMasked || '').toLowerCase().includes(q);
+        if (!matchesId && !matchesModel && !matchesKey) return false;
+      }
+      return true;
+    });
+  }, [state, modelFilter, statusFilter, searchQuery]);
+
+  const hasActiveAdvancedFilters = Boolean(modelFilter || statusFilter !== 'all' || searchQuery.trim());
+
+  function handleExport() {
+    if (state.status !== 'ready') return;
+    const exportData = filteredRecords.length > 0 ? filteredRecords : state.records.records;
+    const filename = `napkey-usage-${days}d-${new Date().toISOString().slice(0, 10)}.csv`;
+    exportUsageCsv(exportData, filename);
+  }
+
+  function handleClearFilters() {
+    setModelFilter('');
+    setStatusFilter('all');
+    setSearchQuery('');
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -166,8 +202,6 @@ export function UsageLedger() {
                     aria-current={value === days ? 'true' : undefined}
                     onClick={() => {
                       setDays(value);
-                      // Doi khoang thoi gian phai ve trang dau: giu offset cu se
-                      // hien mot trang trong khi khoang moi it du lieu hon.
                       setOffset(0);
                       setExpandedId(null);
                     }}
@@ -201,9 +235,91 @@ export function UsageLedger() {
                   </option>
                 ))}
               </select>
+
+              {/* Export CSV Button */}
+              {state.status === 'ready' && state.records.records.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent-soft px-3.5 py-1.5 font-mono text-ui text-accent-light hover:bg-accent/20 transition-colors"
+                >
+                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  <span>{t('exportCsv')}</span>
+                </button>
+              ) : null}
             </div>
           }
         />
+
+        {/* Advanced Filters Toolbar */}
+        {state.status === 'ready' && state.records.records.length > 0 ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-hover/50 px-5 py-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              {/* Filter by Model */}
+              <select
+                value={modelFilter}
+                onChange={(e) => setModelFilter(e.target.value)}
+                className="rounded-lg border border-line bg-surface px-2.5 py-1 font-mono text-label text-muted focus:border-accent"
+              >
+                <option value="">{t('allModels')}</option>
+                {availableModels.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+
+              {/* Filter by Status */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'success' | 'error')}
+                className="rounded-lg border border-line bg-surface px-2.5 py-1 font-mono text-label text-muted focus:border-accent"
+              >
+                <option value="all">{t('allStatuses')}</option>
+                <option value="success">{t('statusSuccess')}</option>
+                <option value="error">{t('statusError')}</option>
+              </select>
+
+              {/* Search query */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={t('searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="rounded-lg border border-line bg-surface pl-2.5 pr-7 py-1 font-mono text-label text-fg placeholder:text-dim focus:border-accent outline-none w-48 sm:w-60"
+                />
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-dim hover:text-fg text-micro"
+                  >
+                    ✕
+                  </button>
+                ) : null}
+              </div>
+
+              {hasActiveAdvancedFilters ? (
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="text-micro text-accent-light hover:underline font-mono"
+                >
+                  {t('clearFilters')}
+                </button>
+              ) : null}
+            </div>
+
+            <div className="font-mono text-micro text-dim">
+              {filteredRecords.length} / {state.records.records.length} records
+            </div>
+          </div>
+        ) : null}
 
         {state.status === 'loading' ? <SkeletonRows rows={6} label={t('loading')} /> : null}
 
@@ -221,7 +337,20 @@ export function UsageLedger() {
           <EmptyState title={t('emptyTitle')} description={t('emptyDescription')} />
         ) : null}
 
-        {state.status === 'ready' && state.records.records.length > 0 ? (
+        {state.status === 'ready' && state.records.records.length > 0 && filteredRecords.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-ui text-muted">{t('noFilteredResults')}</p>
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="mt-3 inline-block rounded-full border border-line px-4 py-1.5 text-label text-accent-light hover:bg-surface-hover"
+            >
+              {t('clearFilters')}
+            </button>
+          </div>
+        ) : null}
+
+        {state.status === 'ready' && filteredRecords.length > 0 ? (
           <>
             <TableScroll>
               <thead>
@@ -239,7 +368,7 @@ export function UsageLedger() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {state.records.records.map((record) => {
+                {filteredRecords.map((record) => {
                   const view = usageRecordView(record);
                   const open = expandedId === record.id;
                   return (
@@ -258,32 +387,37 @@ export function UsageLedger() {
                           </div>
                         </Td>
                         <Td><Badge tone={view.statusTone}>{t(`status.${view.status}`)}</Badge></Td>
-                        <Td align="right">{count(record.tokens.input, locale)}</Td>
-                        <Td align="right">{count(record.tokens.output, locale)}</Td>
-                        <Td align="right" className="text-dim">
-                          {count(view.cacheTokens, locale)}
+                        <Td align="right" className="font-mono text-dim tabular-nums">
+                          {compact(record.tokens.input, locale)}
                         </Td>
-                        <Td align="right" className="font-mono text-fg">
+                        <Td align="right" className="font-mono text-dim tabular-nums">
+                          {compact(record.tokens.output, locale)}
+                        </Td>
+                        <Td align="right" className="font-mono text-dim tabular-nums">
+                          {compact(record.tokens.cacheRead, locale)}
+                        </Td>
+                        <Td align="right" className="font-mono font-medium text-fg tabular-nums">
                           {money(record.cost)}
                         </Td>
-                        <Td align="right" className="text-dim">
+                        <Td align="right" className="font-mono text-dim tabular-nums">
                           {latency(record.latencyMs, locale)}
                         </Td>
                         <Td align="right">
                           <button
                             type="button"
-                            aria-expanded={open}
-                            aria-controls={`usage-detail-${record.id}`}
                             onClick={() => setExpandedId(open ? null : record.id)}
-                            className="rounded-full border border-line px-3 py-1 font-mono text-label text-muted transition-colors hover:bg-white/10 hover:text-fg"
+                            aria-expanded={open}
+                            aria-controls={`usage-record-${record.id}`}
+                            className="rounded-full border border-line px-3 py-1 font-mono text-label text-muted transition-colors hover:border-line hover:text-fg"
                           >
                             {open ? t('hideDetail') : t('showDetail')}
                           </button>
                         </Td>
                       </tr>
+
                       {open ? (
-                        <tr id={`usage-detail-${record.id}`}>
-                          <td colSpan={10} className="p-0">
+                        <tr id={`usage-record-${record.id}`}>
+                          <td colSpan={10} className="bg-bg/40 p-0">
                             <UsageRecordDetail record={record} />
                           </td>
                         </tr>
@@ -302,15 +436,15 @@ export function UsageLedger() {
                   total: count(total, locale),
                 })}
               </p>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   disabled={!hasPrev}
                   onClick={() => {
-                    setOffset((v) => Math.max(v - PAGE_SIZE, 0));
+                    setOffset((v) => Math.max(0, v - PAGE_SIZE));
                     setExpandedId(null);
                   }}
-                  className="rounded-full border border-line bg-surface-hover px-4 py-1.5 text-ui text-muted transition-colors hover:bg-white/10 hover:text-fg disabled:pointer-events-none disabled:opacity-40"
+                  className="rounded-full border border-line px-4 py-1.5 text-ui text-muted transition-colors hover:bg-surface-hover hover:text-fg disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {t('prev')}
                 </button>
@@ -321,7 +455,7 @@ export function UsageLedger() {
                     setOffset((v) => v + PAGE_SIZE);
                     setExpandedId(null);
                   }}
-                  className="rounded-full border border-line bg-surface-hover px-4 py-1.5 text-ui text-muted transition-colors hover:bg-white/10 hover:text-fg disabled:pointer-events-none disabled:opacity-40"
+                  className="rounded-full border border-line px-4 py-1.5 text-ui text-muted transition-colors hover:bg-surface-hover hover:text-fg disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {t('next')}
                 </button>
