@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { api, ApiError } from '@/lib/api/client';
 import type { TopupOrderResponse, WalletResponse } from '@/lib/api/types';
-import { formatVnd, MIN_TOPUP_VND, TOPUP_PRESETS, TOPUP_STEP_VND } from '@/lib/pricing';
+import { formatVnd, MIN_TOPUP_VND, TOPUP_STEP_VND } from '@/lib/pricing';
 import { money } from '@/lib/format';
 import { CheckIcon, CloseIcon } from '@/components/ui/icon';
 import { CopyButton } from '@/components/ui/copy-button';
@@ -17,12 +17,27 @@ export interface QuickTopupDrawerProps {
   onSuccess?: () => void;
 }
 
+type CreditPackage = {
+  vnd: number;
+  credits: number;
+  label: string;
+  popular?: boolean;
+};
+
+// Cac goi nạp theo Cach 2: 1 Credit = 75 VND (1.5x ROI tu nguon von 50d/Credit)
+const CREDIT_PACKAGES_CACH_2: CreditPackage[] = [
+  { vnd: 15_000, credits: 200, label: 'Khởi động' },
+  { vnd: 75_000, credits: 1_000, label: 'Tiêu chuẩn', popular: true },
+  { vnd: 150_000, credits: 2_000, label: 'Developer' },
+  { vnd: 375_000, credits: 5_000, label: 'Pro / Team' },
+];
+
 export function QuickTopupDrawer({ open, onClose, wallet, onSuccess }: QuickTopupDrawerProps) {
   const t = useTranslations('console.wallet');
   const ts = useTranslations('console.shell');
   const locale = useLocale();
 
-  const [amount, setAmount] = useState(MIN_TOPUP_VND);
+  const [amount, setAmount] = useState<number>(75_000);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<TopupOrderResponse['order'] | null>(null);
@@ -70,6 +85,8 @@ export function QuickTopupDrawer({ open, onClose, wallet, onSuccess }: QuickTopu
 
   if (!open) return null;
 
+  const estimatedCredits = Math.round(amount / 75);
+
   return (
     <div
       role="dialog"
@@ -116,21 +133,31 @@ export function QuickTopupDrawer({ open, onClose, wallet, onSuccess }: QuickTopu
           <form onSubmit={createOrder} className="mt-5 space-y-4">
             <div>
               <label className="block text-ui font-medium text-dim">
-                {t('topupTitle')}
+                Chọn gói nạp Credits (Tỉ giá 1 CR = 75 ₫)
               </label>
-              <div className="mt-2.5 grid grid-cols-3 gap-2">
-                {TOPUP_PRESETS.map((value) => (
+              <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+                {CREDIT_PACKAGES_CACH_2.map((pkg) => (
                   <button
-                    key={value}
+                    key={pkg.vnd}
                     type="button"
-                    onClick={() => setAmount(value)}
-                    className={`rounded-full border px-3 py-1.5 font-mono text-ui tabular-nums transition-colors ${
-                      amount === value
-                        ? 'border-accent bg-accent-soft text-accent-light'
-                        : 'border-line text-muted hover:border-line hover:text-fg'
+                    onClick={() => setAmount(pkg.vnd)}
+                    className={`relative rounded-xl border p-3 text-left transition-all ${
+                      amount === pkg.vnd
+                        ? 'border-accent bg-accent-soft text-fg ring-1 ring-accent'
+                        : 'border-line bg-surface hover:border-accent/40 hover:bg-surface-hover'
                     }`}
                   >
-                    {formatVnd(value, locale)}
+                    {pkg.popular ? (
+                      <span className="absolute top-2 right-2 rounded-full bg-accent/20 px-1.5 py-0.5 font-mono text-[10px] font-bold text-accent-light">
+                        POPULAR
+                      </span>
+                    ) : null}
+                    <p className="font-mono text-base font-bold text-accent-light">
+                      {pkg.credits.toLocaleString('vi-VN')} CR
+                    </p>
+                    <p className="mt-1 font-mono text-ui text-muted">
+                      {formatVnd(pkg.vnd, locale)}
+                    </p>
                   </button>
                 ))}
               </div>
@@ -150,6 +177,14 @@ export function QuickTopupDrawer({ open, onClose, wallet, onSuccess }: QuickTopu
                 onChange={(e) => setAmount(Number(e.target.value))}
                 className="mt-1.5 w-full rounded-lg border border-line bg-surface px-4 py-2.5 font-mono text-ui text-fg outline-none focus:border-accent"
               />
+            </div>
+
+            {/* Credit Equivalence Readout */}
+            <div className="rounded-lg border border-accent/30 bg-accent-soft p-3 font-mono text-ui flex items-center justify-between">
+              <span className="text-muted text-label">Nhận vào tài khoản:</span>
+              <span className="font-bold text-accent-light">
+                💎 {estimatedCredits.toLocaleString('vi-VN')} Credits
+              </span>
             </div>
 
             <p className="rounded-lg border border-warn/30 bg-warn/10 p-3 text-label text-warn leading-relaxed">
@@ -177,76 +212,64 @@ export function QuickTopupDrawer({ open, onClose, wallet, onSuccess }: QuickTopu
           </form>
         ) : (
           <div className="mt-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-label text-dim">{t('transferTitle')}</span>
-              <Badge tone={order.status === 'paid' ? 'accent' : order.status === 'underpaid' ? 'warn' : 'info'}>
-                {t(`status.${order.status}`)}
-              </Badge>
-            </div>
-
-            {/* Transfer details */}
-            <dl className="divide-y divide-line rounded-lg border border-line bg-surface">
-              <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-                <dt className="text-label text-dim">{t('amount')}</dt>
-                <dd className="flex items-center gap-2 font-mono text-ui text-fg">
-                  <span>{order.expectedAmount.formatted}</span>
-                  <CopyButton
-                    value={String(order.expectedAmount.vnd)}
-                    variant="icon"
-                    showTooltip
-                    className="size-5"
-                  />
-                </dd>
-              </div>
-
-              <div className="flex items-center justify-between gap-3 px-4 py-2.5">
-                <dt className="text-label text-dim">{t('memo')}</dt>
-                <dd className="flex items-center gap-2 font-mono text-ui font-semibold text-accent-light">
-                  <span>{order.memoCode}</span>
-                  <CopyButton
-                    value={order.memoCode}
-                    variant="icon"
-                    showTooltip
-                    className="size-5"
-                  />
-                </dd>
-              </div>
-            </dl>
-
             {order.status === 'paid' ? (
-              <div className="rounded-lg border border-accent/40 bg-accent-soft p-4 text-center">
-                <div className="mx-auto mb-2 flex size-8 items-center justify-center rounded-full bg-accent text-bg">
-                  <CheckIcon className="size-5 stroke-[2.5]" />
+              <div className="rounded-xl border border-accent/40 bg-accent-soft p-6 text-center">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-accent text-bg">
+                  <CheckIcon className="size-6" />
                 </div>
-                <p className="text-ui font-medium text-accent-light">{t('paidNotice')}</p>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="mt-3 rounded-full bg-fg px-6 py-2 text-ui font-medium text-bg hover:bg-white/90"
-                >
-                  Hoàn tất
-                </button>
+                <h3 className="mt-4 text-lg font-bold text-fg">{t('paidNotice')}</h3>
+                <p className="mt-1 font-mono text-ui text-accent-light">
+                  +{order.expectedAmount.formatted} (
+                  {Math.round(order.expectedAmount.vnd / 75).toLocaleString('vi-VN')} Credits)
+                </p>
               </div>
             ) : (
-              <div className="space-y-3 text-center">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-ui text-muted">{t('transferTitle')}</span>
+                  <Badge tone={order.status === 'underpaid' ? 'warn' : 'info'}>
+                    {t(`status.${order.status}`)}
+                  </Badge>
+                </div>
+
+                <div className="mt-3 divide-y divide-line rounded-xl border border-line bg-surface">
+                  <div className="flex items-center justify-between p-3">
+                    <span className="text-label text-dim">{t('amount')}</span>
+                    <span className="font-mono font-bold text-accent-light">
+                      {order.expectedAmount.formatted}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3">
+                    <span className="text-label text-dim">Quy đổi Credits</span>
+                    <span className="font-mono font-bold text-fg">
+                      💎 {Math.round(order.expectedAmount.vnd / 75).toLocaleString('vi-VN')} CR
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3">
+                    <span className="text-label text-dim">{t('memo')}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-fg">{order.memoCode}</span>
+                      <CopyButton value={order.memoCode} variant="icon" showTooltip />
+                    </div>
+                  </div>
+                </div>
+
                 {order.payment?.checkoutUrl ? (
-                  <a
-                    href={order.payment.checkoutUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block w-full rounded-full bg-fg py-3 text-ui font-medium text-bg hover:bg-white/90"
-                  >
-                    {t('openCheckout')}
-                  </a>
+                  <div className="mt-4 text-center">
+                    <a
+                      href={order.payment.checkoutUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block w-full rounded-full bg-fg py-2.5 text-center text-ui font-medium text-bg hover:bg-white/90"
+                    >
+                      {t('openCheckout')}
+                    </a>
+                  </div>
                 ) : null}
-                <p className="text-micro text-dim">{t('pollingNotice')}</p>
-                <button
-                  type="button"
-                  onClick={() => setOrder(null)}
-                  className="text-label text-muted hover:text-fg"
-                >
-                  {t('newOrder')}
-                </button>
+
+                <p className="mt-3 text-center text-micro font-mono text-dim">
+                  {t('pollingNotice')}
+                </p>
               </div>
             )}
           </div>

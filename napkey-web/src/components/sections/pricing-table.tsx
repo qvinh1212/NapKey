@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Section } from '@/components/ui/section';
-import { MODEL_TIERS } from '@/lib/pricing';
 import { ENRICHED_MODELS, type ModelCapability } from '@/lib/model-metadata';
 import { CopyButton } from '@/components/ui/copy-button';
 import { PricingCalculator } from './pricing-calculator';
@@ -11,17 +10,28 @@ import { QuickConfigModal } from './quick-config-modal';
 
 type FilterType = 'all' | ModelCapability;
 type ViewMode = 'cards' | 'table';
+type PricingUnit = 'credit' | 'vnd';
 
 export function PricingTable() {
   const t = useTranslations('pricing');
   const [filter, setFilter] = useState<FilterType>('all');
   const [view, setView] = useState<ViewMode>('cards');
+  const [unit, setUnit] = useState<PricingUnit>('credit');
   const [configTarget, setConfigTarget] = useState<{ id: string; name: string } | null>(null);
 
   const filteredModels = ENRICHED_MODELS.filter((model) => {
     if (filter === 'all') return true;
     return model.capabilities.includes(filter);
   });
+
+  function formatModelRate(pricePerMillionVnd: number): string {
+    if (unit === 'credit') {
+      // Cach 2: 1 Credit = 75 VND (Vốn 50d x 1.5 markup = 75d)
+      const cr = Math.round(pricePerMillionVnd / 75).toLocaleString('vi-VN');
+      return `${cr} CR / 1M`;
+    }
+    return `${pricePerMillionVnd.toLocaleString('vi-VN')} ₫ / 1M`;
+  }
 
   return (
     <Section id="pricing" eyebrow={t('eyebrow')} title={t('title')} subtitle={t('subtitle')}>
@@ -33,8 +43,8 @@ export function PricingTable() {
         modelName={configTarget?.name ?? ''}
       />
 
-      {/* Controls Bar: Capability Filter Pills + View Switcher */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Controls Bar: Capability Filter Pills + Unit Switcher + View Switcher */}
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         {/* Capability Filters */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-label text-dim uppercase tracking-wider">
@@ -59,27 +69,57 @@ export function PricingTable() {
           })}
         </div>
 
-        {/* View Mode Switcher (Cards / Table) */}
-        <div
-          role="group"
-          aria-label="View switch"
-          className="inline-flex self-start sm:self-auto items-center rounded-full border border-line bg-surface-hover p-0.5"
-        >
-          {(['cards', 'table'] as const).map((mode) => {
-            const isActive = view === mode;
-            return (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setView(mode)}
-                className={`rounded-full px-3 py-1 font-mono text-label transition-colors duration-150 ${
-                  isActive ? 'bg-white/10 text-fg font-medium' : 'text-dim hover:text-muted'
-                }`}
-              >
-                {t(`models.views.${mode}`)}
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Currency / Unit Switcher (Credit / VNĐ - Cách 2: 1 CR = 75 ₫) */}
+          <div
+            role="group"
+            aria-label="Unit switch"
+            className="inline-flex items-center rounded-full border border-line bg-surface-hover p-0.5"
+          >
+            <button
+              type="button"
+              onClick={() => setUnit('credit')}
+              className={`rounded-full px-3 py-1 font-mono text-micro transition-colors duration-150 ${
+                unit === 'credit'
+                  ? 'border border-accent/40 bg-accent-soft text-accent-light font-semibold'
+                  : 'text-dim hover:text-muted'
+              }`}
+            >
+              💎 Credits (1 CR = 75 ₫)
+            </button>
+            <button
+              type="button"
+              onClick={() => setUnit('vnd')}
+              className={`rounded-full px-3 py-1 font-mono text-micro transition-colors duration-150 ${
+                unit === 'vnd' ? 'bg-white/10 text-fg font-medium' : 'text-dim hover:text-muted'
+              }`}
+            >
+              ₫ VNĐ
+            </button>
+          </div>
+
+          {/* View Mode Switcher (Cards / Table) */}
+          <div
+            role="group"
+            aria-label="View switch"
+            className="inline-flex items-center rounded-full border border-line bg-surface-hover p-0.5"
+          >
+            {(['cards', 'table'] as const).map((mode) => {
+              const isActive = view === mode;
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setView(mode)}
+                  className={`rounded-full px-3 py-1 font-mono text-label transition-colors duration-150 ${
+                    isActive ? 'bg-white/10 text-fg font-medium' : 'text-dim hover:text-muted'
+                  }`}
+                >
+                  {t(`models.views.${mode}`)}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -139,7 +179,7 @@ export function PricingTable() {
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <div className="font-mono text-ui font-bold text-accent-light">
-                      {t('models.ratePerMillion', { rate: model.pricePerMillion.toLocaleString('vi-VN') })}
+                      {formatModelRate(model.pricePerMillion)}
                     </div>
                   </div>
                   <button
@@ -170,7 +210,7 @@ export function PricingTable() {
                   {t('models.colTier')}
                 </th>
                 <th className="px-6 py-4 text-right font-mono text-label tracking-[0.14em] text-accent-light uppercase">
-                  {t('models.rateHeader')}
+                  {unit === 'credit' ? 'Đơn giá / 1M Tokens (CR)' : t('models.rateHeader')}
                 </th>
                 <th className="px-6 py-4 text-right font-mono text-label tracking-[0.14em] text-dim uppercase">
                   Action
@@ -195,7 +235,7 @@ export function PricingTable() {
                     {t('models.tierValue', { ratio: model.ratio })}
                   </td>
                   <td className="px-6 py-4 text-right font-mono text-ui font-semibold tabular-nums text-accent-light">
-                    {t('models.ratePerMillion', { rate: model.pricePerMillion.toLocaleString('vi-VN') })}
+                    {formatModelRate(model.pricePerMillion)}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button
@@ -213,42 +253,8 @@ export function PricingTable() {
         </div>
       )}
 
-      {/* Screen-reader Accessible Baseline Table for Contract Continuity */}
-      <table className="sr-only" aria-label="Served models and pricing tiers">
-        <thead>
-          <tr>
-            <th>{t('models.colModel')}</th>
-            <th>{t('models.colTier')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {MODEL_TIERS.map((tier) => (
-            <tr key={tier.id}>
-              <td>{tier.id}</td>
-              <td>{t('models.tierValue', { ratio: tier.ratio })}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <p className="mt-3 text-prose text-dim">{t('models.note')}</p>
-
-      {/* Interactive Cost Calculator & $20 Pro Comparison */}
+      {/* Interactive Savings & Usage Calculator */}
       <PricingCalculator />
-
-      <div className="relative mt-8 overflow-hidden rounded-xl border border-accent/40 bg-accent-soft p-5 sm:p-7">
-        <div aria-hidden="true" className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-accent/15 blur-3xl" />
-        <div className="relative grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
-          <div>
-            <p className="font-mono text-micro uppercase tracking-[0.14em] text-accent-light">{t('offer.eyebrow')}</p>
-            <h3 className="mt-2 font-display text-2xl font-bold text-fg sm:text-3xl">{t('offer.title')}</h3>
-            <p className="mt-2 text-prose text-muted">{t('offer.body')}</p>
-          </div>
-          <div className="rounded-xl border border-accent/30 bg-bg/60 px-5 py-4 font-mono text-lg text-fg md:text-right">
-            {t('offer.example')}
-          </div>
-        </div>
-      </div>
     </Section>
   );
 }
