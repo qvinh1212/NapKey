@@ -6,8 +6,8 @@ import (
 	"napkey-core/internal/pricing"
 )
 
-func TestWalletHoldAmountCapsLargeQuotesAtTenCredits(t *testing.T) {
-	want := int64(10) * pricing.RetailMicrosPerCredit
+func TestWalletHoldAmountCapsLargeQuotesAtTheCeiling(t *testing.T) {
+	want := walletHoldCeilingVND * pricing.MicrosPerVND
 	if got := walletHoldAmount(100_000 * pricing.MicrosPerVND); got != want {
 		t.Fatalf("walletHoldAmount() = %d, want %d", got, want)
 	}

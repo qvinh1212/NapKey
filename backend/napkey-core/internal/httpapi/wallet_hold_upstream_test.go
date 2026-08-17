@@ -145,7 +145,7 @@ func TestHoldTokensHandleEachComponentIndependently(t *testing.T) {
 
 // The allowance must not swallow the ceiling.
 //
-// walletHoldCredits exists so one request cannot reserve a whole wallet. If the
+// walletHoldCeilingVND exists so one request cannot reserve a whole wallet. If the
 // allowance priced out near it, every request would reserve the maximum and a funded
 // wallet would serve one call at a time.
 func TestHoldAllowanceStaysWellBelowTheCeiling(t *testing.T) {
@@ -153,7 +153,7 @@ func TestHoldAllowanceStaysWellBelowTheCeiling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ceiling := walletHoldCredits * pricing.RetailMicrosPerCredit
+	ceiling := walletHoldCeilingVND * pricing.MicrosPerVND
 	if allowance.Micros >= ceiling/2 {
 		t.Errorf("the allowance prices at %d, more than half the %d ceiling, leaving too little room for real requests",
 			allowance.Micros, ceiling)

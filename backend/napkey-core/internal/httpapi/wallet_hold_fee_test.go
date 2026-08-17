@@ -71,7 +71,7 @@ func TestWalletHoldCeilingStillCoversALargeRequest(t *testing.T) {
 		t.Fatalf("Compute: %v", err)
 	}
 
-	ceiling := walletHoldCredits * pricing.RetailMicrosPerCredit
+	ceiling := walletHoldCeilingVND * pricing.MicrosPerVND
 	if quote.Micros > ceiling {
 		t.Errorf("a %d micro request exceeds the %d ceiling, so part of it is unsecured",
 			quote.Micros, ceiling)

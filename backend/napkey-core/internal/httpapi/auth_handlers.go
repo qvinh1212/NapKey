@@ -38,8 +38,15 @@ const (
 	// cookies and lands on Google, so one address gets a bounded budget.
 	googleStartMaxPerIP = 20
 	googleStartWindow   = 15 * time.Minute
-	trialCredits        = int64(50)
-	trialDuration      = 7 * 24 * time.Hour
+	// The signup trial, in VND rather than in retail credits.
+	//
+	// It was 50 credits, which meant its real value moved every time the display rate
+	// did: at 400 VND it was the 20,000 VND the site advertises, and migration 0022's
+	// return to 75 would have quietly cut it to 3,750 while the launch offer still
+	// promised 250 Credits. What is being given away is an amount of money, so that is
+	// what this names; how many credits it shows as is the rate's business.
+	trialVND      = int64(20_000)
+	trialDuration = 7 * 24 * time.Hour
 )
 
 // Rate limit scopes.
@@ -286,7 +293,7 @@ func (s *Server) handleVerifyEmail(w http.ResponseWriter, r *http.Request) {
 	ip := clientIP(r, s.trustProxy)
 	userID, trialGranted, err := s.store.VerifyEmailAndGrantTrial(
 		r.Context(), auth.HashToken(req.Token), trialIPHash(s.cfg.TrialFingerprintSecret, ip),
-		trialCredits*pricing.RetailMicrosPerCredit, time.Now().Add(trialDuration),
+		trialVND*pricing.MicrosPerVND, time.Now().Add(trialDuration),
 	)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
@@ -309,7 +316,11 @@ func (s *Server) handleVerifyEmail(w http.ResponseWriter, r *http.Request) {
 		"status": "verified",
 		"trial": map[string]any{
 			"granted": trialGranted,
-			"credits": trialCredits,
+			// Both units, because the grant is an amount of money and the credit figure
+			// is that money at the current rate. Sending only credits is what let the
+			// two drift apart.
+			"vnd":           trialVND,
+			"credits":       trialVND / pricing.RetailVNDPerCredit,
 			"expiresInDays": 7,
 		},
 	})

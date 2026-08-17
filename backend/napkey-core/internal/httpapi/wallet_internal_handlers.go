@@ -18,7 +18,17 @@ type walletAuthorizationRequest struct {
 	MaxOutputTokens int64 `json:"maxOutputTokens"`
 }
 
-const walletHoldCredits int64 = 10
+// walletHoldCeilingVND caps what a single request may reserve, so one call cannot
+// take a whole wallet out of circulation while it is in flight.
+//
+// In VND rather than in credits. It was 10 credits until the retail rate returned to
+// 75 in migration 0022, which would have quietly cut the ceiling from 4,000 VND to
+// 750 VND and started refusing requests that are served today -- the price page
+// quotes 948 VND for a large-context call, and a 200k-token request with a 32k cap
+// quotes over 3,000. The ceiling is a risk control on money in flight; the retail
+// credit rate is a display unit for money held. Tying the first to the second meant
+// every change to how a balance is shown resized the limit on what may be reserved.
+const walletHoldCeilingVND int64 = 4_000
 
 // The billable size the upstream adds to a request on top of what the caller sent.
 //
@@ -77,7 +87,7 @@ func walletHoldTokens(declared pricing.Tokens) pricing.Tokens {
 // notices.
 func walletHoldAmount(quotedMicros int64) int64 {
 	minimum := pricing.MicrosPerVND
-	maximum := walletHoldCredits * pricing.RetailMicrosPerCredit
+	maximum := walletHoldCeilingVND * pricing.MicrosPerVND
 	if quotedMicros < minimum {
 		return minimum
 	}

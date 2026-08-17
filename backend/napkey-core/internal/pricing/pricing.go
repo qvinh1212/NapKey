@@ -24,6 +24,13 @@ const MicrocreditsPerCredit int64 = 1_000_000
 // customer-facing unit for money held, not a billing basis: requests are priced
 // from tokens against model_prices.
 //
+// It is 75 because that is the rate the published price page and the top-up form
+// quote (1 CR = 75 VND). It sat at 400 between migration 0017 and 0022, which the
+// console displayed on the wallet and on every order while the web app promised
+// 75 -- the same 10,000 VND top-up read as 25 CR in one place and 133 CR in
+// another. The money was never wrong; only the unit the balance was divided by.
+// Keep this equal to the rate the site advertises, or the two disagree again.
+//
 // There was an UpstreamVNDPerCredit of 110 beside it, used to record what a
 // credit-metered request cost. It was wrong. 110 VND is the measured cost of one
 // upstream *call*, but it was multiplied by the *credit count*, and the retired
@@ -32,7 +39,7 @@ const MicrocreditsPerCredit int64 = 1_000_000
 // is deleted rather than corrected because there is no longer an upstream it
 // describes, and a plausible-looking constant is how the error survived this long.
 const (
-	RetailVNDPerCredit    int64 = 400
+	RetailVNDPerCredit    int64 = 75
 	RetailMicrosPerCredit       = RetailVNDPerCredit * MicrosPerVND
 )
 

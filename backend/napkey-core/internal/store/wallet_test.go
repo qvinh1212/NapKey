@@ -54,22 +54,32 @@ func TestNormalizeTopupStatus(t *testing.T) {
 	}
 }
 
+// An order pays out the credits it was quoted, whatever the rate has since become.
+//
+// Each case below bought 1,000 credits: 45,000 VND when a credit cost 45, 60,000 when it
+// cost 60, 75,000 at today's 75. All three therefore credit the same wallet value, which
+// is what makes an old unpaid order safe to settle after a repricing. The 75 case is exact
+// identity -- money in equals money out -- because the order rate and the retail rate
+// agree; the expectations here move whenever pricing.RetailVNDPerCredit does, so a change
+// that forgets this test is a change that quietly repriced settled quotes.
 func TestWalletCreditValuePreservesLegacyPurchases(t *testing.T) {
+	const thousandCredits = 1_000 * pricing.RetailMicrosPerCredit
+
 	got, err := walletCreditMicros(45_000_000_000, 45)
 	if err != nil {
 		t.Fatalf("walletCreditMicros: %v", err)
 	}
-	if got != 400_000_000_000 {
-		t.Fatalf("credited micros = %d, want 400000000000", got)
+	if got != thousandCredits {
+		t.Fatalf("credited micros = %d, want %d", got, thousandCredits)
 	}
 
 	got, err = walletCreditMicros(60_000_000_000, 60)
-	if err != nil || got != 400_000_000_000 {
+	if err != nil || got != thousandCredits {
 		t.Fatalf("legacy 60 VND credit = %d, %v", got, err)
 	}
 
 	got, err = walletCreditMicros(75_000_000_000, 75)
-	if err != nil || got != 400_000_000_000 {
+	if err != nil || got != thousandCredits {
 		t.Fatalf("current-rate credit = %d, %v", got, err)
 	}
 	if _, err := walletCreditMicros(math.MaxInt64, 1); err == nil {

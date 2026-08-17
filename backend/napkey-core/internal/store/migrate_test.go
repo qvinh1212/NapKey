@@ -215,6 +215,56 @@ func TestRetailRepricePreservesExistingCreditQuantities(t *testing.T) {
 	}
 }
 
+// The return to 75 VND per credit must not rescale any stored money.
+//
+// This is the opposite requirement to every earlier reprice. 0010, 0014, and 0017 each
+// multiplied balance_micros so a customer's displayed credit count survived the rate
+// change. Doing that in reverse here would divide real money by 400/75 and take 5.33x
+// off every wallet, because the column holds the VND that was actually paid. The
+// displayed credit count is meant to rise instead: 75 is the rate the price page
+// quotes, and no buyer ever saw 400 before paying.
+func TestReturnTo75DoesNotRescaleStoredMoney(t *testing.T) {
+	migrations, err := loadMigrations()
+	if err != nil {
+		t.Fatalf("loadMigrations: %v", err)
+	}
+
+	var reprice string
+	for _, m := range migrations {
+		if m.version == 22 {
+			reprice = strings.ToLower(m.sql)
+		}
+	}
+	if reprice == "" {
+		t.Fatal("migration 0022 was not found")
+	}
+
+	for _, required := range []string{
+		"alter column retail_vnd_per_credit set default 75",
+		"where status <> 'paid'",
+		"and status <> 'underpaid'",
+		"received_amount_micros = 0",
+	} {
+		if !strings.Contains(reprice, required) {
+			t.Errorf("migration 0022 is missing %q", required)
+		}
+	}
+	// Any of these would move money rather than change the unit it is displayed in.
+	for _, forbidden := range []string{
+		"update wallets",
+		"balance_micros =",
+		"promotional_micros =",
+		"update wallet_holds",
+		"update trial_grants",
+		"update first_topup_bonus_grants",
+		"insert into ledger_entries",
+	} {
+		if strings.Contains(reprice, forbidden) {
+			t.Errorf("migration 0022 contains %q, which would shrink real wallet balances by 5.33x", forbidden)
+		}
+	}
+}
+
 func sqlOf(migrations []migration) []string {
 	out := make([]string, len(migrations))
 	for i, m := range migrations {

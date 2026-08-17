@@ -156,22 +156,24 @@ func TestCreditPaymentEventRejectsNonPositiveAmounts(t *testing.T) {
 // current rate would give a customer more or less than they were quoted, and repricing is
 // exactly what the append-only ledger exists to prevent.
 func TestCreditIsPricedAtTheRateTheOrderQuoted(t *testing.T) {
-	// 10,000 VND at the historical 75 VND/credit rate.
-	atOldRate, err := walletCreditMicros(10_000*1_000_000, 75)
+	// 10,000 VND on an order quoted at today's 75 VND/credit. The order rate and the retail
+	// rate agree, so the wallet receives exactly the money that arrived.
+	atRetailRate, err := walletCreditMicros(10_000*1_000_000, 75)
 	if err != nil {
 		t.Fatalf("walletCreditMicros: %v", err)
 	}
-	// The same payment at today's 400 VND/credit rate.
-	atCurrentRate, err := walletCreditMicros(10_000*1_000_000, 400)
+	// The same transfer against an order written while a credit cost 400, the rate that
+	// stood between migrations 0017 and 0022.
+	atLegacyRate, err := walletCreditMicros(10_000*1_000_000, 400)
 	if err != nil {
 		t.Fatalf("walletCreditMicros: %v", err)
 	}
-	if atOldRate == atCurrentRate {
+	if atRetailRate == atLegacyRate {
 		t.Fatal("the two rates produced the same credit, so this test proves nothing")
 	}
-	if atOldRate < atCurrentRate {
+	if atRetailRate < atLegacyRate {
 		t.Errorf("a cheaper rate bought less wallet value: %d at 75 VND/credit against %d at 400",
-			atOldRate, atCurrentRate)
+			atRetailRate, atLegacyRate)
 	}
 }
 

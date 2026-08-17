@@ -162,7 +162,7 @@ func (s *Server) handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	if _, err := s.store.GrantTrialForUser(r.Context(), user.ID,
 		trialIPHash(s.cfg.TrialFingerprintSecret, clientIP(r, s.trustProxy)),
-		trialCredits*pricing.RetailMicrosPerCredit, time.Now().Add(trialDuration)); err != nil {
+		trialVND*pricing.MicrosPerVND, time.Now().Add(trialDuration)); err != nil {
 		logger.Errorf("granting Google signup trial failed: %v", err)
 		s.redirectOAuthError(w, r, locale, "internal")
 		return

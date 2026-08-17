@@ -24,8 +24,8 @@ func TestRetailCreditRate(t *testing.T) {
 	// The rate wallet top-ups are denominated in. Margin is no longer asserted here
 	// because credits do not price a request: that check belongs to the token rates,
 	// where TestTokenRatesHoldTheTargetMargin measures it against the real basis.
-	if RetailVNDPerCredit != 400 {
-		t.Fatalf("RetailVNDPerCredit = %d, want 400", RetailVNDPerCredit)
+	if RetailVNDPerCredit != 75 {
+		t.Fatalf("RetailVNDPerCredit = %d, want 75", RetailVNDPerCredit)
 	}
 }
 

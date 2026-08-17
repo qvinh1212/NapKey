@@ -9,12 +9,11 @@ import (
 // A trial wallet must still be able to make a request.
 //
 // Raising the hold takes real balance out of circulation, and the smallest funded wallet
-// is the 50 trial credits granted on signup. If one request reserved most of that, a new
-// customer's first call would fail with an insufficient-balance error, which is the worst
-// possible first impression and would look like a broken product rather than a policy.
+// is the trial granted on signup. If one request reserved most of that, a new customer's
+// first call would fail with an insufficient-balance error, which is the worst possible
+// first impression and would look like a broken product rather than a policy.
 func TestTrialWalletCanAffordATypicalRequest(t *testing.T) {
-	const trialCredits = 50
-	trial := int64(trialCredits) * pricing.RetailMicrosPerCredit
+	trial := trialVND * pricing.MicrosPerVND
 
 	quote, err := pricing.Compute(
 		walletHoldTokens(pricing.Tokens{Input: 1_500, Output: 4_096}),
@@ -74,7 +73,7 @@ func TestRaisedHoldStillPassesAdmissionForALargeRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ceiling := walletHoldCredits * pricing.RetailMicrosPerCredit
+	ceiling := walletHoldCeilingVND * pricing.MicrosPerVND
 	if quote.Micros > ceiling {
 		t.Errorf("a large request now quotes %d against the %d ceiling, so it would be refused",
 			quote.Micros, ceiling)
